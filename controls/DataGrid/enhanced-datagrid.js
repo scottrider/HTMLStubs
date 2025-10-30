@@ -32,6 +32,12 @@ class DataGridControl extends BaseControl {
         this.searchTerm = '';
         this.activeFilters = [];
         this.sortConfig = null;
+        this.rowFilter = typeof this.options.rowFilter === 'function'
+            ? this.options.rowFilter
+            : null;
+        this.rowFilterMetadata = this.options.rowFilterMetadata || null;
+        this.options.rowFilter = this.rowFilter;
+        this.options.rowFilterMetadata = this.rowFilterMetadata;
 
         // State management
         this.isLoading = false;
@@ -399,113 +405,6 @@ class DataGridControl extends BaseControl {
         this.setData(newData);
         this.render();
         return this;
-    }
-
-    /**
-     * Filter data by disabled status
-     */
-    filterByDisabledStatus(showDisabled) {
-        if (!this.originalData) {
-            // Store original data on first filter
-            this.originalData = [...this.data];
-        }
-
-        // Update state
-        this.showDisabledRecords = showDisabled;
-
-        console.log('DEBUG: FilterByDisabledStatus called with:', { 
-            showDisabled,
-            originalDataLength: this.originalData?.length,
-            currentDataLength: this.data?.length,
-            sampleOriginalRecord: this.originalData?.[0],
-            sampleCurrentRecord: this.data?.[0]
-        });
-
-        // Count disabled records in original data
-        const disabledCount = this.originalData.filter(record => record.isDisabled === true).length;
-        const enabledCount = this.originalData.filter(record => record.isDisabled !== true).length;
-        
-        console.log('DEBUG: Data analysis:', {
-            totalRecords: this.originalData.length,
-            disabledRecords: disabledCount,
-            enabledRecords: enabledCount,
-            disabledSample: this.originalData.find(record => record.isDisabled === true),
-            enabledSample: this.originalData.find(record => record.isDisabled !== true)
-        });
-
-        let filteredData;
-        if (showDisabled) {
-            // Show disabled records - PRESERVE original data structure
-            filteredData = this.originalData.filter(record => record.isDisabled === true);
-        } else {
-            // Show enabled records - PRESERVE original data structure  
-            filteredData = this.originalData.filter(record => record.isDisabled !== true);
-        }
-
-        console.log('DataGrid filter applied:', { 
-            showDisabled, 
-            totalRecords: this.originalData.length,
-            filteredCount: filteredData.length,
-            sampleFilteredRecord: filteredData[0]
-        });
-
-        // Update data without full re-render to preserve footer state
-        this.data = filteredData;
-        this.updateDerivedData();
-        this.renderDataContent(); // Only re-render data, not the entire grid
-        
-        return this;
-    }
-
-    /**
-     * Render only the data content and update pagination without destroying footer
-     * This preserves event listeners and checkbox state in the footer
-     */
-    renderDataContent() {
-        this.logger.debug('Rendering data content only', { 
-            id: this.id, 
-            dataCount: this.data.length 
-        });
-
-        // Clear existing data rows (but keep header and footer)
-        const dataRows = this.container.querySelectorAll('.DataGridRow');
-        dataRows.forEach(row => row.remove());
-
-        // Re-render data rows
-        this.renderDataRows();
-
-        // Update pagination info in existing footer without destroying it
-        this.updatePaginationInfo();
-    }
-
-    /**
-     * Update pagination information in the existing footer
-     */
-    updatePaginationInfo() {
-        const paginationInfo = this.getPaginationInfo();
-        
-        // Update page info
-        const pageMetric = this.container.querySelector('.metric-row .metric-value');
-        if (pageMetric) {
-            pageMetric.textContent = `${this.currentPage} of ${this.totalPages}`;
-        }
-
-        // Update pagination buttons
-        const paginationButtons = this.container.querySelector('.pagination-buttons');
-        if (paginationButtons) {
-            const isEnabled = this.options.pagination;
-            const isEmpty = paginationInfo.total === 0;
-            paginationButtons.innerHTML = this.renderPaginationButtons(isEnabled, isEmpty);
-            
-            // Re-attach event listeners to new pagination buttons
-            this.setupFooterEventListeners();
-        }
-
-        // Update page size dropdown if the visible count changed
-        const pageSizeSelect = this.container.querySelector(`#pageSize_${this.id}`);
-        if (pageSizeSelect) {
-            pageSizeSelect.value = this.options.pageSize;
-        }
     }
 
     /**
@@ -921,9 +820,23 @@ class DataGridControl extends BaseControl {
         // Apply search and filters
         let workingData = [...this.data];
 
+        if (typeof this.rowFilter === 'function') {
+            const beforeCount = workingData.length;
+            workingData = workingData.filter((record, index) =>
+                this.applyRowFilter(record, index)
+            );
+
+            this.logger.debug('Row filter evaluated', {
+                id: this.id,
+                beforeCount,
+                afterCount: workingData.length,
+                hasMetadata: !!this.rowFilterMetadata
+            });
+        }
+
         // Apply search if present
         if (this.searchTerm) {
-            workingData = workingData.filter(record => 
+            workingData = workingData.filter(record =>
                 this.searchInRecord(record, this.searchTerm)
             );
         }
@@ -946,6 +859,23 @@ class DataGridControl extends BaseControl {
 
         // Recalculate pagination
         this.calculatePagination();
+    }
+
+    applyRowFilter(record, index) {
+        if (typeof this.rowFilter !== 'function') {
+            return true;
+        }
+
+        try {
+            return this.rowFilter(record, index, this.rowFilterMetadata);
+        } catch (error) {
+            this.logger.error('Row filter execution failed', {
+                id: this.id,
+                index,
+                error: error.message
+            });
+            return true;
+        }
     }
 
     /**
@@ -1277,9 +1207,29 @@ class DataGridControl extends BaseControl {
         // Implement loading state rendering
     }
 
+    getDisplayFieldNames() {
+        if (!this.schema) {
+            return [];
+        }
+
+        return Object.keys(this.schema).filter(fieldName => {
+            const field = this.schema[fieldName];
+            return !(field && field.hidden);
+        });
+    }
+
     renderHeader() {
         if (!this.schema || Object.keys(this.schema).length === 0) {
             this.logger.warn('No schema available for header rendering', { id: this.id });
+            return;
+        }
+
+        const displayFields = this.getDisplayFieldNames();
+
+        if (displayFields.length === 0) {
+            this.logger.warn('Schema defined but no visible columns available for header rendering', {
+                id: this.id
+            });
             return;
         }
 
@@ -1288,7 +1238,7 @@ class DataGridControl extends BaseControl {
         headerRow.className = 'DataGridRow DataGridHeader';
         headerRow.setAttribute('role', 'row');
         
-        // Create header cells based on schema, filtering out non-visible fields
+        // Create header cells based on schema
         Object.keys(this.schema).forEach(fieldName => {
             const field = this.schema[fieldName];
             
@@ -1298,7 +1248,7 @@ class DataGridControl extends BaseControl {
             }
             
             const displayName = field.displayName || fieldName;
-            
+
             const headerCell = document.createElement('div');
             headerCell.className = 'DataGridCell';
             headerCell.setAttribute('role', 'columnheader');
@@ -1308,16 +1258,13 @@ class DataGridControl extends BaseControl {
             headerCell.style.color = 'white';
             headerRow.appendChild(headerCell);
         });
-        
+
         this.container.appendChild(headerRow);
         
-        const visibleFields = Object.keys(this.schema).filter(key => this.schema[key].visible !== false);
-        this.logger.debug('Header rendered with displayNames, respecting visibility', {
+        this.logger.debug('Header rendered with displayNames', {
             id: this.id,
-            totalFields: Object.keys(this.schema).length,
-            visibleFields: visibleFields.length,
-            hiddenFields: Object.keys(this.schema).length - visibleFields.length,
-            columns: visibleFields.map(key => ({
+            columnCount: Object.keys(this.schema).length,
+            columns: Object.keys(this.schema).map(key => ({
                 field: key,
                 displayName: this.schema[key].displayName || key
             }))
@@ -1326,7 +1273,8 @@ class DataGridControl extends BaseControl {
 
     renderDataRows() {
         const visibleData = this.getVisibleData();
-        
+        const displayFields = this.getDisplayFieldNames();
+
         console.log('renderDataRows debug:', {
             totalData: this.data.length,
             filteredData: this.filteredData.length,
@@ -1334,11 +1282,17 @@ class DataGridControl extends BaseControl {
             visibleData: visibleData.length,
             currentPage: this.currentPage,
             pageSize: this.options.pageSize,
-            schemaKeys: Object.keys(this.schema)
+            schemaKeys: displayFields
         });
-        
+
         if (visibleData.length === 0) {
             console.log('No visible data, rendering empty state');
+            this.renderEmptyState();
+            return;
+        }
+
+        if (displayFields.length === 0) {
+            this.logger.warn('No visible columns available for data rendering', { id: this.id });
             this.renderEmptyState();
             return;
         }
@@ -1354,19 +1308,12 @@ class DataGridControl extends BaseControl {
                 dataRow.classList.add('selected');
             }
             
-            // Create data cells based on schema, filtering out non-visible fields
+            // Create data cells based on schema
             Object.keys(this.schema).forEach(fieldName => {
-                const field = this.schema[fieldName];
-                
-                // Skip fields marked as not visible
-                if (field.visible === false) {
-                    return;
-                }
-                
                 const dataCell = document.createElement('div');
                 dataCell.className = 'DataGridCell';
                 dataCell.setAttribute('role', 'gridcell');
-                
+
                 const value = record[fieldName];
                 dataCell.textContent = this.formatCellValue(value, this.schema[fieldName]);
                 

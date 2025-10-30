@@ -100,7 +100,7 @@
         function loadDataAndGrid() {
             // Load positions-data.js with cache busting
             const dataScript = document.createElement('script');
-            dataScript.src = `positions-data.js?v=${timestamp}`;
+            dataScript.src = `controls/DataGrid/positions-data.js?v=${timestamp}`;
             dataScript.onload = function() {
                 // Try to load enhanced DataGrid first, fallback to original
                 const gridScript = document.createElement('script');
@@ -129,17 +129,28 @@
                 // Store original data for filtering
                 const originalData = [...dataGridData.positions.data];
                 
-                console.log('Total records being passed to DataGrid:', originalData.length);
+                // Filter to show only enabled records initially (5 records)
+                const enabledData = originalData.filter(record => record.isDisabled !== true);
+                console.log('Enabled records:', enabledData.length, enabledData);
                 console.log('Schema being passed to DataGrid:', dataGridData.positions.schema);
                 
-                // Pass complete dataset to DataGrid (filtering will be handled internally)
+                // Remove isDisabled from schema for display (business logic shouldn't be in UI)
                 const displaySchema = { ...dataGridData.positions.schema };
-                console.log('Display schema:', displaySchema);
-                
-                // Initialize enhanced DataGrid with complete dataset
+                if (displaySchema.isDisabled) {
+                    displaySchema.isDisabled = {
+                        ...displaySchema.isDisabled,
+                        hidden: true
+                    };
+                }
+                console.log('Schema being passed to DataGrid with hidden isDisabled column:', displaySchema);
+
+                // Initialize enhanced DataGrid with pagination and best practices
                 const dataGrid = new DataGridControl({
                     container: '#dataGrid',
-                    data: originalData, // Pass complete dataset including disabled records
+                    data: enabledData.map(record => {
+                        const { isDisabled, ...displayRecord } = record;
+                        return displayRecord;
+                    }), // Remove isDisabled from initial data
                     schema: displaySchema, // Use schema without isDisabled field
                     
                     // Enable pagination - Best Practice
@@ -162,6 +173,9 @@
                 // Initialize and render
                 dataGrid.init().render();
                 
+                // Add application-level filtering controls
+                addFilteringControls(dataGrid, originalData);
+                
                 console.log('Enhanced DataGrid with pagination initialized successfully');
                 
                 // Add status indicator
@@ -181,6 +195,88 @@
                 const dataGrid = new DataGrid('#dataGrid');
             }
         }
+        
+        // Application-level filtering function
+        function getFilteredData(originalData, showDeleted) {
+            console.log('Filtering data:', { originalCount: originalData.length, showDeleted });
+            
+            let filteredData;
+            if (!showDeleted) {
+                // Show only enabled records (isDisabled = false or undefined)
+                filteredData = originalData.filter(record => !record.isDisabled);
+            } else {
+                // Show only disabled records (isDisabled = true)
+                filteredData = originalData.filter(record => record.isDisabled === true);
+            }
+            
+            console.log('Filtered result:', { filteredCount: filteredData.length, showDeleted });
+            return filteredData;
+        }
+        
+        // Add filtering controls outside the DataGrid
+        function addFilteringControls(dataGrid, originalData) {
+            let currentShowDeleted = false; // Start with enabled records
+            
+            // Create filter container
+            const filterContainer = document.createElement('div');
+            filterContainer.style.cssText = `
+                margin: 20px; 
+                padding: 16px; 
+                background: rgb(69, 69, 69); 
+                border-radius: 4px;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            `;
+            
+            // Create checkbox
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = 'appLevelShowDeleted';
+            checkbox.style.marginRight = '8px';
+            checkbox.checked = false; // Start unchecked (showing enabled)
+            
+            // Create label
+            const label = document.createElement('label');
+            label.htmlFor = 'appLevelShowDeleted';
+            label.style.color = 'white';
+            label.textContent = 'Show disabled records';
+            
+            // Add event listener
+            checkbox.addEventListener('change', function() {
+                currentShowDeleted = this.checked;
+                console.log('Checkbox changed to:', currentShowDeleted);
+                
+                let filteredData;
+                if (currentShowDeleted) {
+                    // Show disabled records (remove isDisabled field from display)
+                    filteredData = originalData.filter(record => record.isDisabled === true)
+                        .map(record => {
+                            const { isDisabled, ...displayRecord } = record;
+                            return displayRecord;
+                        });
+                } else {
+                    // Show enabled records (remove isDisabled field from display)
+                    filteredData = originalData.filter(record => record.isDisabled !== true)
+                        .map(record => {
+                            const { isDisabled, ...displayRecord } = record;
+                            return displayRecord;
+                        });
+                }
+                
+                console.log('Filtered data count:', filteredData.length);
+                
+                // Update DataGrid data and re-render
+                dataGrid.updateData(filteredData);
+                console.log(`Filter applied: showing ${currentShowDeleted ? 'disabled' : 'enabled'} records (${filteredData.length} total)`);
+            });
+            
+            filterContainer.appendChild(checkbox);
+            filterContainer.appendChild(label);
+            
+            // Insert before the DataGrid
+            const dataGridContainer = document.getElementById('dataGrid');
+            dataGridContainer.parentNode.insertBefore(filterContainer, dataGridContainer);
+        }
+        
         // Start loading process
         loadLibraryFile(0);
     </script>
