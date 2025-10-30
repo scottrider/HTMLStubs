@@ -32,6 +32,12 @@ class DataGridControl extends BaseControl {
         this.searchTerm = '';
         this.activeFilters = [];
         this.sortConfig = null;
+        this.rowFilter = typeof this.options.rowFilter === 'function'
+            ? this.options.rowFilter
+            : null;
+        this.rowFilterMetadata = this.options.rowFilterMetadata || null;
+        this.options.rowFilter = this.rowFilter;
+        this.options.rowFilterMetadata = this.rowFilterMetadata;
 
         // State management
         this.isLoading = false;
@@ -381,6 +387,62 @@ class DataGridControl extends BaseControl {
         this.setData(newData);
         this.render();
         return this;
+    }
+
+    setRowFilter(filterFn, metadata = null) {
+        const resolvedMetadata = metadata === undefined ? null : metadata;
+
+        if (filterFn !== null && typeof filterFn !== 'function') {
+            this.logger.error('Invalid row filter provided', {
+                id: this.id,
+                providedType: typeof filterFn
+            });
+            throw new TypeError('Row filter must be a function or null');
+        }
+
+        if (this.rowFilter === filterFn && this.rowFilterMetadata === resolvedMetadata) {
+            this.logger.debug('Row filter unchanged', { id: this.id });
+            return this;
+        }
+
+        this.rowFilter = filterFn;
+        this.rowFilterMetadata = resolvedMetadata;
+        this.options.rowFilter = filterFn;
+        this.options.rowFilterMetadata = resolvedMetadata;
+
+        if (!this.isInitialized) {
+            this.logger.debug('Row filter stored for later application', {
+                id: this.id,
+                willApplyOnInit: true
+            });
+            this.updateDerivedData();
+            return this;
+        }
+
+        const interactionStart = Date.now();
+        const hasFilter = typeof filterFn === 'function';
+
+        this.logger.info('Row filter updated', {
+            id: this.id,
+            hasFilter,
+            metadata: resolvedMetadata || null
+        });
+
+        this.updateDerivedData();
+        this.trackUserInteraction('filter', interactionStart);
+        this.trigger('datagrid:filtersApplied', {
+            id: this.id,
+            rowFilterApplied: hasFilter,
+            metadata: resolvedMetadata || null,
+            activeFilterCount: this.activeFilters.length + (hasFilter ? 1 : 0)
+        });
+
+        this.render();
+        return this;
+    }
+
+    clearRowFilter() {
+        return this.setRowFilter(null, null);
     }
 
     /**
@@ -796,9 +858,23 @@ class DataGridControl extends BaseControl {
         // Apply search and filters
         let workingData = [...this.data];
 
+        if (typeof this.rowFilter === 'function') {
+            const beforeCount = workingData.length;
+            workingData = workingData.filter((record, index) =>
+                this.applyRowFilter(record, index)
+            );
+
+            this.logger.debug('Row filter evaluated', {
+                id: this.id,
+                beforeCount,
+                afterCount: workingData.length,
+                hasMetadata: !!this.rowFilterMetadata
+            });
+        }
+
         // Apply search if present
         if (this.searchTerm) {
-            workingData = workingData.filter(record => 
+            workingData = workingData.filter(record =>
                 this.searchInRecord(record, this.searchTerm)
             );
         }
@@ -821,6 +897,23 @@ class DataGridControl extends BaseControl {
 
         // Recalculate pagination
         this.calculatePagination();
+    }
+
+    applyRowFilter(record, index) {
+        if (typeof this.rowFilter !== 'function') {
+            return true;
+        }
+
+        try {
+            return this.rowFilter(record, index, this.rowFilterMetadata);
+        } catch (error) {
+            this.logger.error('Row filter execution failed', {
+                id: this.id,
+                index,
+                error: error.message
+            });
+            return true;
+        }
     }
 
     /**
@@ -1152,9 +1245,29 @@ class DataGridControl extends BaseControl {
         // Implement loading state rendering
     }
 
+    getDisplayFieldNames() {
+        if (!this.schema) {
+            return [];
+        }
+
+        return Object.keys(this.schema).filter(fieldName => {
+            const field = this.schema[fieldName];
+            return !(field && field.hidden);
+        });
+    }
+
     renderHeader() {
         if (!this.schema || Object.keys(this.schema).length === 0) {
             this.logger.warn('No schema available for header rendering', { id: this.id });
+            return;
+        }
+
+        const displayFields = this.getDisplayFieldNames();
+
+        if (displayFields.length === 0) {
+            this.logger.warn('Schema defined but no visible columns available for header rendering', {
+                id: this.id
+            });
             return;
         }
 
@@ -1162,12 +1275,12 @@ class DataGridControl extends BaseControl {
         const headerRow = document.createElement('div');
         headerRow.className = 'DataGridRow DataGridHeader';
         headerRow.setAttribute('role', 'row');
-        
+
         // Create header cells based on schema
-        Object.keys(this.schema).forEach(fieldName => {
+        displayFields.forEach(fieldName => {
             const field = this.schema[fieldName];
             const displayName = field.displayName || fieldName;
-            
+
             const headerCell = document.createElement('div');
             headerCell.className = 'DataGridCell';
             headerCell.setAttribute('role', 'columnheader');
@@ -1177,13 +1290,13 @@ class DataGridControl extends BaseControl {
             headerCell.style.color = 'white';
             headerRow.appendChild(headerCell);
         });
-        
+
         this.container.appendChild(headerRow);
-        
+
         this.logger.debug('Header rendered with displayNames', {
             id: this.id,
-            columnCount: Object.keys(this.schema).length,
-            columns: Object.keys(this.schema).map(key => ({
+            columnCount: displayFields.length,
+            columns: displayFields.map(key => ({
                 field: key,
                 displayName: this.schema[key].displayName || key
             }))
@@ -1192,7 +1305,8 @@ class DataGridControl extends BaseControl {
 
     renderDataRows() {
         const visibleData = this.getVisibleData();
-        
+        const displayFields = this.getDisplayFieldNames();
+
         console.log('renderDataRows debug:', {
             totalData: this.data.length,
             filteredData: this.filteredData.length,
@@ -1200,11 +1314,17 @@ class DataGridControl extends BaseControl {
             visibleData: visibleData.length,
             currentPage: this.currentPage,
             pageSize: this.options.pageSize,
-            schemaKeys: Object.keys(this.schema)
+            schemaKeys: displayFields
         });
-        
+
         if (visibleData.length === 0) {
             console.log('No visible data, rendering empty state');
+            this.renderEmptyState();
+            return;
+        }
+
+        if (displayFields.length === 0) {
+            this.logger.warn('No visible columns available for data rendering', { id: this.id });
             this.renderEmptyState();
             return;
         }
@@ -1221,11 +1341,11 @@ class DataGridControl extends BaseControl {
             }
             
             // Create data cells based on schema
-            Object.keys(this.schema).forEach(fieldName => {
+            displayFields.forEach(fieldName => {
                 const dataCell = document.createElement('div');
                 dataCell.className = 'DataGridCell';
                 dataCell.setAttribute('role', 'gridcell');
-                
+
                 const value = record[fieldName];
                 dataCell.textContent = this.formatCellValue(value, this.schema[fieldName]);
                 
