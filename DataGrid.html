@@ -152,6 +152,7 @@
                         return displayRecord;
                     }), // Remove isDisabled from initial data
                     schema: displaySchema, // Use schema without isDisabled field
+                    originalData: originalData, // Pass original data for filtering
                     
                     // Enable pagination - Best Practice
                     pagination: true,
@@ -174,7 +175,7 @@
                 dataGrid.init().render();
                 
                 // Add application-level filtering controls
-                addFilteringControls(dataGrid, originalData);
+                // addFilteringControls(dataGrid, originalData);
                 
                 console.log('Enhanced DataGrid with pagination initialized successfully');
                 
