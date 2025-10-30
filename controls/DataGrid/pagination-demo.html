@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataGrid Pagination Demo</title>
+    <link rel="stylesheet" href="datagrid.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+        }
+        
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .demo-header {
+            padding: 20px;
+            background: #2c3e50;
+            color: white;
+        }
+        
+        .demo-header h1 {
+            margin: 0 0 8px 0;
+            font-size: 24px;
+        }
+        
+        .demo-header p {
+            margin: 0;
+            opacity: 0.9;
+        }
+        
+        .demo-controls {
+            padding: 16px 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e1e8ed;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+        
+        .demo-controls button {
+            padding: 8px 16px;
+            border: 1px solid #007bff;
+            background: white;
+            color: #007bff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+        
+        .demo-controls button:hover {
+            background: #007bff;
+            color: white;
+        }
+        
+        .demo-controls button.danger {
+            border-color: #dc3545;
+            color: #dc3545;
+        }
+        
+        .demo-controls button.danger:hover {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .demo-controls select {
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .metrics-display {
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: #e8f4f8;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #0c5460;
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .metrics-display .metric {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .metrics-display .metric strong {
+            color: #155724;
+        }
+        
+        .datagrid-container {
+            height: 500px;
+            position: relative;
+        }
+        
+        .demo-status {
+            padding: 12px 20px;
+            background: #e8f4f8;
+            border-top: 1px solid #bee5eb;
+            font-size: 14px;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1>DataGrid Pagination Demo</h1>
+            <p>Enterprise-grade data grid with comprehensive pagination functionality</p>
+        </div>
+        
+        <div class="demo-controls">
+            <button onclick="addSampleData(50)">Add 50 Records</button>
+            <button onclick="addSampleData(100)">Add 100 Records</button>
+            <button onclick="addSampleData(500)">Add 500 Records</button>
+            <button onclick="clearData()" class="danger">Clear All</button>
+            <select onchange="changePaginationMode(this.value)">
+                <option value="true">Pagination Enabled</option>
+                <option value="false">Pagination Disabled (Always Visible)</option>
+            </select>
+            <button onclick="showMetricsReport()">Show Metrics Report</button>
+            
+            <!-- Live Metrics Display -->
+            <div class="metrics-display" id="liveMetrics">
+                <div class="metric">
+                    <span>Renders:</span> <strong id="renderCount">0</strong>
+                </div>
+                <div class="metric">
+                    <span>Avg Render:</span> <strong id="avgRender">0ms</strong>
+                </div>
+                <div class="metric">
+                    <span>Page Nav:</span> <strong id="pageNavCount">0</strong>
+                </div>
+                <div class="metric">
+                    <span>Performance:</span> <strong id="perfGrade">N/A</strong>
+                </div>
+            </div>
+        </div>
+        
+        <div id="dataGridContainer" class="datagrid-container"></div>
+        
+        <div id="demoStatus" class="demo-status">
+            Ready to demonstrate pagination functionality
+        </div>
+    </div>
+
+    <!-- Load library dependencies -->
+    <script src="../../lib/logging.js"></script>
+    <script src="../../lib/base-control.js"></script>
+    <script src="../../lib/library-manager.js"></script>
+    
+    <!-- Load DataGrid -->
+    <script src="enhanced-datagrid.js"></script>
+    
+    <script>
+        // Initialize demo
+        let dataGrid = null;
+        let currentData = [];
+        
+        // Sample data generator
+        function generateSampleData(count) {
+            const firstNames = ['John', 'Jane', 'Bob', 'Alice', 'Charlie', 'Diana', 'Eve', 'Frank', 'Grace', 'Henry'];
+            const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez'];
+            const departments = ['Engineering', 'Marketing', 'Sales', 'HR', 'Finance', 'Operations', 'Support', 'Legal'];
+            const cities = ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix', 'Philadelphia', 'San Antonio', 'San Diego'];
+            
+            const data = [];
+            for (let i = 1; i <= count; i++) {
+                data.push({
+                    id: i,
+                    firstName: firstNames[Math.floor(Math.random() * firstNames.length)],
+                    lastName: lastNames[Math.floor(Math.random() * lastNames.length)],
+                    email: `user${i}@example.com`,
+                    department: departments[Math.floor(Math.random() * departments.length)],
+                    salary: Math.floor(Math.random() * 100000) + 40000,
+                    city: cities[Math.floor(Math.random() * cities.length)],
+                    hireDate: new Date(Date.now() - Math.random() * 1000 * 60 * 60 * 24 * 365 * 5).toISOString().split('T')[0],
+                    isActive: Math.random() > 0.2
+                });
+            }
+            return data;
+        }
+        
+        // Initialize DataGrid
+        function initializeDataGrid(enablePagination = true) {
+            // Destroy existing grid
+            if (dataGrid) {
+                dataGrid.destroy();
+            }
+            
+            // Create new grid
+            dataGrid = new DataGridControl({
+                container: '#dataGridContainer',
+                data: currentData,
+                schema: {
+                    id: { type: 'number', displayName: 'ID', htmlElement: 'input', htmlType: 'number' },
+                    firstName: { type: 'string', displayName: 'First Name', htmlElement: 'input', htmlType: 'text' },
+                    lastName: { type: 'string', displayName: 'Last Name', htmlElement: 'input', htmlType: 'text' },
+                    email: { type: 'string', displayName: 'Email', htmlElement: 'input', htmlType: 'email' },
+                    department: { type: 'string', displayName: 'Department', htmlElement: 'input', htmlType: 'text' },
+                    salary: { type: 'number', displayName: 'Salary', htmlElement: 'input', htmlType: 'number' },
+                    city: { type: 'string', displayName: 'City', htmlElement: 'input', htmlType: 'text' },
+                    hireDate: { type: 'date', displayName: 'Hire Date', htmlElement: 'input', htmlType: 'date' },
+                    isActive: { type: 'boolean', displayName: 'Active', htmlElement: 'input', htmlType: 'checkbox' }
+                },
+                editable: true,
+                sortable: true,
+                filterable: true,
+                searchable: true,
+                pagination: enablePagination,
+                pageSize: 10,
+                pageSizeOptions: [5, 10, 25, 50, 100],
+                accessibility: true,
+                responsive: true
+            });
+            
+            // Set up enhanced event listeners with metrics tracking
+            dataGrid.on('datagrid:pageChanged', (data) => {
+                const metrics = data.userMetrics || {};
+                updateStatus(`Navigated to page ${data.newPage} of ${data.totalPages} (${metrics.navigationDirection || 'unknown'} ${metrics.jumpSize || 1} page${metrics.jumpSize !== 1 ? 's' : ''})`);
+                updateLiveMetrics();
+            });
+            
+            dataGrid.on('datagrid:pageSizeChanged', (data) => {
+                const metrics = data.userMetrics || {};
+                updateStatus(`Page size changed to ${data.newPageSize}. Now on page ${data.currentPage} of ${data.totalPages}. Pattern: ${metrics.sizeChangePattern || 'unknown'}`);
+                updateLiveMetrics();
+            });
+            
+            dataGrid.on('datagrid:rendered', (data) => {
+                updateStatus(`Rendered ${data.rowsRendered} rows in ${data.renderTime.toFixed(2)}ms`);
+                updateLiveMetrics();
+            });
+
+            dataGrid.on('datagrid:dataChanged', (data) => {
+                updateStatus(`Data updated - ${data.recordCount} total records`);
+                updateLiveMetrics();
+            });
+            
+            // Initialize and render
+            dataGrid.init().render();
+            
+            updateStatus(`DataGrid initialized with ${currentData.length} records. Pagination: ${enablePagination ? 'Enabled' : 'Disabled'}`);
+        }
+        
+        // Add sample data
+        function addSampleData(count) {
+            const newData = generateSampleData(count);
+            currentData = [...currentData, ...newData];
+            
+            if (dataGrid) {
+                dataGrid.setData(currentData);
+                updateStatus(`Added ${count} records. Total: ${currentData.length}`);
+            }
+        }
+        
+        // Clear all data
+        function clearData() {
+            currentData = [];
+            if (dataGrid) {
+                dataGrid.setData(currentData);
+                updateStatus('All data cleared');
+            }
+        }
+        
+        // Change pagination mode
+        function changePaginationMode(enableStr) {
+            const enable = enableStr === 'true';
+            initializeDataGrid(enable);
+        }
+        
+        // Update status
+        function updateStatus(message) {
+            const statusElement = document.getElementById('demoStatus');
+            statusElement.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+        }
+        
+        // Update live metrics display
+        function updateLiveMetrics() {
+            if (!dataGrid) return;
+            
+            // Update live metrics display
+            document.getElementById('renderCount').textContent = dataGrid.renderMetrics?.renderCount || 0;
+            document.getElementById('avgRender').textContent = 
+                (dataGrid.renderMetrics?.averageRenderTime?.toFixed(1) || 0) + 'ms';
+            document.getElementById('pageNavCount').textContent = 
+                dataGrid.userInteractionMetrics?.pageNavigations || 0;
+            document.getElementById('perfGrade').textContent = 
+                dataGrid.getPerformanceGrade?.() || 'N/A';
+        }
+
+        // Show comprehensive metrics report
+        function showMetricsReport() {
+            if (!dataGrid) {
+                alert('No DataGrid instance available');
+                return;
+            }
+
+            const metrics = {
+                render: dataGrid.renderMetrics || {},
+                user: dataGrid.userInteractionMetrics || {},
+                data: dataGrid.dataQualityMetrics || {},
+                usability: dataGrid.usabilityMetrics || {}
+            };
+
+            const sessionDuration = (Date.now() - metrics.usability.sessionDuration) / 1000;
+
+            const report = `
+DataGrid Metrics Report
+======================
+
+Performance Metrics:
+• Total Renders: ${metrics.render.renderCount || 0}
+• Average Render Time: ${(metrics.render.averageRenderTime || 0).toFixed(2)}ms
+• Max Render Time: ${(metrics.render.maxRenderTime || 0).toFixed(2)}ms
+• Min Render Time: ${metrics.render.minRenderTime === Infinity ? 'N/A' : (metrics.render.minRenderTime || 0).toFixed(2) + 'ms'}
+• Performance Grade: ${dataGrid.getPerformanceGrade?.() || 'N/A'}
+
+User Interaction Metrics:
+• Page Navigations: ${metrics.user.pageNavigations || 0}
+• Page Size Changes: ${metrics.user.pageSizeChanges || 0}
+• Search Operations: ${metrics.user.searchOperations || 0}
+• Filter Operations: ${metrics.user.filterOperations || 0}
+• Record Modifications: ${metrics.user.recordModifications || 0}
+• Total Interactions: ${dataGrid.getTotalInteractions?.() || 0}
+• Average Response Time: ${(metrics.user.averageInteractionResponse || 0).toFixed(2)}ms
+
+Data Quality Metrics:
+• Total Records: ${metrics.data.totalRecords || 0}
+• Valid Records: ${metrics.data.validRecords || 0}
+• Quality Score: ${metrics.data.totalRecords > 0 ? ((metrics.data.validRecords / metrics.data.totalRecords) * 100).toFixed(1) + '%' : 'N/A'}
+• Duplicate Records: ${metrics.data.duplicateRecords || 0}
+• Incomplete Records: ${metrics.data.incompleteRecords || 0}
+
+Session Information:
+• Session Duration: ${sessionDuration.toFixed(1)}s
+• User Error Rate: ${metrics.usability.userErrorRate || 0}
+• UX Recommendation: ${dataGrid.getUXRecommendation?.() || 'No recommendation available'}
+
+Best Practices Status:
+• Pagination Always Visible: ✓ Implemented
+• Performance Monitoring: ✓ Active
+• User Interaction Tracking: ✓ Active
+• Data Quality Analysis: ✓ Active
+• Accessibility Support: ✓ Enabled
+            `;
+
+            // Create modal dialog for metrics
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(0,0,0,0.7); z-index: 10000;
+                display: flex; align-items: center; justify-content: center;
+                padding: 20px;
+            `;
+            
+            const content = document.createElement('div');
+            content.style.cssText = `
+                background: white; border-radius: 8px; padding: 24px;
+                max-width: 600px; max-height: 80vh; overflow-y: auto;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            `;
+            
+            const pre = document.createElement('pre');
+            pre.style.cssText = `
+                font-family: monospace; font-size: 12px; line-height: 1.4;
+                margin: 0; white-space: pre-wrap; word-wrap: break-word;
+            `;
+            pre.textContent = report;
+            
+            const closeBtn = document.createElement('button');
+            closeBtn.textContent = 'Close';
+            closeBtn.style.cssText = `
+                margin-top: 16px; padding: 8px 16px; border: 1px solid #007bff;
+                background: #007bff; color: white; border-radius: 4px; cursor: pointer;
+            `;
+            closeBtn.onclick = () => document.body.removeChild(modal);
+            
+            content.appendChild(pre);
+            content.appendChild(closeBtn);
+            modal.appendChild(content);
+            document.body.appendChild(modal);
+            
+            // Close on background click
+            modal.onclick = (e) => {
+                if (e.target === modal) {
+                    document.body.removeChild(modal);
+                }
+            };
+        }
+
+        // Initialize demo with sample data
+        document.addEventListener('DOMContentLoaded', () => {
+            currentData = generateSampleData(75); // Start with 75 records
+            initializeDataGrid(true);
+            
+            // Start live metrics updates
+            setInterval(updateLiveMetrics, 1000);
+        });
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (event) => {
+            if (!dataGrid) return;
+            
+            if (event.ctrlKey || event.metaKey) {
+                switch (event.key) {
+                    case 'ArrowLeft':
+                        dataGrid.previousPage();
+                        event.preventDefault();
+                        break;
+                    case 'ArrowRight':
+                        dataGrid.nextPage();
+                        event.preventDefault();
+                        break;
+                    case 'Home':
+                        dataGrid.firstPage();
+                        event.preventDefault();
+                        break;
+                    case 'End':
+                        dataGrid.lastPage();
+                        event.preventDefault();
+                        break;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

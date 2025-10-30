@@ -1,0 +1,81 @@
+# HTMLStubs Project AI Agent Configuration
+# Project-specific settings override master-agent.yaml
+
+## Project Information
+project:
+  name: "HTMLStubs"
+  type: "frontend_components"
+  description: "HTML Controls Library with DataGrid components"
+  status: "active_development"
+
+## AI Interaction Settings
+ai_interaction:
+  enabled: true
+  mode: development
+  code_generation: true
+  file_modifications: true
+  explanations: true
+  questions: true
+  debugging: true
+
+## Project-Specific Guidelines
+guidelines:
+  - Focus on separation of concerns in component architecture
+  - Maintain clean DataGrid control without business logic
+  - Use proper data pipeline architecture
+  - Implement comprehensive logging and debugging
+  - Follow enterprise-grade coding practices
+
+## Resources
+resources:
+  master_agent:
+    - file: "../master-agent.yaml"
+      description: "Master AI agent configuration with safety guidelines"
+      location: "repos/master-agent.yaml"
+      notes: "Project settings override master settings for development work"
+  
+  evaluation:
+    - file: "../master-evaluate.yaml"
+      description: "Evaluation checklist for completion tracking"
+      location: "repos/master-evaluate.yaml"
+      
+  project_docs:
+    - file: "DataGrid-README.md"
+      description: "DataGrid component documentation"
+    - file: "DataGrid-Documentation.md"
+      description: "Detailed DataGrid implementation docs"
+    - file: "LIBRARY-README.md"
+      description: "HTML Controls Library overview"
+
+## Development Context
+current_work:
+  focus: "DataGrid component architecture and filtering"
+  issues:
+    - "Schema displayName not showing correctly (Cphone vs Cell)"
+    - "Data pipeline bypassing filtering logic"
+    - "Business logic separation from UI components"
+  
+  recent_fixes:
+    - "Removed business logic from DataGrid control"
+    - "Fixed data initialization sequence bugs" 
+    - "Implemented proper data pipeline flow"
+    - "Added defensive programming for data loading"
+
+## Response Style
+response_style:
+  tone: technical
+  completeness: detailed
+  debugging: verbose
+  format: structured
+  guidelines:
+    - Provide complete technical analysis
+    - Show code context and execution flow
+    - Explain root causes of issues
+    - Include architectural recommendations
+    - Use debugging output to trace problems
+
+## Override Justification
+# This project requires active code modification and debugging
+# Master agent's "questions_only" mode would prevent necessary fixes
+# Development mode enables proper troubleshooting and implementation
+override_reason: "Active debugging and architecture fixes required"

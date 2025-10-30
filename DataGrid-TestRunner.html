@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataGrid Test Runner</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <link rel="stylesheet" href="datagrid.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .test-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .test-controls {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+        
+        .test-output {
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            line-height: 1.4;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .datagrid-demo {
+            padding: 20px;
+            min-height: 300px;
+            background: white;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-ready { background: #28a745; }
+        .status-running { background: #ffc107; }
+        .status-error { background: #dc3545; }
+        
+        .test-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #007bff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>🧪 DataGrid Test Suite</h1>
+            <p>Comprehensive testing environment for DataGrid component functionality</p>
+        </div>
+        
+        <div class="test-controls">
+            <span class="status-indicator status-ready" id="statusIndicator"></span>
+            <strong>Status:</strong> <span id="statusText">Ready</span>
+            
+            <div style="flex: 1;"></div>
+            
+            <button class="btn btn-primary" onclick="runAllTests()">
+                🚀 Run All Tests
+            </button>
+            <button class="btn btn-success" onclick="runDataTests()">
+                📊 Data Tests
+            </button>
+            <button class="btn btn-success" onclick="runSearchTests()">
+                🔍 Search Tests
+            </button>
+            <button class="btn btn-success" onclick="runValidationTests()">
+                ✅ Validation Tests
+            </button>
+            <button class="btn btn-warning" onclick="clearOutput()">
+                🗑️ Clear Output
+            </button>
+        </div>
+        
+        <div class="test-stats" id="testStats" style="display: none;">
+            <div class="stat-card">
+                <div class="stat-number" id="totalTests">0</div>
+                <div class="stat-label">Total Tests</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="passedTests">0</div>
+                <div class="stat-label">Passed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="failedTests">0</div>
+                <div class="stat-label">Failed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="testCoverage">0%</div>
+                <div class="stat-label">Coverage</div>
+            </div>
+        </div>
+        
+        <div class="test-output" id="testOutput">
+            <div>🧪 DataGrid Test Runner initialized</div>
+            <div>📝 Load the DataGrid component and methods to begin testing</div>
+            <div>🎯 Click "Run All Tests" to execute the complete test suite</div>
+            <div>───────────────────────────────────────────────────────</div>
+        </div>
+        
+        <div class="datagrid-demo">
+            <h3>📋 DataGrid Demo Instance</h3>
+            <p>This DataGrid instance is used for testing purposes</p>
+            <div id="test-datagrid-container" style="height: 300px; border: 1px solid #dee2e6; border-radius: 4px;"></div>
+        </div>
+    </div>
+
+    <script>
+        // Console override to display in our test output
+        const originalConsoleLog = console.log;
+        const originalConsoleError = console.error;
+        const testOutput = document.getElementById('testOutput');
+        
+        function appendToOutput(message, type = 'log') {
+            const div = document.createElement('div');
+            div.style.color = type === 'error' ? '#ff6b6b' : 
+                             type === 'warn' ? '#ffa726' : 
+                             type === 'success' ? '#4caf50' : '#d4d4d4';
+            div.innerHTML = message;
+            testOutput.appendChild(div);
+            testOutput.scrollTop = testOutput.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalConsoleLog.apply(console, args);
+            const message = args.join(' ');
+            
+            if (message.includes('✅')) {
+                appendToOutput(message, 'success');
+            } else if (message.includes('❌')) {
+                appendToOutput(message, 'error');
+            } else if (message.includes('🧪')) {
+                appendToOutput(message, 'warn');
+            } else {
+                appendToOutput(message);
+            }
+        };
+        
+        console.error = function(...args) {
+            originalConsoleError.apply(console, args);
+            appendToOutput('❌ ERROR: ' + args.join(' '), 'error');
+        };
+        
+        // Status management
+        function updateStatus(status, text) {
+            const indicator = document.getElementById('statusIndicator');
+            const statusText = document.getElementById('statusText');
+            
+            indicator.className = `status-indicator status-${status}`;
+            statusText.textContent = text;
+        }
+        
+        function updateStats(testResults) {
+            const statsContainer = document.getElementById('testStats');
+            const totalTests = testResults.length;
+            const passedTests = testResults.filter(t => t.success).length;
+            const failedTests = totalTests - passedTests;
+            const coverage = totalTests > 0 ? Math.round((passedTests / totalTests) * 100) : 0;
+            
+            document.getElementById('totalTests').textContent = totalTests;
+            document.getElementById('passedTests').textContent = passedTests;
+            document.getElementById('failedTests').textContent = failedTests;
+            document.getElementById('testCoverage').textContent = coverage + '%';
+            
+            statsContainer.style.display = 'grid';
+        }
+        
+        // Test execution functions
+        let testSuite = null;
+        let dataGridInstance = null;
+        
+        function initializeTestEnvironment() {
+            if (typeof DataGrid === 'undefined') {
+                console.error('DataGrid class not found. Please ensure all scripts are loaded.');
+                updateStatus('error', 'DataGrid not loaded');
+                return false;
+            }
+            
+            if (!testSuite) {
+                try {
+                    testSuite = new DataGridTestSuite();
+                    console.log('✅ Test suite initialized successfully');
+                    updateStatus('ready', 'Test suite ready');
+                    return true;
+                } catch (error) {
+                    console.error('Failed to initialize test suite:', error);
+                    updateStatus('error', 'Initialization failed');
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+        
+        function runAllTests() {
+            if (!initializeTestEnvironment()) return;
+            
+            updateStatus('running', 'Running all tests...');
+            console.log('🚀 Starting comprehensive test execution...');
+            
+            try {
+                testSuite.runAllTests();
+                updateStats(testSuite.testResults);
+                
+                const passed = testSuite.testResults.filter(t => t.success).length;
+                const total = testSuite.testResults.length;
+                
+                if (passed === total) {
+                    updateStatus('ready', `All tests passed (${passed}/${total})`);
+                } else {
+                    updateStatus('error', `${total - passed} tests failed`);
+                }
+            } catch (error) {
+                console.error('Test execution failed:', error);
+                updateStatus('error', 'Test execution failed');
+            }
+        }
+        
+        function runDataTests() {
+            if (!initializeTestEnvironment()) return;
+            
+            updateStatus('running', 'Running data tests...');
+            console.log('📊 Running data management tests...');
+            
+            try {
+                testSuite.testAddRecord();
+                testSuite.testUpdateRecord();
+                testSuite.testDeleteRecord();
+                console.log('✅ Data tests completed');
+                updateStatus('ready', 'Data tests completed');
+            } catch (error) {
+                console.error('Data tests failed:', error);
+                updateStatus('error', 'Data tests failed');
+            }
+        }
+        
+        function runSearchTests() {
+            if (!initializeTestEnvironment()) return;
+            
+            updateStatus('running', 'Running search tests...');
+            console.log('🔍 Running search and filtering tests...');
+            
+            try {
+                testSuite.testApplyFilters();
+                testSuite.testSearch();
+                testSuite.testSortBy();
+                console.log('✅ Search tests completed');
+                updateStatus('ready', 'Search tests completed');
+            } catch (error) {
+                console.error('Search tests failed:', error);
+                updateStatus('error', 'Search tests failed');
+            }
+        }
+        
+        function runValidationTests() {
+            if (!initializeTestEnvironment()) return;
+            
+            updateStatus('running', 'Running validation tests...');
+            console.log('✅ Running validation tests...');
+            
+            try {
+                testSuite.testValidateRecord();
+                testSuite.testGenerateUniqueId();
+                testSuite.testTriggerEvent();
+                console.log('✅ Validation tests completed');
+                updateStatus('ready', 'Validation tests completed');
+            } catch (error) {
+                console.error('Validation tests failed:', error);
+                updateStatus('error', 'Validation tests failed');
+            }
+        }
+        
+        function clearOutput() {
+            testOutput.innerHTML = `
+                <div>🧪 Test output cleared</div>
+                <div>📝 Ready for new test execution</div>
+                <div>───────────────────────────────────────────────────────</div>
+            `;
+            document.getElementById('testStats').style.display = 'none';
+            updateStatus('ready', 'Output cleared');
+        }
+        
+        // Initialize when page loads
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('🏁 Test runner interface loaded');
+            console.log('⚡ Waiting for DataGrid components to load...');
+        });
+    </script>
+    
+    <!-- Load DataGrid dependencies with cache busting -->
+    <script>
+        // Dynamic script loading with cache busting
+        const timestamp = Date.now();
+        const scripts = [
+            'positions-data.js',
+            'datagrid.js',
+            'datagrid-methods.js',  
+            'datagrid-tests.js'
+        ];
+        
+        let loadedScripts = 0;
+        
+        function loadScript(src, callback) {
+            const script = document.createElement('script');
+            script.src = `${src}?v=${timestamp}`;
+            script.onload = callback;
+            script.onerror = () => {
+                console.error(`Failed to load script: ${src}`);
+                updateStatus('error', `Failed to load ${src}`);
+            };
+            document.head.appendChild(script);
+        }
+        
+        function scriptLoaded() {
+            loadedScripts++;
+            console.log(`📦 Loaded ${loadedScripts}/${scripts.length} scripts`);
+            
+            if (loadedScripts === scripts.length) {
+                console.log('✅ All DataGrid components loaded successfully');
+                console.log('🎯 Test environment ready - you can now run tests');
+                updateStatus('ready', 'All components loaded');
+                
+                // Initialize demo DataGrid
+                try {
+                    dataGridInstance = new DataGrid('#test-datagrid-container');
+                    console.log('📋 Demo DataGrid instance created');
+                } catch (error) {
+                    console.error('Failed to create demo DataGrid:', error);
+                }
+            }
+        }
+        
+        // Load all scripts sequentially
+        function loadAllScripts(index = 0) {
+            if (index >= scripts.length) return;
+            
+            loadScript(scripts[index], () => {
+                scriptLoaded();
+                loadAllScripts(index + 1);
+            });
+        }
+        
+        // Start loading when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAllScripts();
+        });
+    </script>
+</body>
+</html>

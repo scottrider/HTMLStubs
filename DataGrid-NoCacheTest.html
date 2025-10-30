@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataGrid Component - No Cache</title>
+    <!-- Force no caching -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+</head>
+<body>
+    <h1>DataGrid Component - Fresh Load</h1>
+    <div class="DataGrid" id="dataGrid">
+        <div class="DataGridRow">
+            <div class="DataGridCell">Position</div>
+            <div class="DataGridCell">Company</div>
+            <div class="DataGridCell">Email</div>
+            <div class="DataGridCell">Cell</div>
+            <div class="DataGridCell">Office</div>
+            <div class="DataGridCell">Initial Contact</div>
+            <div class="DataGridCell">Last Contact</div>
+        </div>
+    </div>
+
+    <script>
+        // Clear all storage
+        if (typeof(Storage) !== "undefined") {
+            localStorage.clear();
+            sessionStorage.clear();
+        }
+        
+        // Force cache busting with current timestamp
+        const cacheBuster = new Date().getTime();
+        console.log('Cache buster timestamp:', cacheBuster);
+        
+        // Load CSS with cache busting
+        const cssLink = document.createElement('link');
+        cssLink.rel = 'stylesheet';
+        cssLink.href = `datagrid.css?nocache=${cacheBuster}`;
+        cssLink.onload = function() {
+            console.log('CSS loaded fresh');
+        };
+        document.head.appendChild(cssLink);
+        
+        // Load JavaScript files in sequence with cache busting
+        const dataScript = document.createElement('script');
+        dataScript.src = `positions-data.js?nocache=${cacheBuster}`;
+        dataScript.onload = function() {
+            console.log('Data script loaded fresh');
+            
+            const gridScript = document.createElement('script');
+            gridScript.src = `datagrid.js?nocache=${cacheBuster}`;
+            gridScript.onload = function() {
+                console.log('Grid script loaded fresh');
+                
+                // Initialize DataGrid
+                try {
+                    const dataGrid = new DataGrid('#dataGrid');
+                    console.log('DataGrid initialized successfully');
+                } catch (error) {
+                    console.error('Error initializing DataGrid:', error);
+                }
+            };
+            gridScript.onerror = function() {
+                console.error('Failed to load datagrid.js');
+            };
+            document.head.appendChild(gridScript);
+        };
+        dataScript.onerror = function() {
+            console.error('Failed to load positions-data.js');
+        };
+        document.head.appendChild(dataScript);
+        
+        // Log all loaded scripts
+        setTimeout(() => {
+            const scripts = document.querySelectorAll('script[src]');
+            console.log('Loaded scripts:');
+            scripts.forEach(script => console.log('- ' + script.src));
+        }, 1000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,732 @@
+/* DataGrid Full Viewport Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.DataGrid {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+    background: #ffffff;
+    overflow: hidden;
+}
+
+.DataGridRow {
+    display: flex;
+    width: 100%;
+    white-space: nowrap; /* Prevent text wrapping */
+    border-bottom: 1px solid #e1e8ed;
+    transition: background-color 0.2s ease;
+    flex-shrink: 0; /* Prevent rows from shrinking */
+}
+
+.DataGridRow:first-child {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    color: white;
+    font-weight: 600;
+    border-bottom: 2px solid #1a252f;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.DataGridRow:not(:first-child):hover {
+    background-color: #f8f9fa;
+}
+
+.DataGridRow:not(:first-child):nth-child(even) {
+    background-color: #fbfcfd;
+}
+
+.DataGridRow:not(:first-child):nth-child(even):hover {
+    background-color: #f1f3f5;
+}
+
+.DataGridCell {
+    flex: 1;
+    padding: 4px;
+    border-right: 1px solid #e1e8ed;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap; /* Ensure no wrapping within cells */
+    min-width: 0; /* Allow flex items to shrink below content size */
+}
+
+/* Style input elements within DataGrid cells */
+.DataGridCell input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+    padding: 2px;
+    outline: none;
+}
+
+.DataGridCell input:focus {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+}
+
+.DataGridCell input:invalid {
+    background-color: rgba(255, 0, 0, 0.1);
+}
+
+.DataGridCell:last-child {
+    border-right: none;
+}
+
+/* First row (header) specific styling */
+.DataGridRow:first-child .DataGridCell {
+    color: white;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .DataGridCell {
+        padding: 4px;
+        font-size: 14px;
+    }
+    
+    .DataGridRow:first-child .DataGridCell {
+        font-size: 14px;
+        font-weight: 700;
+    }
+}
+
+@media (max-width: 480px) {
+    .DataGridCell {
+        padding: 4px;
+        font-size: 12px;
+    }
+    
+    .DataGridRow:first-child .DataGridCell {
+        font-size: 12px;
+    }
+}
+
+/* Scrollbar styling for webkit browsers */
+.DataGrid::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.DataGrid::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.DataGrid::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.DataGrid::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* ========================================
+   ENHANCED DATAGRID CONTENT STYLES
+   ======================================== */
+
+.datagrid-content {
+    flex: 1;
+    overflow: auto;
+    background: white;
+}
+
+.DataGridRow.selected {
+    background-color: #e3f2fd !important;
+    border-left: 3px solid #2196f3;
+}
+
+.DataGridRow.empty-state {
+    background: #f8f9fa;
+    border: 2px dashed #dee2e6;
+    margin: 20px;
+    border-radius: 8px;
+}
+
+.DataGridCell[title="Click to edit"]:hover {
+    background-color: #f0f8ff;
+    outline: 1px solid #007bff;
+    outline-offset: -1px;
+}
+
+/* Ensure proper grid layout */
+.DataGrid {
+    display: flex;
+    flex-direction: column;
+    min-height: 300px;
+}
+
+/* ========================================
+   PAGINATION STYLES - Always Visible Best Practices
+   ======================================== */
+
+.datagrid-footer {
+    display: flex;
+    justify-content: stretch;
+    align-items: center;
+    padding: 12px 16px;
+    background: rgb(69, 69, 69);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    flex-shrink: 0;
+    min-height: 50px;
+    margin-top: 8px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.datagrid-footer * {
+    color: white !important;
+}
+
+/* W3Schools CSS Switch - Exact Implementation */
+.deleted-toggle-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 10px;
+    margin: 0 6px;
+}
+
+/* The switch - the box around the slider */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* The slider */
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+input:checked + .slider {
+    background-color: #2196F3;
+}
+
+input:focus + .slider {
+    box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+    -webkit-transform: translateX(26px);
+    -ms-transform: translateX(26px);
+    transform: translateX(26px);
+}
+
+/* Rounded sliders */
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+.deleted-toggle-container .metric-label {
+    font-size: 13px;
+    color: white !important;
+    white-space: nowrap;
+}
+
+/* Three-area horizontal metrics layout */
+.metrics-columns {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0;
+    flex: 1;
+}
+
+.metrics-area {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1 1 33.333%;
+    min-width: 0;
+    padding: 8px 12px;
+    min-height: 30px;
+}
+
+.metrics-area.left {
+    justify-content: flex-start;
+    border-right: 1px solid #2c3e50;
+    background: rgba(255,255,255,0.1);
+}
+
+.metrics-area.middle {
+    justify-content: center;
+    border-right: 1px solid #2c3e50;
+    background: rgba(255,255,255,0.1);
+    flex-wrap: nowrap;
+}
+
+.metrics-area.right {
+    justify-content: flex-end;
+    background: rgba(255,255,255,0.1);
+}
+
+.metrics-column {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.column-header {
+    font-weight: 600;
+    font-size: 12px;
+    color: #495057;
+    margin-right: 4px;
+}
+
+.metrics-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.metric-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+}
+
+.metric-label {
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.metric-value {
+    color: #212529;
+    font-weight: 600;
+}
+
+.combined-controls {
+    display: flex !important;
+    align-items: center !important;
+    gap: 16px !important;
+    justify-content: center !important;
+    flex-wrap: nowrap !important;
+    width: 100% !important;
+}
+
+.control-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.control-label {
+    font-size: 12px;
+    color: #6c757d;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.pagination-buttons {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Performance status indicators */
+.performance-excellent { color: #28a745; }
+.performance-good { color: #ffc107; }
+.performance-needs-optimization { color: #dc3545; }
+
+.performance-indicator-excellent { color: #28a745; }
+.performance-indicator-good { color: #ffc107; }
+.performance-indicator-slow { color: #dc3545; }
+
+.selected-count { color: #007bff; }
+.unsaved-changes { color: #dc3545; }
+
+/* Footer states */
+.datagrid-footer.pagination-disabled {
+    background: #f1f3f4;
+    color: #6c757d;
+}
+
+.datagrid-footer.empty-data {
+    background: #fff3cd;
+    border-color: #ffeaa7;
+}
+
+/* Data Summary Section */
+.data-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 200px;
+}
+
+.results-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.results-count {
+    font-weight: 500;
+    color: #495057;
+}
+
+.empty-state {
+    color: #856404;
+    font-weight: 500;
+    font-style: italic;
+}
+
+/* Performance Metrics Display */
+.performance-metrics {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+}
+
+.metric-indicator {
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-weight: 500;
+    font-family: monospace;
+}
+
+.performance-excellent {
+    background: #d4edda;
+    color: #155724;
+}
+
+.performance-good {
+    background: #cce5ff;
+    color: #004085;
+}
+
+.performance-needs-optimization {
+    background: #fff3cd;
+    color: #856404;
+}
+
+/* Page Size Control */
+.page-size-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.page-size-label {
+    font-weight: 500;
+    color: #6c757d;
+    white-space: nowrap;
+}
+
+.disabled-hint {
+    font-size: 11px;
+    color: #adb5bd;
+    font-style: italic;
+}
+
+.page-size-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.page-size-selector label {
+    font-weight: 500;
+    color: #6c757d;
+}
+
+.page-size-select {
+    padding: 4px 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    background: white;
+    font-size: 14px;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+
+.page-size-select:hover {
+    border-color: #007bff;
+}
+
+.page-size-select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+}
+
+.pagination-buttons {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.pagination-buttons.disabled {
+    opacity: 0.6;
+}
+
+.pagination-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 100px;
+    height: 36px;
+    padding: 0 12px;
+    color: #6c757d;
+    font-weight: 500;
+    font-size: 13px;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    background: #f8f9fa;
+}
+
+.pagination-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 8px;
+    border: 1px solid #dee2e6;
+    background: white;
+    color: #495057;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background: #e9ecef;
+    border-color: #adb5bd;
+    color: #212529;
+}
+
+.pagination-btn:focus:not(:disabled) {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    border-color: #007bff;
+}
+
+.pagination-btn:active:not(:disabled) {
+    background: #dee2e6;
+    border-color: #adb5bd;
+    transform: translateY(1px);
+}
+
+.pagination-btn:disabled {
+    background: #f8f9fa;
+    color: #adb5bd;
+    border-color: #e9ecef;
+    cursor: not-allowed;
+}
+
+.pagination-btn.current {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+    font-weight: 600;
+}
+
+.pagination-btn.current:hover {
+    background: #0056b3;
+    border-color: #0056b3;
+}
+
+.pagination-ellipsis {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    color: #6c757d;
+    font-weight: bold;
+    user-select: none;
+}
+
+/* Responsive pagination */
+@media (max-width: 768px) {
+    .datagrid-footer {
+        flex-direction: column;
+        gap: 12px;
+        padding: 12px;
+    }
+    
+    .pagination-info {
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+    }
+    
+    .pagination-buttons {
+        gap: 2px;
+    }
+    
+    .pagination-btn {
+        min-width: 32px;
+        height: 32px;
+        font-size: 13px;
+    }
+    
+    /* Hide ellipsis on small screens */
+    .pagination-ellipsis {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .pagination-info {
+        font-size: 13px;
+    }
+    
+    .pagination-btn {
+        min-width: 28px;
+        height: 28px;
+        font-size: 12px;
+        padding: 0 4px;
+    }
+}
+
+/* Loading state for pagination */
+.pagination-loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.pagination-loading .pagination-btn {
+    cursor: wait;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .pagination-btn {
+        border-width: 2px;
+    }
+    
+    .pagination-btn.current {
+        border-width: 3px;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .pagination-btn {
+        transition: none;
+    }
+}
+
+/* Focus visible support */
+.pagination-btn:focus-visible {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+}
+
+/* Additional Metrics Section */
+.additional-metrics {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 12px;
+    min-width: 150px;
+}
+
+.data-metrics,
+.user-metrics {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.metric-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 6px;
+    background: #e9ecef;
+    border-radius: 12px;
+    color: #495057;
+    font-weight: 500;
+    white-space: nowrap;
+    font-size: 11px;
+}
+
+.metric-item.selected-count {
+    background: #cce5ff;
+    color: #004085;
+}
+
+.metric-item.unsaved-changes {
+    background: #f8d7da;
+    color: #721c24;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* Print styles */
+@media print {
+    .datagrid-footer {
+        display: none;
+    }
+}

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataGrid Component</title>
+    <!-- Prevent caching -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <script>
+        // Cache bust CSS
+        const cssTimestamp = new Date().getTime();
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = `datagrid.css?v=${cssTimestamp}`;
+        document.head.appendChild(link);
+    </script>
+</head>
+<body>
+    <!-- Enhanced DataGrid Container with Pagination Support -->
+    <div class="enhanced-datagrid-container">
+        <h1 style="margin: 20px; color: #2c3e50; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+            Job Positions - Enhanced DataGrid with Pagination
+        </h1>
+        
+        <!-- DataGrid will be rendered here by the enhanced control -->
+        <div class="DataGrid" id="dataGrid">
+            <!-- Loading placeholder -->
+            <div class="loading-placeholder" style="
+                display: flex; 
+                align-items: center; 
+                justify-content: center; 
+                height: 200px; 
+                color: #6c757d;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            ">
+                <div style="text-align: center;">
+                    <div style="margin-bottom: 10px; font-size: 24px;">⏳</div>
+                    <div>Loading Enhanced DataGrid with Pagination...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Information Panel -->
+        <div class="info-panel" style="
+            margin: 20px; 
+            padding: 16px; 
+            background: #e8f4f8; 
+            border-left: 4px solid #007bff; 
+            border-radius: 4px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        ">
+            <h3 style="margin: 0 0 8px 0; color: #0c5460;">Enhanced Features Active:</h3>
+            <ul style="margin: 0; padding-left: 20px; color: #0c5460;">
+                <li><strong>Pagination:</strong> Navigate through records with page controls</li>
+                <li><strong>Performance Monitoring:</strong> Real-time render time tracking</li>
+                <li><strong>Always-Visible Controls:</strong> Pagination visible even with small datasets</li>
+                <li><strong>User Analytics:</strong> Interaction patterns and metrics tracking</li>
+                <li><strong>Data Quality:</strong> Automatic validation and quality scoring</li>
+                <li><strong>Accessibility:</strong> Full keyboard navigation and ARIA support</li>
+            </ul>
+        </div>
+    </div>
+    <script>
+        // Cache busting - force reload of JavaScript files
+        const timestamp = new Date().getTime();
+        
+        // Load enhanced library dependencies
+        const libraryFiles = [
+            'lib/logging.js',
+            'lib/base-control.js', 
+            'lib/library-manager.js'
+        ];
+        
+        let loadedCount = 0;
+        
+        function loadLibraryFile(index) {
+            if (index >= libraryFiles.length) {
+                // All library files loaded, now load data and enhanced DataGrid
+                loadDataAndGrid();
+                return;
+            }
+            
+            const script = document.createElement('script');
+            script.src = `${libraryFiles[index]}?v=${timestamp}`;
+            script.onload = function() {
+                loadedCount++;
+                loadLibraryFile(index + 1);
+            };
+            script.onerror = function() {
+                console.warn(`Failed to load ${libraryFiles[index]}, using fallback`);
+                loadedCount++;
+                loadLibraryFile(index + 1);
+            };
+            document.head.appendChild(script);
+        }
+        
+        function loadDataAndGrid() {
+            // Load positions-data.js with cache busting
+            const dataScript = document.createElement('script');
+            dataScript.src = `positions-data.js?v=${timestamp}`;
+            dataScript.onload = function() {
+                // Try to load enhanced DataGrid first, fallback to original
+                const gridScript = document.createElement('script');
+                gridScript.src = `controls/DataGrid/enhanced-datagrid.js?v=${timestamp}`;
+                gridScript.onload = function() {
+                    // Initialize enhanced DataGrid with pagination
+                    initializeEnhancedDataGrid();
+                };
+                gridScript.onerror = function() {
+                    console.warn('Enhanced DataGrid not found, using original');
+                    // Fallback to original DataGrid
+                    const fallbackScript = document.createElement('script');
+                    fallbackScript.src = `datagrid.js?v=${timestamp}`;
+                    fallbackScript.onload = function() {
+                        const dataGrid = new DataGrid('#dataGrid');
+                    };
+                    document.head.appendChild(fallbackScript);
+                };
+                document.head.appendChild(gridScript);
+            };
+            document.head.appendChild(dataScript);
+        }
+        
+        function initializeEnhancedDataGrid() {
+            try {
+                // Store original data for filtering
+                const originalData = [...dataGridData.positions.data];
+                
+                // Filter to show only enabled records initially (5 records)
+                const enabledData = originalData.filter(record => record.isDisabled !== true);
+                console.log('Enabled records:', enabledData.length, enabledData);
+                console.log('Schema being passed to DataGrid:', dataGridData.positions.schema);
+                
+                // Remove isDisabled from schema for display (business logic shouldn't be in UI)
+                const displaySchema = { ...dataGridData.positions.schema };
+                delete displaySchema.isDisabled;
+                console.log('Display schema (without isDisabled):', displaySchema);
+                
+                // Initialize enhanced DataGrid with pagination and best practices
+                const dataGrid = new DataGridControl({
+                    container: '#dataGrid',
+                    data: enabledData.map(record => {
+                        const { isDisabled, ...displayRecord } = record;
+                        return displayRecord;
+                    }), // Remove isDisabled from initial data
+                    schema: displaySchema, // Use schema without isDisabled field
+                    
+                    // Enable pagination - Best Practice
+                    pagination: true,
+                    pageSize: 5, // Small page size for demo with 8 records
+                    pageSizeOptions: [5, 10, 25, 50],
+                    
+                    // Enable other features
+                    editable: true,
+                    sortable: true,
+                    filterable: true,
+                    searchable: true,
+                    
+                    // Best practices enabled
+                    accessibility: true,
+                    responsive: true,
+                    performanceTracking: true
+                });
+                
+                // Initialize and render
+                dataGrid.init().render();
+                
+                // Add application-level filtering controls
+                addFilteringControls(dataGrid, originalData);
+                
+                console.log('Enhanced DataGrid with pagination initialized successfully');
+                
+                // Add status indicator
+                const status = document.createElement('div');
+                status.style.cssText = `
+                    position: fixed; top: 10px; right: 10px; 
+                    background: #28a745; color: white; 
+                    padding: 8px 12px; border-radius: 4px; 
+                    font-size: 12px; z-index: 1000;
+                `;
+                status.textContent = '✓ Enhanced DataGrid with Pagination Active';
+                document.body.appendChild(status);
+                
+            } catch (error) {
+                console.error('Enhanced DataGrid initialization failed:', error);
+                // Fallback to original implementation
+                const dataGrid = new DataGrid('#dataGrid');
+            }
+        }
+        
+        // Application-level filtering function
+        function getFilteredData(originalData, showDeleted) {
+            console.log('Filtering data:', { originalCount: originalData.length, showDeleted });
+            
+            let filteredData;
+            if (!showDeleted) {
+                // Show only enabled records (isDisabled = false or undefined)
+                filteredData = originalData.filter(record => !record.isDisabled);
+            } else {
+                // Show only disabled records (isDisabled = true)
+                filteredData = originalData.filter(record => record.isDisabled === true);
+            }
+            
+            console.log('Filtered result:', { filteredCount: filteredData.length, showDeleted });
+            return filteredData;
+        }
+        
+        // Add filtering controls outside the DataGrid
+        function addFilteringControls(dataGrid, originalData) {
+            let currentShowDeleted = false; // Start with enabled records
+            
+            // Create filter container
+            const filterContainer = document.createElement('div');
+            filterContainer.style.cssText = `
+                margin: 20px; 
+                padding: 16px; 
+                background: rgb(69, 69, 69); 
+                border-radius: 4px;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            `;
+            
+            // Create checkbox
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = 'appLevelShowDeleted';
+            checkbox.style.marginRight = '8px';
+            checkbox.checked = false; // Start unchecked (showing enabled)
+            
+            // Create label
+            const label = document.createElement('label');
+            label.htmlFor = 'appLevelShowDeleted';
+            label.style.color = 'white';
+            label.textContent = 'Show disabled records';
+            
+            // Add event listener
+            checkbox.addEventListener('change', function() {
+                currentShowDeleted = this.checked;
+                console.log('Checkbox changed to:', currentShowDeleted);
+                
+                let filteredData;
+                if (currentShowDeleted) {
+                    // Show disabled records (remove isDisabled field from display)
+                    filteredData = originalData.filter(record => record.isDisabled === true)
+                        .map(record => {
+                            const { isDisabled, ...displayRecord } = record;
+                            return displayRecord;
+                        });
+                } else {
+                    // Show enabled records (remove isDisabled field from display)
+                    filteredData = originalData.filter(record => record.isDisabled !== true)
+                        .map(record => {
+                            const { isDisabled, ...displayRecord } = record;
+                            return displayRecord;
+                        });
+                }
+                
+                console.log('Filtered data count:', filteredData.length);
+                
+                // Update DataGrid data and re-render
+                dataGrid.updateData(filteredData);
+                console.log(`Filter applied: showing ${currentShowDeleted ? 'disabled' : 'enabled'} records (${filteredData.length} total)`);
+            });
+            
+            filterContainer.appendChild(checkbox);
+            filterContainer.appendChild(label);
+            
+            // Insert before the DataGrid
+            const dataGridContainer = document.getElementById('dataGrid');
+            dataGridContainer.parentNode.insertBefore(filterContainer, dataGridContainer);
+        }
+        
+        // Start loading process
+        loadLibraryFile(0);
+    </script>
+</body>
+</html>

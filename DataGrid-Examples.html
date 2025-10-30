@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataGrid Usage Examples</title>
+    <link rel="stylesheet" href="datagrid.css">
+</head>
+<body>
+    <h1>DataGrid Usage Examples</h1>
+    
+    <!-- Method 1: Custom HTML Element -->
+    <h2>Method 1: Custom HTML Element</h2>
+    <data-grid source="dataGridData" records="data"></data-grid>
+    
+    <hr>
+    
+    <!-- Method 2: Traditional JavaScript Initialization -->
+    <h2>Method 2: Traditional JavaScript Initialization</h2>
+    <div id="traditionalGrid" class="DataGrid">
+        <div class="DataGridRow">
+            <!-- Headers will be generated dynamically -->
+        </div>
+    </div>
+    
+    <hr>
+    
+    <!-- Method 3: Custom Data Source -->
+    <h2>Method 3: Custom Data Source</h2>
+    <div id="customGrid" class="DataGrid">
+        <div class="DataGridRow">
+            <!-- Headers will be generated dynamically -->
+        </div>
+    </div>
+
+    <!-- Include the data and scripts -->
+    <script src="positions-data.js"></script>
+    <script src="datagrid.js"></script>
+    
+    <script>
+        // Example custom data
+        const customData = {
+            positions: {
+                schema: {
+                    name: { 
+                        type: 'string', 
+                        displayName: 'Name', 
+                        htmlElement: 'input',
+                        htmlType: 'text',
+                        css: { placeholder: 'Enter name' },
+                        required: true 
+                    },
+                    age: { 
+                        type: 'number', 
+                        displayName: 'Age', 
+                        htmlElement: 'input',
+                        htmlType: 'number',
+                        css: { placeholder: 'Enter age', min: '18', max: '100' },
+                        required: true 
+                    }
+                },
+                data: [
+                    { name: 'John Doe', age: 30 },
+                    { name: 'Jane Smith', age: 25 },
+                    { name: 'Bob Johnson', age: 35 }
+                ]
+            }
+        };
+
+        // Method 2: Traditional initialization
+        const traditionalGrid = new DataGrid('#traditionalGrid');
+        
+        // Method 3: Initialize with custom data
+        const customGrid = new DataGrid({
+            container: '#customGrid',
+            source: customData
+        });
+        
+        // Method 4: Initialize with just array data (auto-generates schema)
+        setTimeout(() => {
+            const simpleData = [
+                { product: 'Laptop', price: 999, category: 'Electronics' },
+                { product: 'Book', price: 25, category: 'Education' },
+                { product: 'Coffee', price: 5, category: 'Food' }
+            ];
+            
+            const simpleGrid = new DataGrid({
+                container: document.createElement('div'),
+                source: simpleData
+            });
+            
+            // Add to page
+            const container = document.createElement('div');
+            container.innerHTML = '<h2>Method 4: Simple Array Data</h2>';
+            container.appendChild(simpleGrid.container);
+            document.body.appendChild(container);
+        }, 1000);
+        
+        console.log('All DataGrid examples initialized');
+    </script>
+</body>
+</html>
