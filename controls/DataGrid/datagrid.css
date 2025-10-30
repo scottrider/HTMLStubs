@@ -17,7 +17,7 @@ html, body {
     height: 100vh;
     width: 100vw;
     background: #ffffff;
-    overflow: hidden;
+    overflow: auto;
 }
 
 .DataGridRow {
@@ -142,7 +142,8 @@ html, body {
 
 .datagrid-content {
     flex: 1;
-    overflow: auto;
+    overflow-y: scroll;
+    overflow-x: auto;
     background: white;
 }
 

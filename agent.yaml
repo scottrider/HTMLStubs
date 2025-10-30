@@ -26,6 +26,23 @@ guidelines:
   - Implement comprehensive logging and debugging
   - Follow enterprise-grade coding practices
 
+## Master Agent Edicts
+edicts:
+  - "Do not edit the data supplied unless specifically told to do so"
+  - "Separation of concerns: Controls should not contain business logic"
+  - "Use schema displayName for column headers when available"
+  - "*********************** WHAT!?!! *********************** - Challenge requests that don't make logical sense before proceeding"
+
+## Alert Protocol
+alert_system:
+  logical_contradiction_alert: "*********************** WHAT!?!! ***********************"
+  purpose: "Flag requests that contradict established patterns, violate data integrity, or create architectural inconsistencies"
+  examples:
+    - "Edit the data but don't edit the data"
+    - "Add business logic to a pure display component"
+    - "Make the control both stateless and stateful"
+    - "Filter data while preserving all records"
+
 ## Resources
 resources:
   master_agent:

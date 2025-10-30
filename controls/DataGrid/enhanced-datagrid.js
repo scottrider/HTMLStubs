@@ -15,7 +15,7 @@ class DataGridControl extends BaseControl {
             responsive: true,
             accessibility: true,
             virtualization: false,
-            pageSize: 50,
+            pageSize: 20,
             autoSave: false,
             validationMode: 'realtime',
             ...options
@@ -37,6 +37,7 @@ class DataGridControl extends BaseControl {
         this.isLoading = false;
         this.hasUnsavedChanges = false;
         this.validationErrors = new Map();
+        this.showDisabledRecords = false; // Track checkbox state
 
         // Comprehensive Performance & UX Metrics - Best Practices
         this.renderMetrics = {
@@ -307,6 +308,23 @@ class DataGridControl extends BaseControl {
 
             // Set data
             this.data = [...data];
+            
+            // Store original data for filtering if this is the initial data load
+            if (!this.originalData || this.originalData.length === 0) {
+                this.originalData = [...data];
+                console.log('DEBUG: Original data stored:', {
+                    count: this.originalData.length,
+                    sampleRecord: this.originalData[0],
+                    disabledCount: this.originalData.filter(r => r.isDisabled === true).length
+                });
+                
+                // Filter to show only enabled records initially
+                this.data = this.originalData.filter(record => record.isDisabled !== true);
+                console.log('DEBUG: Initial data filtered to enabled only:', {
+                    enabledCount: this.data.length,
+                    totalCount: this.originalData.length
+                });
+            }
 
             // Set or generate schema - FORCE provided schema usage
             if (schema && Object.keys(schema).length > 0) {
@@ -381,6 +399,113 @@ class DataGridControl extends BaseControl {
         this.setData(newData);
         this.render();
         return this;
+    }
+
+    /**
+     * Filter data by disabled status
+     */
+    filterByDisabledStatus(showDisabled) {
+        if (!this.originalData) {
+            // Store original data on first filter
+            this.originalData = [...this.data];
+        }
+
+        // Update state
+        this.showDisabledRecords = showDisabled;
+
+        console.log('DEBUG: FilterByDisabledStatus called with:', { 
+            showDisabled,
+            originalDataLength: this.originalData?.length,
+            currentDataLength: this.data?.length,
+            sampleOriginalRecord: this.originalData?.[0],
+            sampleCurrentRecord: this.data?.[0]
+        });
+
+        // Count disabled records in original data
+        const disabledCount = this.originalData.filter(record => record.isDisabled === true).length;
+        const enabledCount = this.originalData.filter(record => record.isDisabled !== true).length;
+        
+        console.log('DEBUG: Data analysis:', {
+            totalRecords: this.originalData.length,
+            disabledRecords: disabledCount,
+            enabledRecords: enabledCount,
+            disabledSample: this.originalData.find(record => record.isDisabled === true),
+            enabledSample: this.originalData.find(record => record.isDisabled !== true)
+        });
+
+        let filteredData;
+        if (showDisabled) {
+            // Show disabled records - PRESERVE original data structure
+            filteredData = this.originalData.filter(record => record.isDisabled === true);
+        } else {
+            // Show enabled records - PRESERVE original data structure  
+            filteredData = this.originalData.filter(record => record.isDisabled !== true);
+        }
+
+        console.log('DataGrid filter applied:', { 
+            showDisabled, 
+            totalRecords: this.originalData.length,
+            filteredCount: filteredData.length,
+            sampleFilteredRecord: filteredData[0]
+        });
+
+        // Update data without full re-render to preserve footer state
+        this.data = filteredData;
+        this.updateDerivedData();
+        this.renderDataContent(); // Only re-render data, not the entire grid
+        
+        return this;
+    }
+
+    /**
+     * Render only the data content and update pagination without destroying footer
+     * This preserves event listeners and checkbox state in the footer
+     */
+    renderDataContent() {
+        this.logger.debug('Rendering data content only', { 
+            id: this.id, 
+            dataCount: this.data.length 
+        });
+
+        // Clear existing data rows (but keep header and footer)
+        const dataRows = this.container.querySelectorAll('.DataGridRow');
+        dataRows.forEach(row => row.remove());
+
+        // Re-render data rows
+        this.renderDataRows();
+
+        // Update pagination info in existing footer without destroying it
+        this.updatePaginationInfo();
+    }
+
+    /**
+     * Update pagination information in the existing footer
+     */
+    updatePaginationInfo() {
+        const paginationInfo = this.getPaginationInfo();
+        
+        // Update page info
+        const pageMetric = this.container.querySelector('.metric-row .metric-value');
+        if (pageMetric) {
+            pageMetric.textContent = `${this.currentPage} of ${this.totalPages}`;
+        }
+
+        // Update pagination buttons
+        const paginationButtons = this.container.querySelector('.pagination-buttons');
+        if (paginationButtons) {
+            const isEnabled = this.options.pagination;
+            const isEmpty = paginationInfo.total === 0;
+            paginationButtons.innerHTML = this.renderPaginationButtons(isEnabled, isEmpty);
+            
+            // Re-attach event listeners to new pagination buttons
+            this.setupFooterEventListeners();
+        }
+
+        // Update page size dropdown if the visible count changed
+        const pageSizeSelect = this.container.querySelector(`#pageSize_${this.id}`);
+        if (pageSizeSelect) {
+            pageSizeSelect.value = this.options.pageSize;
+        }
     }
 
     /**
@@ -1163,9 +1288,15 @@ class DataGridControl extends BaseControl {
         headerRow.className = 'DataGridRow DataGridHeader';
         headerRow.setAttribute('role', 'row');
         
-        // Create header cells based on schema
+        // Create header cells based on schema, filtering out non-visible fields
         Object.keys(this.schema).forEach(fieldName => {
             const field = this.schema[fieldName];
+            
+            // Skip fields marked as not visible
+            if (field.visible === false) {
+                return;
+            }
+            
             const displayName = field.displayName || fieldName;
             
             const headerCell = document.createElement('div');
@@ -1180,10 +1311,13 @@ class DataGridControl extends BaseControl {
         
         this.container.appendChild(headerRow);
         
-        this.logger.debug('Header rendered with displayNames', {
+        const visibleFields = Object.keys(this.schema).filter(key => this.schema[key].visible !== false);
+        this.logger.debug('Header rendered with displayNames, respecting visibility', {
             id: this.id,
-            columnCount: Object.keys(this.schema).length,
-            columns: Object.keys(this.schema).map(key => ({
+            totalFields: Object.keys(this.schema).length,
+            visibleFields: visibleFields.length,
+            hiddenFields: Object.keys(this.schema).length - visibleFields.length,
+            columns: visibleFields.map(key => ({
                 field: key,
                 displayName: this.schema[key].displayName || key
             }))
@@ -1220,8 +1354,15 @@ class DataGridControl extends BaseControl {
                 dataRow.classList.add('selected');
             }
             
-            // Create data cells based on schema
+            // Create data cells based on schema, filtering out non-visible fields
             Object.keys(this.schema).forEach(fieldName => {
+                const field = this.schema[fieldName];
+                
+                // Skip fields marked as not visible
+                if (field.visible === false) {
+                    return;
+                }
+                
                 const dataCell = document.createElement('div');
                 dataCell.className = 'DataGridCell';
                 dataCell.setAttribute('role', 'gridcell');
@@ -1345,7 +1486,8 @@ class DataGridControl extends BaseControl {
         // Define metric configuration - simplified to three distinct columns
         const metricsConfig = {
             left: [
-                { type: 'page', html: `<span class="metric-row"><span class="metric-label">Page:</span><span class="metric-value">${this.currentPage} of ${this.totalPages}</span></span>` }
+                { type: 'page', html: `<span class="metric-row"><span class="metric-label">Page:</span><span class="metric-value">${this.currentPage} of ${this.totalPages}</span></span>` },
+                { type: 'filter', html: `<div style="margin-left: 10px; display: flex; align-items: center;"><input type="checkbox" id="showDisabledFilter_${this.id}" ${this.showDisabledRecords ? 'checked' : ''} style="margin-right: 8px;"><label for="showDisabledFilter_${this.id}" style="color: white; font-size: 12px; cursor: pointer;">Show disabled records</label></div>` }
             ],
             middle: [
                 { type: 'controls', html: `<div class="combined-controls"><div class="pagination-buttons">${this.renderPaginationButtons(isEnabled, isEmpty)}</div><div class="control-row"><label for="pageSize_${this.id}" class="control-label">Per page:</label><select id="pageSize_${this.id}" class="page-size-select" aria-label="Number of items per page" ${!isEnabled ? 'disabled title="Enable pagination to use this control"' : ''}>${this.getPageSizeOptions().map(size => `<option value="${size}" ${size === this.options.pageSize ? 'selected' : ''}>${size}</option>`).join('')}</select></div></div>` }
@@ -1712,6 +1854,11 @@ class DataGridControl extends BaseControl {
                 this.usabilityMetrics.userErrorRate++;
                 throw new Error('Page size must be greater than 0');
             }
+            
+            if (newPageSize > 20) {
+                this.usabilityMetrics.userErrorRate++;
+                throw new Error('Page size cannot exceed 20 records');
+            }
 
             const oldPageSize = this.options.pageSize;
             this.options.pageSize = newPageSize;
@@ -1827,20 +1974,25 @@ class DataGridControl extends BaseControl {
 
     /**
      * Get available page size options
+     * Maximum display limit is 20 records per page
      */
     getPageSizeOptions() {
-        const defaultOptions = [10, 25, 50, 100];
+        const defaultOptions = [5, 10, 15, 20];
+        
+        console.log('DEBUG: getPageSizeOptions called, defaultOptions:', defaultOptions);
         
         if (this.options.pageSizeOptions) {
+            console.log('DEBUG: Using custom pageSizeOptions:', this.options.pageSizeOptions);
             return this.options.pageSizeOptions;
         }
         
-        // Ensure current page size is included
-        if (!defaultOptions.includes(this.options.pageSize)) {
+        // Ensure current page size is included but capped at 20
+        if (!defaultOptions.includes(this.options.pageSize) && this.options.pageSize <= 20) {
             defaultOptions.push(this.options.pageSize);
             defaultOptions.sort((a, b) => a - b);
         }
         
+        console.log('DEBUG: Final page size options:', defaultOptions);
         return defaultOptions;
     }
 
@@ -2015,6 +2167,15 @@ class DataGridControl extends BaseControl {
                 if (!isNaN(pageNumber)) {
                     this.goToPage(pageNumber);
                 }
+            });
+        }
+
+        // Show disabled records filter checkbox
+        const showDisabledCheckbox = footer.querySelector(`#showDisabledFilter_${this.id}`);
+        if (showDisabledCheckbox) {
+            showDisabledCheckbox.addEventListener('change', (event) => {
+                const showDisabled = event.target.checked;
+                this.filterByDisabledStatus(showDisabled);
             });
         }
 
