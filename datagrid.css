@@ -21,12 +21,22 @@ html, body {
 }
 
 .DataGridRow {
-    display: flex;
+    display: grid;
+    grid-template-columns: 
+        minmax(200px, 2fr)  /* Position - wider for job titles */
+        minmax(150px, 1.5fr) /* Company */
+        minmax(200px, 2fr)  /* Email - wider for email addresses */
+        minmax(120px, 1fr)  /* Cell - narrower for phone numbers */
+        minmax(120px, 1fr)  /* Office - narrower for phone numbers */
+        minmax(140px, 1.2fr) /* Initial Contact - medium width for dates */
+        minmax(140px, 1.2fr); /* Last Contact - medium width for dates */
     width: 100%;
     white-space: nowrap; /* Prevent text wrapping */
     border-bottom: 1px solid #e1e8ed;
     transition: background-color 0.2s ease;
     flex-shrink: 0; /* Prevent rows from shrinking */
+    align-items: center; /* Center content vertically */
+    gap: 1px; /* Small gap between columns */
 }
 
 .DataGridRow:first-child {
@@ -52,13 +62,14 @@ html, body {
 }
 
 .DataGridCell {
-    flex: 1;
-    padding: 4px;
+    padding: 4px 12px;
     border-right: 1px solid #e1e8ed;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap; /* Ensure no wrapping within cells */
-    min-width: 0; /* Allow flex items to shrink below content size */
+    min-width: 0; /* Allow grid items to shrink below content size */
+    display: flex;
+    align-items: center; /* Center content vertically */
 }
 
 /* Style input elements within DataGrid cells */
