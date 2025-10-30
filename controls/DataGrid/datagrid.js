@@ -301,8 +301,17 @@ class DataGrid {
         }
     }
 
-    updateData(index, newData) {
-        if (index >= 0 && index < this.data.length) {
+    updateData(indexOrData, newData) {
+        // Support replacing the entire dataset when an array is provided
+        if (Array.isArray(indexOrData)) {
+            this.data = indexOrData.map(record => ({ ...record }));
+            this.render();
+            return;
+        }
+
+        const index = indexOrData;
+
+        if (typeof index === 'number' && index >= 0 && index < this.data.length) {
             this.data[index] = { ...this.data[index], ...newData };
             this.render();
         }
