@@ -41,6 +41,11 @@
                 </div>
             </div>
         </div>
+
+        <!-- Search Control Container -->
+        <div id="searchControl" style="margin: 20px; display: flex; justify-content: flex-end;">
+            <!-- SearchControl will be rendered here -->
+        </div>
         
         <!-- Information Panel -->
         <div class="info-panel" style="
@@ -102,24 +107,30 @@
             const dataScript = document.createElement('script');
             dataScript.src = `controls/DataGrid/positions-data.js?v=${timestamp}`;
             dataScript.onload = function() {
-                // Try to load enhanced DataGrid first, fallback to original
-                const gridScript = document.createElement('script');
-                gridScript.src = `controls/DataGrid/enhanced-datagrid.js?v=${timestamp}`;
-                gridScript.onload = function() {
-                    // Initialize enhanced DataGrid with pagination
-                    initializeEnhancedDataGrid();
-                };
-                gridScript.onerror = function() {
-                    console.warn('Enhanced DataGrid not found, using original');
-                    // Fallback to original DataGrid
-                    const fallbackScript = document.createElement('script');
-                    fallbackScript.src = `datagrid.js?v=${timestamp}`;
-                    fallbackScript.onload = function() {
-                        const dataGrid = new DataGrid('#dataGrid');
+                // Load SearchControl first
+                const searchScript = document.createElement('script');
+                searchScript.src = `controls/Search/search-control.js?v=${timestamp}`;
+                searchScript.onload = function() {
+                    // Then load enhanced DataGrid
+                    const gridScript = document.createElement('script');
+                    gridScript.src = `controls/DataGrid/enhanced-datagrid.js?v=${timestamp}`;
+                    gridScript.onload = function() {
+                        // Initialize enhanced DataGrid with pagination and search
+                        initializeEnhancedDataGrid();
                     };
-                    document.head.appendChild(fallbackScript);
+                    gridScript.onerror = function() {
+                        console.warn('Enhanced DataGrid not found, using original');
+                        // Fallback to original DataGrid
+                        const fallbackScript = document.createElement('script');
+                        fallbackScript.src = `datagrid.js?v=${timestamp}`;
+                        fallbackScript.onload = function() {
+                            const dataGrid = new DataGrid('#dataGrid');
+                        };
+                        document.head.appendChild(fallbackScript);
+                    };
+                    document.head.appendChild(gridScript);
                 };
-                document.head.appendChild(gridScript);
+                document.head.appendChild(searchScript);
             };
             document.head.appendChild(dataScript);
         }
@@ -174,10 +185,33 @@
                 // Initialize and render
                 dataGrid.init().render();
                 
+                // Create and initialize SearchControl
+                const searchControl = new SearchControl({
+                    container: '#searchControl',
+                    placeholder: 'Search records...',
+                    width: '300px',
+                    debounceMs: 300,
+                    showResultCount: true
+                });
+                
+                // Connect SearchControl to DataGrid
+                searchControl.onSearch((searchTerm) => {
+                    dataGrid.search(searchTerm);
+                    searchControl.setResults(dataGrid.getVisibleData());
+                });
+                
+                searchControl.onClear(() => {
+                    dataGrid.search('');
+                    searchControl.setResults(dataGrid.getVisibleData());
+                });
+                
+                // Initialize and render SearchControl
+                searchControl.init().render();
+                
                 // Add application-level filtering controls
                 // addFilteringControls(dataGrid, originalData);
                 
-                console.log('Enhanced DataGrid with pagination initialized successfully');
+                console.log('Enhanced DataGrid with pagination and SearchControl initialized successfully');
                 
                 // Add status indicator
                 const status = document.createElement('div');

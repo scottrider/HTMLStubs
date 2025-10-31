@@ -766,6 +766,7 @@ class DataGridControl extends BaseControl {
 
             this.updateDerivedData();
             this.currentPage = 1; // Reset to first page
+            this.render(); // Re-render to show filtered results
 
             // Trigger search event
             this.trigger('datagrid:searchApplied', {
@@ -1544,7 +1545,7 @@ class DataGridControl extends BaseControl {
                 { type: 'controls', html: `<div class="combined-controls"><div class="pagination-buttons">${this.renderPaginationButtons(isEnabled, isEmpty)}</div><div class="control-row"><label for="pageSize_${this.id}" class="control-label">Per page:</label><select id="pageSize_${this.id}" class="page-size-select" aria-label="Number of items per page" ${!isEnabled ? 'disabled title="Enable pagination to use this control"' : ''}>${this.getPageSizeOptions().map(size => `<option value="${size}" ${size === this.options.pageSize ? 'selected' : ''}>${size}</option>`).join('')}</select></div></div>` }
             ],
             right: [
-                // Right column intentionally empty - all other metrics removed
+                // Right column - search control will be added externally
             ]
         };
         
@@ -1691,8 +1692,30 @@ class DataGridControl extends BaseControl {
     }
 
     searchInRecord(record, searchTerm) {
-        // Implement record search logic
-        return true;
+        if (!searchTerm || searchTerm.trim().length === 0) {
+            return true;
+        }
+
+        const normalizedSearchTerm = searchTerm.toLowerCase().trim();
+        
+        // Search through all fields marked as canFilter: true
+        for (const fieldName in this.schema) {
+            const field = this.schema[fieldName];
+            
+            // Only search in fields that can be filtered
+            if (field.canFilter === true && record.hasOwnProperty(fieldName)) {
+                const fieldValue = record[fieldName];
+                
+                if (fieldValue != null) {
+                    const normalizedValue = String(fieldValue).toLowerCase();
+                    if (normalizedValue.includes(normalizedSearchTerm)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        
+        return false;
     }
 
     evaluateFilters(record, filters) {

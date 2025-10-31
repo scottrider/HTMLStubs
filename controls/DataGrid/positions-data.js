@@ -14,7 +14,8 @@ const dataGridData = {
                 "htmlElement": "input",
                 "htmlType": "text",
                 "css": { "placeholder": "Enter position title", "maxlength": "100" },
-                "required": true 
+                "required": true, 
+                "canFilter": true
             },
             "company": { 
                 "type": "string", 
@@ -22,7 +23,8 @@ const dataGridData = {
                 "htmlElement": "input",
                 "htmlType": "text",
                 "css": { "placeholder": "Company name", "maxlength": "80" },
-                "required": true 
+                "required": true, 
+                "canFilter": true
             },
             "email": { 
                 "type": "email", 
@@ -30,7 +32,8 @@ const dataGridData = {
                 "htmlElement": "input",
                 "htmlType": "email",
                 "css": { "placeholder": "email@example.com" },
-                "required": true 
+                "required": true, 
+                "canFilter": true
             },
             "cphone": { 
                 "type": "phone", 
@@ -38,7 +41,8 @@ const dataGridData = {
                 "htmlElement": "input",
                 "htmlType": "tel",
                 "css": { "placeholder": "(555) 123-4567" },
-                "required": false 
+                "required": false, 
+                "canFilter": true
             },
             "ophone": { 
                 "type": "phone", 
@@ -46,7 +50,8 @@ const dataGridData = {
                 "htmlElement": "input",
                 "htmlType": "tel",
                 "css": { "placeholder": "(555) 123-4567" },
-                "required": false 
+                "required": false, 
+                "canFilter": true
             },
             "icontact": { 
                 "type": "date", 
@@ -54,7 +59,8 @@ const dataGridData = {
                 "htmlElement": "label",
                 "htmlType": "label",
                 "css": { "min": "2020-01-01", "max": "2030-12-31" },
-                "required": true 
+                "required": true, 
+                "canFilter": true
             },
             "lcontact": { 
                 "type": "date", 
@@ -62,7 +68,8 @@ const dataGridData = {
                 "htmlElement": "input",
                 "htmlType": "date",
                 "css": { "min": "2020-01-01", "max": "2030-12-31" },
-                "required": false 
+                "required": false, 
+                "canFilter": true
             },
             "isDisabled": {
                 "type": "boolean",
