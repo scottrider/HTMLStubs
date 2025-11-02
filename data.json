@@ -1,11 +1,4 @@
-// DataGrid data structure with positions entity containing schema and data siblings
-// Last updated: 2025-10-30 - No regex patterns version
-// Cache buster: Remove any regex patterns that cause issues
-console.log('positions-data.js loaded at:', new Date().toISOString());
-// Last updated: 2025-10-30 13:58 - COMPLETELY PATTERN-FREE VERSION
-// Cache buster: All regex patterns removed to prevent browser errors
-
-const dataGridData = {
+{
     "positions": {
         "schema": {
             "position": { 
@@ -14,9 +7,8 @@ const dataGridData = {
                 "htmlElement": "input",
                 "htmlType": "text",
                 "css": { "placeholder": "Enter position title", "maxlength": "100" },
-                "required": true,
-                "visible": true,
-                "searchable": true
+                "required": true, 
+                "canFilter": true
             },
             "company": { 
                 "type": "string", 
@@ -24,9 +16,8 @@ const dataGridData = {
                 "htmlElement": "input",
                 "htmlType": "text",
                 "css": { "placeholder": "Company name", "maxlength": "80" },
-                "required": true,
-                "visible": true,
-                "searchable": true 
+                "required": true, 
+                "canFilter": true
             },
             "email": { 
                 "type": "email", 
@@ -34,9 +25,8 @@ const dataGridData = {
                 "htmlElement": "input",
                 "htmlType": "email",
                 "css": { "placeholder": "email@example.com" },
-                "required": true,
-                "visible": true,
-                "searchable": true
+                "required": true, 
+                "canFilter": true
             },
             "cphone": { 
                 "type": "phone", 
@@ -44,9 +34,8 @@ const dataGridData = {
                 "htmlElement": "input",
                 "htmlType": "tel",
                 "css": { "placeholder": "(555) 123-4567" },
-                "required": false,
-                "visible": true,
-                "searchable": true
+                "required": false, 
+                "canFilter": true
             },
             "ophone": { 
                 "type": "phone", 
@@ -54,9 +43,8 @@ const dataGridData = {
                 "htmlElement": "input",
                 "htmlType": "tel",
                 "css": { "placeholder": "(555) 123-4567" },
-                "required": false,
-                "visible": true,
-                "searchable": true
+                "required": false, 
+                "canFilter": true
             },
             "icontact": { 
                 "type": "date", 
@@ -64,9 +52,8 @@ const dataGridData = {
                 "htmlElement": "label",
                 "htmlType": "label",
                 "css": { "min": "2020-01-01", "max": "2030-12-31" },
-                "required": true,
-                "visible": true,
-                "searchable": true
+                "required": true, 
+                "canFilter": true
             },
             "lcontact": { 
                 "type": "date", 
@@ -74,9 +61,8 @@ const dataGridData = {
                 "htmlElement": "input",
                 "htmlType": "date",
                 "css": { "min": "2020-01-01", "max": "2030-12-31" },
-                "required": false,
-                "visible": true,
-                "searchable": true
+                "required": false, 
+                "canFilter": true
             },
             "isDisabled": {
                 "type": "boolean",
@@ -85,8 +71,7 @@ const dataGridData = {
                 "htmlType": "checkbox",
                 "css": {},
                 "required": false,
-                "visible": false,
-                "searchable": false
+                "visible": false
             }
         },
         "data": [
@@ -199,8 +184,4 @@ const dataGridData = {
             { "position": "Lead Engineering Director", "company": "EngLead Directors", "email": "jamie.boyd@engleaddirectors.com", "cphone": "(555) 012-3456", "ophone": "(555) 012-3457", "icontact": "2024-01-12", "lcontact": "2023-11-25", "isDisabled": true }
         ]
     }
-};
-
-// Make sure it's available globally
-window.dataGridData = dataGridData;
-console.log('dataGridData assigned to window:', !!window.dataGridData);
+}

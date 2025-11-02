@@ -41,11 +41,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Search Control Container -->
-        <div id="searchControl" style="margin: 20px; display: flex; justify-content: flex-end;">
-            <!-- SearchControl will be rendered here -->
-        </div>
         
         <!-- Information Panel -->
         <div class="info-panel" style="
@@ -168,7 +163,7 @@
                     // Enable pagination - Best Practice
                     pagination: true,
                     pageSize: 5, // Small page size for demo with 8 records
-                    pageSizeOptions: [5, 10, 25, 50],
+                    pageSizeOptions: [5, 10, 20],
                     
                     // Enable other features
                     editable: true,
@@ -185,33 +180,38 @@
                 // Initialize and render
                 dataGrid.init().render();
                 
-                // Create and initialize SearchControl
-                const searchControl = new SearchControl({
-                    container: '#searchControl',
-                    placeholder: 'Search records...',
-                    width: '300px',
-                    debounceMs: 300,
-                    showResultCount: true
-                });
-                
-                // Connect SearchControl to DataGrid
-                searchControl.onSearch((searchTerm) => {
-                    dataGrid.search(searchTerm);
-                    searchControl.setResults(dataGrid.getVisibleData());
-                });
-                
-                searchControl.onClear(() => {
-                    dataGrid.search('');
-                    searchControl.setResults(dataGrid.getVisibleData());
-                });
-                
-                // Initialize and render SearchControl
-                searchControl.init().render();
+                // Create and initialize SearchControl in the DataGrid footer
+                const searchContainer = document.querySelector(`#searchContainer_${dataGrid.id}`);
+                if (searchContainer) {
+                    const searchControl = new SearchControl({
+                        container: searchContainer,
+                        placeholder: 'Search records...',
+                        width: '300px',
+                        debounceMs: 300,
+                        showResultCount: false // Hide count in footer for space
+                    });
+                    
+                    // Connect SearchControl to DataGrid
+                    searchControl.onSearch((searchTerm) => {
+                        dataGrid.search(searchTerm);
+                    });
+                    
+                    searchControl.onClear(() => {
+                        dataGrid.search('');
+                    });
+                    
+                    // Initialize and render SearchControl
+                    searchControl.init().render();
+                    
+                    console.log('SearchControl integrated into DataGrid footer');
+                } else {
+                    console.warn('Search container not found in DataGrid footer');
+                }
                 
                 // Add application-level filtering controls
                 // addFilteringControls(dataGrid, originalData);
                 
-                console.log('Enhanced DataGrid with pagination and SearchControl initialized successfully');
+                console.log('Enhanced DataGrid with pagination and integrated SearchControl initialized successfully');
                 
                 // Add status indicator
                 const status = document.createElement('div');

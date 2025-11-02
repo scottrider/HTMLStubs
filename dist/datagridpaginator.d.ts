@@ -1,0 +1,53 @@
+export interface DataGridPaginatorConfig {
+    schema: any;
+    data: any[];
+    companyOptions?: string[];
+    pageSize?: number;
+    showAddButton?: boolean;
+    showCheckboxes?: boolean;
+    onNewRecord?: () => void;
+    onEditRecord?: (index: number, record: any) => void;
+    onDeleteRecord?: (index: number, record: any) => void;
+    onSaveRecord?: (index: number, record: any) => void;
+    onSelectionChange?: (selectedIndexes: number[]) => void;
+    onDeleteSelected?: (selectedIndexes: number[]) => void;
+}
+export declare class DataGridPaginator {
+    private config;
+    private container;
+    private currentPage;
+    private totalPages;
+    private pageSize;
+    private gridRows;
+    private editingIndex;
+    private selectedIndexes;
+    private masterCheckboxState;
+    constructor(config: DataGridPaginatorConfig);
+    getElement(): HTMLElement;
+    getCurrentPage(): number;
+    getTotalPages(): number;
+    goToPage(page: number): void;
+    addNewRecord(newRecord: any): void;
+    removeRecord(index: number): void;
+    private createContainer;
+    private render;
+    private createHeaderRow;
+    private createAddButton;
+    private createDeleteSelectedButton;
+    private createHeaderButtons;
+    private createRecordsDisplay;
+    private createPaginationControls;
+    private getPaginationInfo;
+    private attachEventListeners;
+    private handleAddRecord;
+    private handleEditRecord;
+    private handleSaveRecord;
+    private handleCancelEdit;
+    private handleDeleteRecord;
+    private getGlobalIndex;
+    private createDefaultNewRecord;
+    private handleCheckboxChange;
+    private handleMasterCheckboxChange;
+    private handleDeleteSelected;
+    static createFromData(sourceData: any, config?: Partial<DataGridPaginatorConfig>): DataGridPaginator;
+}

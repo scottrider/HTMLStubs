@@ -1,0 +1,30 @@
+import { DataGrid } from './datagrid.js';
+type EditMode = 'edit' | 'locked' | 'readonly';
+declare class EditablePositionsDataGrid extends DataGrid {
+    private _editMode;
+    private _editingRowIndex;
+    private _originalData;
+    constructor();
+    connectedCallback(): void;
+    get editMode(): EditMode;
+    set editMode(value: EditMode);
+    protected render(): void;
+    private createHeaderRow;
+    private createDataRows;
+    private createCell;
+    private createEditableCell;
+    private createActionCell;
+    private createToolbar;
+    private getEditableAttribute;
+    private getCellClass;
+    private getInputType;
+    private attachEventListeners;
+    private startEditing;
+    private saveRow;
+    private cancelEditing;
+    private validateRowData;
+    private addNewRow;
+    private saveAllChanges;
+    private getTableStyles;
+}
+export { EditablePositionsDataGrid };

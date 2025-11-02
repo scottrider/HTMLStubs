@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GridDataRow Dual State Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .controls {
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 8px 16px;
+            margin-right: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            background: #e9ecef;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>GridDataRow Dual State Test</h1>
+        
+        <div class="test-section">
+            <div class="test-title">Read-Only State (shows edit/delete buttons)</div>
+            <div class="controls">
+                <button class="btn-primary" onclick="createReadOnlyForm()">Create Read-Only Form</button>
+                <button class="btn-secondary" onclick="clearReadOnly()">Clear</button>
+            </div>
+            <div id="readonly-container"></div>
+            <div id="readonly-status" class="status">Status: Ready</div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Editable State (shows save/cancel buttons)</div>
+            <div class="controls">
+                <button class="btn-primary" onclick="createEditableForm()">Create Editable Form</button>
+                <button class="btn-secondary" onclick="clearEditable()">Clear</button>
+            </div>
+            <div id="editable-container"></div>
+            <div id="editable-status" class="status">Status: Ready</div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Dynamic State Switching</div>
+            <div class="controls">
+                <button class="btn-primary" onclick="createSwitchableForm()">Create Form</button>
+                <button class="btn-secondary" onclick="toggleFormState()">Toggle Read-Only/Editable</button>
+                <button class="btn-secondary" onclick="clearSwitchable()">Clear</button>
+            </div>
+            <div id="switchable-container"></div>
+            <div id="switchable-status" class="status">Status: Ready</div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { GridDataRow } from './griddatarow.js';
+        
+        // Load test data
+        let testData;
+        try {
+            const response = await fetch('./positions-data.js');
+            const dataText = await response.text();
+            // Extract the data object from the module
+            const dataMatch = dataText.match(/const positionsData = ({[\s\S]*});/);
+            if (dataMatch) {
+                testData = eval('(' + dataMatch[1] + ')');
+                console.log('Test data loaded successfully');
+            } else {
+                throw new Error('Could not parse positions data');
+            }
+        } catch (error) {
+            console.error('Failed to load test data:', error);
+            testData = createFallbackData();
+        }
+
+        let readOnlyForm = null;
+        let editableForm = null;
+        let switchableForm = null;
+        let isCurrentlyEditable = false;
+
+        // Global functions for buttons
+        window.createReadOnlyForm = function() {
+            try {
+                readOnlyForm = GridDataRow.createFromFirstRecord(testData, getCompanyOptions(), false);
+                
+                // Add custom callbacks
+                readOnlyForm.config.onEdit = function() {
+                    updateStatus('readonly-status', 'Edit button clicked!');
+                };
+                readOnlyForm.config.onDelete = function() {
+                    updateStatus('readonly-status', 'Delete button clicked!');
+                };
+
+                document.getElementById('readonly-container').innerHTML = '';
+                document.getElementById('readonly-container').appendChild(readOnlyForm.getElement());
+                updateStatus('readonly-status', 'Read-only form created - shows edit/delete buttons');
+            } catch (error) {
+                updateStatus('readonly-status', 'Error: ' + error.message);
+                console.error(error);
+            }
+        };
+
+        window.clearReadOnly = function() {
+            document.getElementById('readonly-container').innerHTML = '';
+            updateStatus('readonly-status', 'Cleared');
+            readOnlyForm = null;
+        };
+
+        window.createEditableForm = function() {
+            try {
+                editableForm = GridDataRow.createFromFirstRecord(testData, getCompanyOptions(), true);
+                
+                // Add custom callbacks
+                editableForm.config.onSave = function(data) {
+                    updateStatus('editable-status', 'Save button clicked! Data: ' + JSON.stringify(data, null, 2));
+                };
+                editableForm.config.onCancel = function() {
+                    updateStatus('editable-status', 'Cancel button clicked!');
+                };
+
+                document.getElementById('editable-container').innerHTML = '';
+                document.getElementById('editable-container').appendChild(editableForm.getElement());
+                updateStatus('editable-status', 'Editable form created - shows save/cancel buttons');
+            } catch (error) {
+                updateStatus('editable-status', 'Error: ' + error.message);
+                console.error(error);
+            }
+        };
+
+        window.clearEditable = function() {
+            document.getElementById('editable-container').innerHTML = '';
+            updateStatus('editable-status', 'Cleared');
+            editableForm = null;
+        };
+
+        window.createSwitchableForm = function() {
+            try {
+                isCurrentlyEditable = false;
+                switchableForm = GridDataRow.createFromFirstRecord(testData, getCompanyOptions(), isCurrentlyEditable);
+                
+                // Add custom callbacks
+                switchableForm.config.onEdit = function() {
+                    updateStatus('switchable-status', 'Edit clicked - switching to editable mode');
+                    isCurrentlyEditable = true;
+                    switchableForm.setEditable(true);
+                };
+                switchableForm.config.onDelete = function() {
+                    updateStatus('switchable-status', 'Delete button clicked!');
+                };
+                switchableForm.config.onSave = function(data) {
+                    updateStatus('switchable-status', 'Save clicked - switching to read-only mode. Data: ' + JSON.stringify(data, null, 2));
+                    isCurrentlyEditable = false;
+                    switchableForm.setEditable(false);
+                };
+                switchableForm.config.onCancel = function() {
+                    updateStatus('switchable-status', 'Cancel clicked - switching to read-only mode');
+                    isCurrentlyEditable = false;
+                    switchableForm.setEditable(false);
+                };
+
+                document.getElementById('switchable-container').innerHTML = '';
+                document.getElementById('switchable-container').appendChild(switchableForm.getElement());
+                updateStatus('switchable-status', 'Switchable form created - currently in read-only mode');
+            } catch (error) {
+                updateStatus('switchable-status', 'Error: ' + error.message);
+                console.error(error);
+            }
+        };
+
+        window.toggleFormState = function() {
+            if (switchableForm) {
+                isCurrentlyEditable = !isCurrentlyEditable;
+                switchableForm.setEditable(isCurrentlyEditable);
+                updateStatus('switchable-status', 'Toggled to ' + (isCurrentlyEditable ? 'editable' : 'read-only') + ' mode');
+            } else {
+                updateStatus('switchable-status', 'No form to toggle - create one first');
+            }
+        };
+
+        window.clearSwitchable = function() {
+            document.getElementById('switchable-container').innerHTML = '';
+            updateStatus('switchable-status', 'Cleared');
+            switchableForm = null;
+            isCurrentlyEditable = false;
+        };
+
+        function updateStatus(elementId, message) {
+            const statusEl = document.getElementById(elementId);
+            statusEl.textContent = 'Status: ' + message;
+            statusEl.style.background = '#d4edda';
+            setTimeout(() => {
+                statusEl.style.background = '#e9ecef';
+            }, 2000);
+        }
+
+        function getCompanyOptions() {
+            return [
+                'TechCorp Inc',
+                'InnovateSoft', 
+                'DataDrive Systems',
+                'CloudFirst Technologies',
+                'NextGen Solutions',
+                'DesignWorks Studio',
+                'ServerTech Corp',
+                'TestPro Solutions',
+                'AI Innovations Ltd',
+                'SecureNet Corp'
+            ];
+        }
+
+        function createFallbackData() {
+            return {
+                positions: {
+                    schema: {
+                        position: { visible: true, displayName: 'Position', required: true },
+                        company: { visible: true, displayName: 'Company', required: true },
+                        email: { visible: true, displayName: 'Email', htmlType: 'email' },
+                        cphone: { visible: true, displayName: 'Cell Phone', htmlType: 'tel' },
+                        ophone: { visible: true, displayName: 'Office Phone', htmlType: 'tel' },
+                        icontact: { visible: true, displayName: 'Initial Contact', htmlElement: 'label' },
+                        lcontact: { visible: true, displayName: 'Last Contact', htmlType: 'date' }
+                    },
+                    data: [{
+                        position: 'Software Engineer',
+                        company: 'TechCorp Inc',
+                        email: 'john.doe@techcorp.com',
+                        cphone: '555-123-4567',
+                        ophone: '555-987-6543',
+                        icontact: '2024-01-15',
+                        lcontact: '2024-10-30'
+                    }]
+                }
+            };
+        }
+
+        console.log('GridDataRow dual state test loaded successfully');
+    </script>
+</body>
+</html>

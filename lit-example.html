@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lit DataGrid Example</title>
+    <script src="./positions-data.js"></script>
+    <!-- In real project, you'd compile the TypeScript and import the compiled JS -->
+    <script type="module" src="./datagrid-lit-compiled.js"></script>
+</head>
+<body>
+    <h3>Lit Web Component with TypeScript</h3>
+    
+    <!-- This is the beautiful syntax you get with Lit! -->
+    <data-grid-lit 
+        id="litGrid"
+        entity="positions"
+        cssClass="my-fancy-grid"
+        addRowFunction="handleRowAdd">
+    </data-grid-lit>
+    
+    <script>
+        // Clean property assignment with full type safety
+        document.addEventListener('DOMContentLoaded', () => {
+            const grid = document.getElementById('litGrid');
+            grid.source = dataGridData; // TypeScript ensures this is correct type!
+        });
+        
+        function handleRowAdd(rowData) {
+            console.log('Row processed:', rowData);
+        }
+    </script>
+</body>
+</html>

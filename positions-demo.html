@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Positions DataGrid Demo</title>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        h1, h3 {
+            color: #333;
+        }
+        
+        .demo-section {
+            background: white;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .data-grid-container {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            margin: 10px 0;
+        }
+        
+        .header {
+            display: flex;
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        .row {
+            display: flex;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .row:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .column {
+            padding: 12px;
+            border-right: 1px solid #dee2e6;
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        .header-column {
+            font-weight: bold;
+            background-color: #e9ecef;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .header-column:hover {
+            background-color: #dee2e6;
+        }
+        
+        .filter-controls {
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .filter-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .filter-row input,
+        .filter-row select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            flex: 1;
+        }
+        
+        .error {
+            color: red;
+            padding: 20px;
+            border: 1px solid red;
+            border-radius: 4px;
+            background-color: #ffe6e6;
+        }
+        
+        .controls {
+            margin: 15px 0;
+        }
+        
+        .controls button {
+            padding: 8px 16px;
+            margin: 0 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+        }
+        
+        .controls button:hover {
+            background: #f5f5f5;
+        }
+    </style>
+    
+    <!-- Load compiled TypeScript modules -->
+    <script type="module" src="./dist/datagrid.js"></script>
+    <script type="module" src="./dist/positionsdatagrid.js"></script>
+</head>
+<body>
+    <h1>Positions DataGrid Demo</h1>
+    
+    <div class="demo-section">
+        <h3>Basic Positions Grid</h3>
+        <positions-data-grid 
+            id="basicPositionsGrid"
+            cssClass="basic-grid">
+        </positions-data-grid>
+    </div>
+    
+    <div class="demo-section">
+        <h3>Positions Grid with Filters</h3>
+        <div class="controls">
+            <button onclick="toggleFilters()">Toggle Filters</button>
+            <button onclick="sortByCompany()">Sort by Company</button>
+            <button onclick="addNewPosition()">Add Position</button>
+        </div>
+        <positions-data-grid 
+            id="filteredPositionsGrid"
+            show-filters="true"
+            sort-by="company"
+            cssClass="filtered-grid">
+        </positions-data-grid>
+    </div>
+    
+    <script type="module">
+        // Sample positions data
+        const samplePositions = [
+            {
+                position: "Senior Software Engineer",
+                company: "TechCorp Inc",
+                email: "hr@techcorp.com",
+                cphone: "(555) 123-4567",
+                ophone: "(555) 987-6543",
+                location: "San Francisco, CA",
+                notes: "Great team culture, remote-friendly"
+            },
+            {
+                position: "Full Stack Developer", 
+                company: "StartupXYZ",
+                email: "jobs@startupxyz.com",
+                cphone: "(555) 234-5678",
+                ophone: "",
+                location: "Austin, TX",
+                notes: "Equity opportunity, fast-paced environment"
+            },
+            {
+                position: "Frontend Developer",
+                company: "Design Studio",
+                email: "careers@designstudio.com", 
+                cphone: "(555) 345-6789",
+                ophone: "(555) 876-5432",
+                location: "New York, NY",
+                notes: "Focus on UX/UI, creative projects"
+            },
+            {
+                position: "Backend Engineer",
+                company: "DataFlow Solutions",
+                email: "hiring@dataflow.com",
+                cphone: "(555) 456-7890",
+                ophone: "(555) 765-4321",
+                location: "Seattle, WA",
+                notes: "Cloud infrastructure, high scale systems"
+            },
+            {
+                position: "DevOps Engineer",
+                company: "CloudTech",
+                email: "devops-jobs@cloudtech.com",
+                cphone: "(555) 567-8901",
+                ophone: "",
+                location: "Denver, CO", 
+                notes: "Kubernetes, AWS, automation focus"
+            }
+        ];
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const basicGrid = document.getElementById('basicPositionsGrid');
+            const filteredGrid = document.getElementById('filteredPositionsGrid');
+            
+            // Set positions data using the specialized setter
+            basicGrid.positionsData = samplePositions;
+            filteredGrid.positionsData = samplePositions;
+            
+            console.log('Positions grids loaded with', samplePositions.length, 'positions');
+        });
+        
+        // Global functions for demo controls
+        window.toggleFilters = () => {
+            const grid = document.getElementById('filteredPositionsGrid');
+            grid.showFilters = !grid.showFilters;
+        };
+        
+        window.sortByCompany = () => {
+            const grid = document.getElementById('filteredPositionsGrid');
+            grid.sortBy = 'company';
+            grid.sortDirection = grid.sortDirection === 'asc' ? 'desc' : 'asc';
+        };
+        
+        window.addNewPosition = () => {
+            const grid = document.getElementById('filteredPositionsGrid');
+            const newPosition = {
+                position: "JavaScript Developer",
+                company: "Web Innovations",
+                email: "careers@webinnovations.com",
+                cphone: "(555) 999-0000",
+                ophone: "",
+                location: "Remote",
+                notes: "Remote-first company, modern stack"
+            };
+            grid.addPosition(newPosition);
+        };
+        
+        // Demonstrate search functionality
+        window.searchPositions = (term) => {
+            const grid = document.getElementById('filteredPositionsGrid');
+            const results = grid.searchPositions(term);
+            console.log(`Found ${results.length} positions matching "${term}":`, results);
+        };
+        
+        // Demonstrate filtering
+        window.filterByLocation = (location) => {
+            const grid = document.getElementById('filteredPositionsGrid');
+            const results = grid.filterPositions(pos => pos.location === location);
+            console.log(`Found ${results.length} positions in ${location}:`, results);
+        };
+    </script>
+</body>
+</html>

@@ -1545,7 +1545,7 @@ class DataGridControl extends BaseControl {
                 { type: 'controls', html: `<div class="combined-controls"><div class="pagination-buttons">${this.renderPaginationButtons(isEnabled, isEmpty)}</div><div class="control-row"><label for="pageSize_${this.id}" class="control-label">Per page:</label><select id="pageSize_${this.id}" class="page-size-select" aria-label="Number of items per page" ${!isEnabled ? 'disabled title="Enable pagination to use this control"' : ''}>${this.getPageSizeOptions().map(size => `<option value="${size}" ${size === this.options.pageSize ? 'selected' : ''}>${size}</option>`).join('')}</select></div></div>` }
             ],
             right: [
-                // Right column - search control will be added externally
+                { type: 'search-container', html: `<div id="searchContainer_${this.id}" class="search-container"></div>` }
             ]
         };
         

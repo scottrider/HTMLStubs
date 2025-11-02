@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test</title>
+    
+    <!-- No styling - raw display -->
+    
+    <!-- Load TypeScript compiled files -->
+    <script src="./positions-data.js"></script>
+    <script type="module" src="./dist/datagrid.js"></script>
+    <script type="module" src="./dist/positionsdatagrid.js"></script>
+</head>
+<body>
+    <h1>DataGrid</h1>
+    
+    <positions-data-grid 
+        id="testGrid"
+        cssClass="test-grid">
+    </positions-data-grid>
+    
+    <script type="module">
+        // Use the PositionsDataGrid with data from positions-data.js
+        setTimeout(() => {
+            const grid = document.getElementById('testGrid');
+            
+            if (window.dataGridData && grid) {
+                console.log('Loading data into PositionsDataGrid...');
+                grid.sourceData = window.dataGridData;
+                console.log('Data loaded - should show table with headers and first 20 records');
+            } else {
+                console.error('Data or grid missing:', {
+                    data: !!window.dataGridData,
+                    grid: !!grid
+                });
+            }
+        }, 100);
+    </script>
+</body>
+</html>
