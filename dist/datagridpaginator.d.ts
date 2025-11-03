@@ -22,11 +22,16 @@ export declare class DataGridPaginator {
     private editingIndex;
     private selectedIndexes;
     private masterCheckboxState;
+    private showDisabled;
+    private filteredData;
     constructor(config: DataGridPaginatorConfig);
     getElement(): HTMLElement;
     getCurrentPage(): number;
     getTotalPages(): number;
     goToPage(page: number): void;
+    changePageSize(newPageSize: number): void;
+    private filterData;
+    toggleDisabledFilter(): void;
     addNewRecord(newRecord: any): void;
     removeRecord(index: number): void;
     private createContainer;

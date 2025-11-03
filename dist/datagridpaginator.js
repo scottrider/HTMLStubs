@@ -10,9 +10,12 @@ export class DataGridPaginator {
         this.editingIndex = -1; // Track which row is being edited
         this.selectedIndexes = new Set(); // Track selected checkboxes
         this.masterCheckboxState = false;
+        this.showDisabled = false; // Toggle state for enabled/disabled filter
+        this.filteredData = []; // Filtered data based on toggle state
         this.config = config;
         this.pageSize = config.pageSize || 5;
-        this.totalPages = Math.ceil(config.data.length / this.pageSize);
+        this.filteredData = this.filterData(); // Initialize filtered data
+        this.totalPages = Math.ceil(this.filteredData.length / this.pageSize);
         this.container = this.createContainer();
         this.render();
     }
@@ -36,7 +39,7 @@ export class DataGridPaginator {
         this.selectedIndexes.clear();
         this.masterCheckboxState = false;
         this.pageSize = newPageSize;
-        this.totalPages = Math.ceil(this.config.data.length / this.pageSize);
+        this.totalPages = Math.ceil(this.filteredData.length / this.pageSize);
         // Adjust current page if necessary
         if (this.currentPage > this.totalPages && this.totalPages > 0) {
             this.currentPage = this.totalPages;
@@ -46,9 +49,26 @@ export class DataGridPaginator {
         }
         this.render();
     }
+    filterData() {
+        return this.config.data.filter(record => {
+            // Show only enabled records (isDisabled = false) by default
+            // When showDisabled is true, show only disabled records (isDisabled = true)
+            return this.showDisabled ? (record.isDisabled === true) : (record.isDisabled === false);
+        });
+    }
+    toggleDisabledFilter() {
+        this.showDisabled = !this.showDisabled;
+        this.filteredData = this.filterData();
+        this.totalPages = Math.ceil(this.filteredData.length / this.pageSize);
+        this.currentPage = 1; // Reset to first page when toggling
+        this.selectedIndexes.clear(); // Clear selections when filtering
+        this.masterCheckboxState = false;
+        this.render();
+    }
     addNewRecord(newRecord) {
         this.config.data.push(newRecord);
-        this.totalPages = Math.ceil(this.config.data.length / this.pageSize);
+        this.filterData(); // Update filtered data
+        this.totalPages = Math.ceil(this.filteredData.length / this.pageSize);
         // Go to the last page to show the new record
         this.currentPage = this.totalPages;
         this.render();
@@ -56,8 +76,10 @@ export class DataGridPaginator {
     removeRecord(index) {
         const globalIndex = this.getGlobalIndex(index);
         if (globalIndex >= 0 && globalIndex < this.config.data.length) {
-            this.config.data.splice(globalIndex, 1);
-            this.totalPages = Math.ceil(this.config.data.length / this.pageSize);
+            // Soft delete: set isDisabled = true instead of removing record
+            this.config.data[globalIndex].isDisabled = true;
+            this.filterData(); // Update filtered data
+            this.totalPages = Math.ceil(this.filteredData.length / this.pageSize);
             // Adjust current page if necessary
             if (this.currentPage > this.totalPages && this.totalPages > 0) {
                 this.currentPage = this.totalPages;
@@ -214,7 +236,7 @@ export class DataGridPaginator {
                     min-width: fit-content;
                 }
                 .pagination-btn {
-                    padding: 0 0 1px 0;
+                    padding: 2px;
                     border: 1px solid #ccc;
                     border-radius: 4px;
                     cursor: pointer;
@@ -267,6 +289,43 @@ export class DataGridPaginator {
                     color: #666;
                     font-style: italic;
                 }
+                .toggle-container {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    margin-top: 5px;
+                }
+                .toggle-switch {
+                    position: relative;
+                    width: 50px;
+                    height: 24px;
+                    background: #ccc;
+                    border-radius: 12px;
+                    cursor: pointer;
+                    transition: background 0.3s;
+                }
+                .toggle-switch.active {
+                    background: #ff6b6b;
+                }
+                .toggle-slider {
+                    position: absolute;
+                    top: 2px;
+                    left: 2px;
+                    width: 20px;
+                    height: 20px;
+                    background: white;
+                    border-radius: 50%;
+                    transition: transform 0.3s;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                }
+                .toggle-switch.active .toggle-slider {
+                    transform: translateX(26px);
+                }
+                .toggle-label {
+                    font-size: 14px;
+                    color: #666;
+                    user-select: none;
+                }
             </style>
             
             <div class="paginator-header">
@@ -274,6 +333,13 @@ export class DataGridPaginator {
                     <div class="paginator-title">Position Records</div>
                     <div class="paginator-info">
                         ${this.getPaginationInfo()}
+                    </div>
+                    <div class="toggle-container">
+                        <span class="toggle-label">Show Enabled Only</span>
+                        <div class="toggle-switch ${this.showDisabled ? 'active' : ''}" data-toggle="disabled-filter">
+                            <div class="toggle-slider"></div>
+                        </div>
+                        <span class="toggle-label">Show Disabled Only</span>
                     </div>
                 </div>
                 ${this.createHeaderButtons()}
@@ -353,8 +419,8 @@ export class DataGridPaginator {
             `;
         }
         const startIndex = (this.currentPage - 1) * this.pageSize;
-        const endIndex = Math.min(startIndex + this.pageSize, this.config.data.length);
-        const pageRecords = this.config.data.slice(startIndex, endIndex);
+        const endIndex = Math.min(startIndex + this.pageSize, this.filteredData.length);
+        const pageRecords = this.filteredData.slice(startIndex, endIndex);
         this.gridRows = []; // Clear existing rows
         return pageRecords.map((record, index) => {
             const globalIndex = startIndex + index;
@@ -434,12 +500,15 @@ export class DataGridPaginator {
         `;
     }
     getPaginationInfo() {
-        if (this.config.data.length === 0) {
+        const currentData = this.filteredData;
+        if (currentData.length === 0) {
             return 'No records';
         }
         const startIndex = (this.currentPage - 1) * this.pageSize + 1;
-        const endIndex = Math.min(this.currentPage * this.pageSize, this.config.data.length);
-        return `Showing ${startIndex}-${endIndex} of ${this.config.data.length} records`;
+        const endIndex = Math.min(this.currentPage * this.pageSize, currentData.length);
+        const filterInfo = this.filteredData !== this.config.data ?
+            ` (filtered from ${this.config.data.length} total)` : '';
+        return `Showing ${startIndex}-${endIndex} of ${currentData.length} records${filterInfo}`;
     }
     attachEventListeners() {
         // Add record button
@@ -496,6 +565,13 @@ export class DataGridPaginator {
                 this.changePageSize(newPageSize);
             });
         }
+        // Toggle switch for disabled filter
+        const toggleSwitch = this.container.querySelector('[data-toggle="disabled-filter"]');
+        if (toggleSwitch) {
+            toggleSwitch.addEventListener('click', () => {
+                this.toggleDisabledFilter();
+            });
+        }
         // Insert GridDataRow components
         this.gridRows.forEach((gridRow, index) => {
             const container = this.container.querySelector(`#record-${index}`);
@@ -549,14 +625,20 @@ export class DataGridPaginator {
             this.config.onDeleteRecord(globalIndex, this.config.data[globalIndex]);
         }
         else {
-            // Default delete behavior
-            if (confirm('Are you sure you want to delete this record?')) {
+            // Default soft delete behavior
+            if (confirm('Are you sure you want to mark this record as disabled?')) {
                 this.removeRecord(index);
             }
         }
     }
     getGlobalIndex(pageIndex) {
-        return (this.currentPage - 1) * this.pageSize + pageIndex;
+        const filteredIndex = (this.currentPage - 1) * this.pageSize + pageIndex;
+        if (filteredIndex >= this.filteredData.length) {
+            return -1;
+        }
+        // Find the original index in config.data
+        const filteredRecord = this.filteredData[filteredIndex];
+        return this.config.data.findIndex(record => record === filteredRecord);
     }
     createDefaultNewRecord() {
         const newRecord = {};
@@ -628,21 +710,24 @@ export class DataGridPaginator {
     handleDeleteSelected() {
         if (this.selectedIndexes.size === 0)
             return;
-        const selectedArray = Array.from(this.selectedIndexes).sort((a, b) => b - a);
+        const selectedArray = Array.from(this.selectedIndexes);
         if (this.config.onDeleteSelected) {
             this.config.onDeleteSelected(selectedArray);
         }
         else {
-            // Default behavior: confirm and delete
-            if (confirm(`Delete ${this.selectedIndexes.size} selected record(s)?`)) {
-                // Remove records in reverse order to maintain indexes
+            // Default behavior: soft delete (set isDisabled = true)
+            if (confirm(`Mark ${this.selectedIndexes.size} selected record(s) as disabled?`)) {
+                // Soft delete: set isDisabled = true for selected records
                 selectedArray.forEach(index => {
-                    this.config.data.splice(index, 1);
+                    if (index >= 0 && index < this.config.data.length) {
+                        this.config.data[index].isDisabled = true;
+                    }
                 });
-                // Clear selection and update pagination
+                // Clear selection and update filtered data
                 this.selectedIndexes.clear();
                 this.masterCheckboxState = false;
-                this.totalPages = Math.ceil(this.config.data.length / this.pageSize);
+                this.filterData(); // Update filtered data after soft delete
+                this.totalPages = Math.ceil(this.filteredData.length / this.pageSize);
                 // Adjust current page if necessary
                 if (this.currentPage > this.totalPages && this.totalPages > 0) {
                     this.currentPage = this.totalPages;

@@ -1,0 +1,19 @@
+{
+  "name": "htmlstubs-datagrid",
+  "version": "1.0.0",
+  "description": "DataGrid components with TypeScript support",
+  "main": "index.html",
+  "scripts": {
+    "dev": "npx http-server -p 8000 -c-1 --cors",
+    "build": "npx tsc griddatarow.ts datagridpaginator.ts --target es2020 --module es2020 --outDir dist",
+    "watch": "npx tsc griddatarow.ts datagridpaginator.ts --target es2020 --module es2020 --outDir dist --watch",
+    "serve": "npm run build && npm run dev"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1",
+    "typescript": "^5.2.2"
+  },
+  "keywords": ["datagrid", "typescript", "web-components"],
+  "author": "Scott",
+  "license": "MIT"
+}
