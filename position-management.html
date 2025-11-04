@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Position Management System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        .tab-navigation {
+            background: white;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            color: #495057;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s ease;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .tab-button:hover {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        .tab-button.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .tab-button::before {
+            font-size: 1.2em;
+        }
+
+        .tab-button[data-tab="positions"]::before {
+            content: "📋";
+        }
+
+        .tab-button[data-tab="companies"]::before {
+            content: "🏢";
+        }
+
+        .tab-button[data-tab="reports"]::before {
+            content: "📊";
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .tab-panel {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            overflow: hidden;
+            background: white;
+        }
+
+        .tab-panel.active {
+            display: flex;
+        }
+
+        .content-header {
+            padding: 20px 30px;
+            border-bottom: 1px solid #dee2e6;
+            background: white;
+            flex-shrink: 0;
+        }
+
+        .content-title {
+            font-size: 1.3rem;
+            color: #333;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .content-description {
+            color: #666;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        .content-body {
+            flex: 1;
+            padding: 20px 30px;
+            overflow: auto;
+            background: #f8f9fa;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .toolbar-left,
+        .toolbar-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #1e7e34;
+            transform: translateY(-1px);
+        }
+
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #117a8b;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+            transform: translateY(-1px);
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-group label {
+            font-weight: 500;
+            color: #495057;
+            white-space: nowrap;
+            font-size: 14px;
+        }
+
+        .input-group input,
+        .input-group select {
+            padding: 6px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+            background: white;
+        }
+
+        .search-input-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .search-input-with-clear {
+            padding-right: 30px;
+            min-width: 200px;
+        }
+
+        .search-clear-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #6c757d;
+            font-size: 16px;
+            padding: 2px;
+            border-radius: 2px;
+            display: none;
+            transition: color 0.2s;
+        }
+
+        .search-clear-btn:hover {
+            color: #495057;
+        }
+
+        /* Show clear button when input has content */
+        .search-input-with-clear:focus + .search-clear-btn {
+            display: block;
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-right: 20px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 24px;
+            background: #ccc;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .toggle-switch.active {
+            background: #667eea;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(26px);
+        }
+
+        .toggle-label {
+            font-size: 14px;
+            color: #666;
+            user-select: none;
+            font-weight: 500;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            text-align: center;
+            min-width: 120px;
+        }
+
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #667eea;
+            display: block;
+            line-height: 1;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.85rem;
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .datagrid-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            overflow: hidden;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .datagrid-wrapper {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .placeholder-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            height: 100%;
+            color: #6c757d;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .placeholder-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .placeholder-title {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            color: #495057;
+        }
+
+        .placeholder-text {
+            font-size: 1rem;
+            line-height: 1.5;
+            max-width: 400px;
+        }
+
+        .loading-spinner {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .loading-spinner::before {
+            content: "⏳";
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .tab-button {
+                padding: 15px 20px;
+                font-size: 14px;
+            }
+
+            .content-header {
+                padding: 15px 20px;
+            }
+
+            .content-body {
+                padding: 15px 20px;
+            }
+
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .toolbar-left,
+            .toolbar-right {
+                justify-content: center;
+            }
+
+            .stats-bar {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .tab-button span {
+                display: none;
+            }
+
+            .tab-button::before {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Tab Navigation -->
+        <nav class="tab-navigation">
+            <button class="tab-button active" data-tab="positions" onclick="switchTab('positions')">
+                <span>Positions</span>
+            </button>
+            <button class="tab-button" data-tab="companies" onclick="switchTab('companies')">
+                <span>Companies</span>
+            </button>
+            <button class="tab-button" data-tab="reports" onclick="switchTab('reports')">
+                <span>Reports</span>
+            </button>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Positions Tab -->
+            <div id="positions-panel" class="tab-panel active">
+                <div class="content-body">
+                    <!-- Statistics Bar -->
+                    <div class="stats-bar">
+                        <div class="stat-item">
+                            <span class="stat-number" id="total-positions">0</span>
+                            <div class="stat-label">Total Positions</div>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="active-positions">0</span>
+                            <div class="stat-label">Active</div>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="disabled-positions">0</span>
+                            <div class="stat-label">Archived</div>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="current-page-stat">1</span>
+                            <div class="stat-label">Current Page</div>
+                        </div>
+                    </div>
+
+                    <!-- Toolbar -->
+                    <div class="toolbar">
+                        <div class="toolbar-left">
+                            <button class="btn btn-success" onclick="addNewPosition()">
+                                ➕ Add Position
+                            </button>
+                            <button class="btn btn-info" onclick="exportPositions()">
+                                📤 Export
+                            </button>
+                            <button class="btn btn-secondary" onclick="refreshData()">
+                                🔄 Refresh
+                            </button>
+                        </div>
+                        <div class="toolbar-right">
+                            <div class="toggle-container">
+                                <span class="toggle-label" id="toggle-label">Enabled</span>
+                                <div class="toggle-switch" id="global-toggle" data-toggle="disabled-filter">
+                                    <div class="toggle-slider"></div>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="global-search">Search:</label>
+                                <div class="search-input-container">
+                                    <input type="text" id="global-search" class="search-input-with-clear" placeholder="Search positions..." oninput="handleSearchInput(this)" onchange="performGlobalSearch(this.value)">
+                                    <button type="button" class="search-clear-btn" onclick="clearSearch()" title="Clear search">✕</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- DataGrid Container -->
+                    <div class="datagrid-container">
+                        <div class="datagrid-wrapper">
+                            <div id="positions-datagrid">
+                                <div class="loading-spinner">Loading position data...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Companies Tab -->
+            <div id="companies-panel" class="tab-panel">
+                <div class="content-header">
+                    <h2 class="content-title">Company Management</h2>
+                    <p class="content-description">
+                        Manage company profiles, track relationships, and maintain contact information for potential employers.
+                    </p>
+                </div>
+                
+                <div class="content-body">
+                    <div class="placeholder-content">
+                        <div class="placeholder-icon">🏢</div>
+                        <h3 class="placeholder-title">Company Management</h3>
+                        <p class="placeholder-text">
+                            This section will contain company profiles, contact information, and relationship tracking.
+                            Features will include company search, industry categorization, and contact management.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Tab -->
+            <div id="reports-panel" class="tab-panel">
+                <div class="content-header">
+                    <h2 class="content-title">Reports & Analytics</h2>
+                    <p class="content-description">
+                        Generate insights and analytics from your position and company data to track progress and trends.
+                    </p>
+                </div>
+                
+                <div class="content-body">
+                    <div class="placeholder-content">
+                        <div class="placeholder-icon">📊</div>
+                        <h3 class="placeholder-title">Reports & Analytics</h3>
+                        <p class="placeholder-text">
+                            This section will provide comprehensive reporting including application timelines, 
+                            success rates, company interaction history, and trend analysis with interactive charts.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        import { DataGridPaginator } from './dist/datagridpaginator.js';
+
+        // Sample position data
+        const positionData = [
+            { id: 1, position: "Senior Software Engineer", company: "TechCorp Inc", email: "careers@techcorp.com", cphone: "(555) 123-4567", ophone: "(555) 123-4568", icontact: "2024-01-15", lcontact: "2024-03-01", isDisabled: false },
+            { id: 2, position: "Product Manager", company: "InnovateHub", email: "hr@innovate.com", cphone: "(555) 234-5678", ophone: "(555) 234-5679", icontact: "2024-02-01", lcontact: "2024-02-28", isDisabled: false },
+            { id: 3, position: "UX Designer", company: "DesignWorks Studio", email: "jobs@designworks.com", cphone: "(555) 345-6789", ophone: "(555) 345-6790", icontact: "2024-01-20", lcontact: "2024-03-05", isDisabled: false },
+            { id: 4, position: "DevOps Engineer", company: "CloudTech Solutions", email: "recruiting@cloudtech.com", cphone: "(555) 456-7890", ophone: "(555) 456-7891", icontact: "2024-02-10", lcontact: "2024-02-25", isDisabled: true },
+            { id: 5, position: "Data Scientist", company: "Analytics Pro", email: "talent@analytics.com", cphone: "(555) 567-8901", ophone: "(555) 567-8902", icontact: "2024-01-25", lcontact: "2024-03-03", isDisabled: false },
+            { id: 6, position: "Frontend Developer", company: "WebCraft Agency", email: "opportunities@webcraft.com", cphone: "(555) 678-9012", ophone: "(555) 678-9013", icontact: "2024-02-05", lcontact: "2024-02-29", isDisabled: false },
+            { id: 7, position: "Backend Engineer", company: "ServerSide Systems", email: "careers@serverside.com", cphone: "(555) 789-0123", ophone: "(555) 789-0124", icontact: "2024-01-30", lcontact: "2024-03-02", isDisabled: false },
+            { id: 8, position: "QA Engineer", company: "QualityFirst Labs", email: "jobs@quality.com", cphone: "(555) 890-1234", ophone: "(555) 890-1235", icontact: "2024-02-15", lcontact: "2024-02-27", isDisabled: true },
+            { id: 9, position: "System Administrator", company: "TechOps Corp", email: "hiring@techops.com", cphone: "(555) 901-2345", ophone: "(555) 901-2346", icontact: "2024-01-10", lcontact: "2024-03-04", isDisabled: false },
+            { id: 10, position: "Full Stack Developer", company: "CodeCraft Inc", email: "apply@codecraft.com", cphone: "(555) 012-3456", ophone: "(555) 012-3457", icontact: "2024-02-20", lcontact: "2024-03-01", isDisabled: false },
+            { id: 11, position: "Mobile Developer", company: "AppForge Studios", email: "careers@appforge.com", cphone: "(555) 111-2222", ophone: "(555) 111-2223", icontact: "2024-01-12", lcontact: "2024-02-26", isDisabled: false },
+            { id: 12, position: "Security Engineer", company: "CyberDefense Inc", email: "security-jobs@cyberdefense.com", cphone: "(555) 222-3333", ophone: "(555) 222-3334", icontact: "2024-02-08", lcontact: "2024-03-06", isDisabled: false }
+        ];
+
+        // Position schema
+        const positionSchema = {
+            id: { 
+                type: 'number', 
+                displayName: 'ID', 
+                htmlElement: 'input', 
+                htmlType: 'number', 
+                required: true,
+                searchable: false,
+                canFilter: false,
+                visible: false,
+                css: { readonly: true } 
+            },
+            position: { 
+                type: 'string', 
+                displayName: 'Position', 
+                htmlElement: 'input', 
+                htmlType: 'text', 
+                required: true,
+                searchable: true,
+                canFilter: true,
+                css: { placeholder: 'Enter position title' } 
+            },
+            company: { 
+                type: 'string', 
+                displayName: 'Company', 
+                htmlElement: 'input', 
+                htmlType: 'text', 
+                required: true,
+                searchable: true,
+                canFilter: true,
+                css: { placeholder: 'Enter company name' } 
+            },
+            email: { 
+                type: 'email', 
+                displayName: 'Email', 
+                htmlElement: 'input', 
+                htmlType: 'email', 
+                required: true,
+                searchable: true,
+                canFilter: true,
+                css: { placeholder: 'Enter contact email' } 
+            },
+            cphone: { 
+                type: 'phone', 
+                displayName: 'Cell Phone', 
+                htmlElement: 'input', 
+                htmlType: 'tel', 
+                required: false,
+                searchable: false,
+                canFilter: false,
+                css: { placeholder: '(555) 123-4567' } 
+            },
+            ophone: { 
+                type: 'phone', 
+                displayName: 'Office Phone', 
+                htmlElement: 'input', 
+                htmlType: 'tel', 
+                required: false,
+                searchable: false,
+                canFilter: false,
+                css: { placeholder: '(555) 123-4567' } 
+            },
+            icontact: { 
+                type: 'date', 
+                displayName: 'Initial Contact', 
+                htmlElement: 'input', 
+                htmlType: 'date', 
+                required: false,
+                searchable: false,
+                canFilter: true,
+                css: {} 
+            },
+            lcontact: { 
+                type: 'date', 
+                displayName: 'Last Contact', 
+                htmlElement: 'input', 
+                htmlType: 'date', 
+                required: false,
+                searchable: false,
+                canFilter: true,
+                css: {} 
+            }
+        };
+
+        // Global variables
+        let positionsPaginator;
+
+        // Initialize the application
+        async function initializeApp() {
+            try {
+                // Initialize positions DataGrid
+                const paginatorConfig = {
+                    schema: positionSchema,
+                    data: [...positionData],
+                    pageSize: 5,
+                    showCheckboxes: true,
+                    onDeleteRecord: async (index, record) => {
+                        // Custom delete handler with API call
+                        try {
+                            const response = await fetch(`http://localhost:8000/api/positions/${record.id}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                }
+                            });
+                            
+                            if (response.ok) {
+                                // Update local data to mark as disabled
+                                const dataIndex = positionsPaginator.config.data.findIndex(p => p.id === record.id);
+                                if (dataIndex !== -1) {
+                                    positionsPaginator.config.data[dataIndex].isDisabled = true;
+                                    positionsPaginator.filterData();
+                                    positionsPaginator.render();
+                                    updateStatistics();
+                                    console.log(`✅ Position ${record.id} marked as disabled via API`);
+                                }
+                            } else {
+                                console.error('❌ Failed to delete position via API:', response.status);
+                                alert('Failed to update position status. Please try again.');
+                            }
+                        } catch (error) {
+                            console.error('❌ Error calling delete API:', error);
+                            alert('Network error. Please check your connection and try again.');
+                        }
+                    },
+                    onDeleteSelected: async (selectedIndexes) => {
+                        // Custom bulk delete handler with API calls
+                        if (selectedIndexes.length === 0) return;
+                        
+                        if (confirm(`Mark ${selectedIndexes.length} selected record(s) as disabled?`)) {
+                            const promises = selectedIndexes.map(async (index) => {
+                                const record = positionsPaginator.config.data[index];
+                                try {
+                                    const response = await fetch(`http://localhost:8000/api/positions/${record.id}`, {
+                                        method: 'DELETE',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                        }
+                                    });
+                                    
+                                    if (response.ok) {
+                                        // Mark as disabled locally
+                                        positionsPaginator.config.data[index].isDisabled = true;
+                                        return { success: true, id: record.id };
+                                    } else {
+                                        console.error(`❌ Failed to delete position ${record.id}:`, response.status);
+                                        return { success: false, id: record.id };
+                                    }
+                                } catch (error) {
+                                    console.error(`❌ Error deleting position ${record.id}:`, error);
+                                    return { success: false, id: record.id };
+                                }
+                            });
+                            
+                            try {
+                                const results = await Promise.all(promises);
+                                const successful = results.filter(r => r.success);
+                                const failed = results.filter(r => !r.success);
+                                
+                                if (successful.length > 0) {
+                                    // Clear selection and update UI
+                                    positionsPaginator.selectedIndexes.clear();
+                                    positionsPaginator.masterCheckboxState = false;
+                                    positionsPaginator.filterData();
+                                    positionsPaginator.render();
+                                    updateStatistics();
+                                    console.log(`✅ Successfully disabled ${successful.length} position(s)`);
+                                }
+                                
+                                if (failed.length > 0) {
+                                    alert(`Failed to disable ${failed.length} position(s). Please try again.`);
+                                }
+                            } catch (error) {
+                                console.error('❌ Error in bulk delete operation:', error);
+                                alert('Error occurred during bulk operation. Please try again.');
+                            }
+                        }
+                    },
+                    onSaveRecord: async (index, updatedData) => {
+                        // Custom save handler with API call
+                        try {
+                            const response = await fetch(`http://localhost:8000/api/positions/${updatedData.id}`, {
+                                method: 'PUT',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify(updatedData)
+                            });
+                            
+                            if (response.ok) {
+                                console.log(`✅ Position ${updatedData.id} updated via API`);
+                                updateStatistics();
+                            } else {
+                                console.error('❌ Failed to save position via API:', response.status);
+                                alert('Failed to save changes. Please try again.');
+                            }
+                        } catch (error) {
+                            console.error('❌ Error calling save API:', error);
+                            alert('Network error. Please check your connection and try again.');
+                        }
+                    }
+                };
+
+                positionsPaginator = new DataGridPaginator(paginatorConfig);
+                const positionsContainer = document.getElementById('positions-datagrid');
+                positionsContainer.innerHTML = '';
+                positionsContainer.appendChild(positionsPaginator.getElement());
+
+                // Set up global toggle switch event listener
+                const globalToggle = document.getElementById('global-toggle');
+                if (globalToggle) {
+                    globalToggle.addEventListener('click', toggleGlobalDisabledFilter);
+                }
+
+                // Initialize toggle label
+                updateToggleLabel();
+
+                // Update statistics
+                updateStatistics();
+
+                console.log('✅ Position Management System initialized successfully');
+            } catch (error) {
+                console.error('❌ Error initializing application:', error);
+                const errorMsg = `
+                    <div style="padding: 40px; text-align: center; color: #dc3545;">
+                        <h3>Error Loading Application</h3>
+                        <p>${error.message}</p>
+                        <button class="btn btn-primary" onclick="location.reload()">Reload Application</button>
+                    </div>
+                `;
+                document.getElementById('positions-datagrid').innerHTML = errorMsg;
+            }
+        }
+
+        // Tab switching functionality
+        window.switchTab = function(tabName) {
+            // Remove active class from all tab buttons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            // Hide all tab panels
+            document.querySelectorAll('.tab-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            
+            // Activate selected tab
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+            document.getElementById(`${tabName}-panel`).classList.add('active');
+            
+            // Update statistics if positions tab is active
+            if (tabName === 'positions') {
+                updateStatistics();
+            }
+        };
+
+        // Update statistics
+        function updateStatistics() {
+            if (positionsPaginator) {
+                const data = positionsPaginator.config.data;
+                const activeRecords = data.filter(r => !r.isDisabled).length;
+                const disabledRecords = data.filter(r => r.isDisabled).length;
+                
+                document.getElementById('total-positions').textContent = data.length;
+                document.getElementById('active-positions').textContent = activeRecords;
+                document.getElementById('disabled-positions').textContent = disabledRecords;
+                document.getElementById('current-page-stat').textContent = positionsPaginator.currentPage;
+            }
+        }
+
+        // Add new position
+        window.addNewPosition = function() {
+            if (positionsPaginator) {
+                const newPosition = {
+                    id: Date.now(),
+                    position: `New Position ${Math.floor(Math.random() * 1000)}`,
+                    company: "New Company",
+                    email: `contact${Math.floor(Math.random() * 1000)}@example.com`,
+                    cphone: "(555) 000-0000",
+                    ophone: "(555) 000-0001",
+                    icontact: new Date().toISOString().split('T')[0],
+                    lcontact: new Date().toISOString().split('T')[0],
+                    isDisabled: false
+                };
+                
+                positionsPaginator.addNewRecord(newPosition);
+                updateStatistics();
+            }
+        };
+
+        // Export positions data
+        window.exportPositions = function() {
+            if (positionsPaginator) {
+                const data = positionsPaginator.config.data;
+                const jsonData = JSON.stringify(data, null, 2);
+                const blob = new Blob([jsonData], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `positions_export_${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+        };
+
+        // Refresh data
+        window.refreshData = function() {
+            updateStatistics();
+            if (positionsPaginator) {
+                positionsPaginator.render();
+            }
+        };
+
+        // Change page size
+        window.changePageSize = function(newSize) {
+            if (positionsPaginator) {
+                positionsPaginator.changePageSize(parseInt(newSize));
+                updateStatistics();
+            }
+        };
+
+        // Global search
+        window.performGlobalSearch = function(searchTerm) {
+            if (positionsPaginator) {
+                positionsPaginator.handleSearch(searchTerm);
+                updateStatistics();
+            }
+        };
+
+        // Handle search input changes to show/hide clear button
+        window.handleSearchInput = function(input) {
+            const clearBtn = input.nextElementSibling;
+            if (input.value.trim() !== '') {
+                clearBtn.style.display = 'block';
+            } else {
+                clearBtn.style.display = 'none';
+            }
+            
+            // Perform search on input change
+            performGlobalSearch(input.value);
+        };
+
+        // Clear search function
+        window.clearSearch = function() {
+            const searchInput = document.getElementById('global-search');
+            const clearBtn = searchInput.nextElementSibling;
+            
+            searchInput.value = '';
+            clearBtn.style.display = 'none';
+            searchInput.focus();
+            
+            // Clear the search in the paginator
+            performGlobalSearch('');
+        };
+
+        // Global toggle for disabled filter
+        window.toggleGlobalDisabledFilter = function() {
+            if (positionsPaginator) {
+                positionsPaginator.toggleDisabledFilter();
+                updateToggleLabel();
+                updateStatistics();
+            }
+        };
+
+        // Update toggle label based on state
+        window.updateToggleLabel = function() {
+            const toggleLabel = document.getElementById('toggle-label');
+            const toggleSwitch = document.getElementById('global-toggle');
+            
+            if (positionsPaginator && positionsPaginator.showDisabled) {
+                toggleLabel.textContent = 'Disabled';
+                toggleSwitch.classList.add('active');
+            } else {
+                toggleLabel.textContent = 'Enabled';
+                toggleSwitch.classList.remove('active');
+            }
+        };
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initializeApp);
+
+        // Listen for window resize to handle responsive behavior
+        window.addEventListener('resize', function() {
+            if (positionsPaginator) {
+                // Force re-render on significant size changes
+                setTimeout(() => {
+                    positionsPaginator.render();
+                }, 100);
+            }
+        });
+    </script>
+</body>
+</html>

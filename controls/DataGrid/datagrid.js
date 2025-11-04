@@ -322,6 +322,149 @@ class DataGrid {
     }
 }
 
+// Load and integrate methods from datagrid-methods.js
+try {
+    // Import methods from datagrid-methods.js if running in browser
+    if (typeof window !== 'undefined') {
+        // For now, we'll define essential methods directly here
+        // This ensures the DataGrid class has the search functionality needed by the tests
+        
+        DataGrid.prototype.search = function(searchTerm, options = {}) {
+            try {
+                if (!searchTerm || searchTerm.trim().length === 0) {
+                    return this.clearSearch();
+                }
+
+                const searchFields = options.fields || this.getSearchableFields();
+                const fuzzyMatch = options.fuzzy !== false;
+                const maxResults = options.maxResults || 100;
+                const minRelevance = options.minRelevance || 0.1;
+
+                const results = [];
+
+                this.data.forEach((record, index) => {
+                    if (record.isDeleted) return;
+
+                    const relevanceScore = this.calculateRelevanceScore(
+                        record, 
+                        searchTerm, 
+                        searchFields, 
+                        fuzzyMatch
+                    );
+
+                    if (relevanceScore >= minRelevance) {
+                        results.push({
+                            record,
+                            index,
+                            relevanceScore,
+                            matchedFields: this.getMatchedFields(record, searchTerm, searchFields)
+                        });
+                    }
+                });
+
+                // Sort by relevance score
+                results.sort((a, b) => b.relevanceScore - a.relevanceScore);
+
+                // Limit results
+                const limitedResults = results.slice(0, maxResults);
+
+                // Store search state
+                this.currentSearch = { searchTerm, options, results: limitedResults };
+
+                return limitedResults;
+            } catch (error) {
+                console.error('Error performing search:', error);
+                return [];
+            }
+        };
+
+        DataGrid.prototype.getSearchableFields = function() {
+            if (!this.schema) return [];
+            
+            return Object.keys(this.schema).filter(fieldName => {
+                const field = this.schema[fieldName];
+                return field.searchable === true || field.searchable === undefined;
+            });
+        };
+
+        DataGrid.prototype.calculateRelevanceScore = function(record, searchTerm, searchFields, fuzzyMatch = true) {
+            let totalScore = 0;
+            let fieldCount = 0;
+            const term = searchTerm.toLowerCase().trim();
+
+            for (const fieldName of searchFields) {
+                const fieldValue = record[fieldName];
+                if (fieldValue === null || fieldValue === undefined) continue;
+
+                const value = fieldValue.toString().toLowerCase();
+                let fieldScore = 0;
+
+                if (value === term) {
+                    fieldScore = 1.0;
+                } else if (value.startsWith(term)) {
+                    fieldScore = 0.8;
+                } else if (value.includes(term)) {
+                    fieldScore = 0.6;
+                } else if (fuzzyMatch && this.fuzzyMatch(value, term)) {
+                    fieldScore = 0.3;
+                }
+
+                const fieldWeight = this.schema[fieldName]?.searchWeight || 1;
+                totalScore += fieldScore * fieldWeight;
+                fieldCount++;
+            }
+
+            return fieldCount > 0 ? totalScore / fieldCount : 0;
+        };
+
+        DataGrid.prototype.fuzzyMatch = function(text, term) {
+            let termIndex = 0;
+            for (let i = 0; i < text.length && termIndex < term.length; i++) {
+                if (text[i] === term[termIndex]) {
+                    termIndex++;
+                }
+            }
+            return termIndex === term.length;
+        };
+
+        DataGrid.prototype.getMatchedFields = function(record, searchTerm, searchFields) {
+            const matchedFields = [];
+            const term = searchTerm.toLowerCase().trim();
+
+            for (const fieldName of searchFields) {
+                const fieldValue = record[fieldName];
+                if (fieldValue === null || fieldValue === undefined) continue;
+
+                const value = fieldValue.toString().toLowerCase();
+                if (value.includes(term) || this.fuzzyMatch(value, term)) {
+                    matchedFields.push(fieldName);
+                }
+            }
+
+            return matchedFields;
+        };
+
+        DataGrid.prototype.clearSearch = function() {
+            this.currentSearch = null;
+            
+            const allResults = this.data
+                .filter(record => !record.isDeleted)
+                .map((record, index) => ({
+                    record,
+                    index,
+                    relevanceScore: 1,
+                    matchedFields: []
+                }));
+            
+            return allResults;
+        };
+
+        console.log('DataGrid search methods integrated successfully');
+    }
+} catch (error) {
+    console.error('Error integrating DataGrid methods:', error);
+}
+
 // Add selection styling
 const style = document.createElement('style');
 style.textContent = `

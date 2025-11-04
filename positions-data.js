@@ -1,7 +1,7 @@
 // DataGrid data structure with positions entity containing schema and data siblings
 // Last updated: 2025-10-30 - No regex patterns version
 // Cache buster: Remove any regex patterns that cause issues
-console.log('positions-data.js loaded at:', new Date().toISOString());
+//console.log('positions-data.js loaded at:', new Date().toISOString());
 // Last updated: 2025-10-30 13:58 - COMPLETELY PATTERN-FREE VERSION
 // Cache buster: All regex patterns removed to prevent browser errors
 
@@ -15,7 +15,6 @@ const dataGridData = {
                 "htmlType": "text",
                 "css": { "placeholder": "Enter position title", "maxlength": "100" },
                 "required": true,
-                "visible": true,
                 "searchable": true
             },
             "company": { 
@@ -25,7 +24,6 @@ const dataGridData = {
                 "htmlType": "text",
                 "css": { "placeholder": "Company name", "maxlength": "80" },
                 "required": true,
-                "visible": true,
                 "searchable": true 
             },
             "email": { 
@@ -35,7 +33,6 @@ const dataGridData = {
                 "htmlType": "email",
                 "css": { "placeholder": "email@example.com" },
                 "required": true,
-                "visible": true,
                 "searchable": true
             },
             "cphone": { 
@@ -45,7 +42,6 @@ const dataGridData = {
                 "htmlType": "tel",
                 "css": { "placeholder": "(555) 123-4567" },
                 "required": false,
-                "visible": true,
                 "searchable": true
             },
             "ophone": { 
@@ -55,7 +51,6 @@ const dataGridData = {
                 "htmlType": "tel",
                 "css": { "placeholder": "(555) 123-4567" },
                 "required": false,
-                "visible": true,
                 "searchable": true
             },
             "icontact": { 
@@ -65,7 +60,6 @@ const dataGridData = {
                 "htmlType": "label",
                 "css": { "min": "2020-01-01", "max": "2030-12-31" },
                 "required": true,
-                "visible": true,
                 "searchable": true
             },
             "lcontact": { 
@@ -75,7 +69,6 @@ const dataGridData = {
                 "htmlType": "date",
                 "css": { "min": "2020-01-01", "max": "2030-12-31" },
                 "required": false,
-                "visible": true,
                 "searchable": true
             },
             "isDisabled": {
@@ -200,7 +193,3 @@ const dataGridData = {
         ]
     }
 };
-
-// Make sure it's available globally
-window.dataGridData = dataGridData;
-console.log('dataGridData assigned to window:', !!window.dataGridData);

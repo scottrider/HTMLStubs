@@ -1,86 +1,43 @@
+<script>
 
 class DataGrid extends HTMLElement {
-    set sourceData(data) {
-        this._sourceData = data;
-        if (this.isConnected) {
-            this.render();
-        }
-    }
-    
-    get sourceData() {
-        return this._sourceData || {};
-    }
-    
     connectedCallback() {
-        // If sourceData was set before connection, render now
-        if (this._sourceData) {
-            this.render();
-        }
-    }
-    
-    render() {
         const cssClass = this.getAttribute('cssClass') || '';
         const style = this.getAttribute('style') || '';
         const externalFunctionAddRow = this.getAttribute('addRow');
-        const entityName = this.getAttribute('entity') || 'positions';
         
-        if (!this._sourceData) {
-            console.error('DataGrid: No source data provided');
-            this.innerHTML = '<div class="error">No source data provided</div>';
-            return;
-        }
+        const sourceArray = JSON.parse(this.getAttribute('source'));
         
-        // Get the entity data (e.g., positions)
-        const sourceArray = this._sourceData[entityName];
-        if (!sourceArray) {
-            console.error(`DataGrid: entity '${entityName}' not found in source data`);
-            this.innerHTML = `<div class="error">Entity '${entityName}' not found</div>`;
-            return;
-        }
-
-        console.log('DataGrid loaded with data:', sourceArray);
+        // Fixed: use sourceArray instead of 'a', and access schema properly
+        const keys = getMemberNames(sourceArray.schema).filter(k => sourceArray.schema[k].canFilter == true); 
         
-        // Get searchable columns from schema
-        const keys = this.getMemberNames(sourceArray.schema)
-            .filter(k => sourceArray.schema[k].searchable === true); 
+        let titles = `<div>${keys.map(t => addColumn(t)).join('')}</div>`;
         
-        const titles = `<div class="header">${keys.map(t => this.addColumn(t, sourceArray.schema[t])).join('')}</div>`;
-        
-        // Process data rows
-        let dataRows = '';
-        if (sourceArray.data && Array.isArray(sourceArray.data)) {
-            dataRows = sourceArray.data.map(row => {
-                if (externalFunctionAddRow && typeof window[externalFunctionAddRow] === 'function') {
+        // Fixed: check if data exists and iterate properly
+        if (sourceArray.data) {
+            sourceArray.data.map(r => {
+                if (externalFunctionAddRow) {
                     // Call external function if provided
-                    window[externalFunctionAddRow](row);
+                    window[externalFunctionAddRow](r);
                 }
-                return this.renderDataRow(row, keys);
-            }).join('');
+            });
         }
         
-        // Render the grid
-        this.innerHTML = `
-            <div class="data-grid-container ${cssClass}" style="${style}">
-                ${titles}
-                <div class="data-rows">${dataRows}</div>
-            </div>`;
-    }
-
-    getMemberNames(obj) {
-        return Object.keys(obj);
-    }
-
-    addColumn(value, schemaField) {
-        const displayName = schemaField.displayName || value;
-        return `<div class="column header-column">${displayName}</div>`;
-    }
-
-    renderDataRow(row, keys) {
-        const cells = keys.map(key => 
-            `<div class="column data-column">${row[key] || ''}</div>`
-        ).join('');
-        return `<div class="row">${cells}</div>`;
+        // Fixed: moved innerHTML outside and corrected structure
+        this.innerHTML = `<div class="${cssClass}" style="${style}">${titles}</div>`;
     }
 }
 
+
+
 customElements.define("data-grid", DataGrid);
+
+// function getMemberNames(obj) {
+//     return Object.keys(obj);
+// } 
+
+// function addColumn(value) {
+//     return `<div class="column">${value}</div>`;
+// }
+
+</script>

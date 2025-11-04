@@ -12,6 +12,8 @@ export class DataGridPaginator {
         this.masterCheckboxState = false;
         this.showDisabled = false; // Toggle state for enabled/disabled filter
         this.filteredData = []; // Filtered data based on toggle state
+        this.searchTerm = ''; // Current search term
+        this.searchTimeout = null; // Debounce timer for search
         this.config = config;
         this.pageSize = config.pageSize || 5;
         this.filteredData = this.filterData(); // Initialize filtered data
@@ -51,9 +53,32 @@ export class DataGridPaginator {
     }
     filterData() {
         return this.config.data.filter(record => {
-            // Show only enabled records (isDisabled = false) by default
-            // When showDisabled is true, show only disabled records (isDisabled = true)
-            return this.showDisabled ? (record.isDisabled === true) : (record.isDisabled === false);
+            // First apply disabled/enabled filter
+            const passesDisabledFilter = this.showDisabled ? (record.isDisabled === true) : (record.isDisabled === false);
+            
+            // If no search term, just return the disabled filter result
+            if (!this.searchTerm || this.searchTerm.trim() === '') {
+                return passesDisabledFilter;
+            }
+            
+            // Apply search filter
+            const searchTerm = this.searchTerm.toLowerCase().trim();
+            const passesSearchFilter = this.getSearchableFields().some(fieldName => {
+                const fieldValue = record[fieldName];
+                if (fieldValue === null || fieldValue === undefined) return false;
+                return fieldValue.toString().toLowerCase().includes(searchTerm);
+            });
+            
+            return passesDisabledFilter && passesSearchFilter;
+        });
+    }
+
+    getSearchableFields() {
+        if (!this.config.schema) return [];
+        
+        return Object.keys(this.config.schema).filter(fieldName => {
+            const field = this.config.schema[fieldName];
+            return field.searchable === true || field.searchable === undefined; // Default to searchable if not specified
         });
     }
     toggleDisabledFilter() {
@@ -63,6 +88,30 @@ export class DataGridPaginator {
         this.currentPage = 1; // Reset to first page when toggling
         this.selectedIndexes.clear(); // Clear selections when filtering
         this.masterCheckboxState = false;
+        this.render();
+    }
+    
+    handleSearch(searchTerm) {
+        this.searchTerm = searchTerm.trim();
+        this.filteredData = this.filterData();
+        this.totalPages = Math.ceil(this.filteredData.length / this.pageSize);
+        this.currentPage = 1; // Reset to first page when searching
+        this.selectedIndexes.clear(); // Clear selections when searching
+        this.masterCheckboxState = false;
+        this.render();
+    }
+    
+    handleSearchWithoutRender(searchTerm) {
+        this.searchTerm = searchTerm.trim();
+        this.filteredData = this.filterData();
+        this.totalPages = Math.ceil(this.filteredData.length / this.pageSize);
+        this.currentPage = 1; // Reset to first page when searching
+        this.selectedIndexes.clear(); // Clear selections when searching
+        this.masterCheckboxState = false;
+    }
+    
+    renderWithPreserveFocus() {
+        // Since search is now handled globally, just render normally
         this.render();
     }
     addNewRecord(newRecord) {
@@ -76,18 +125,25 @@ export class DataGridPaginator {
     removeRecord(index) {
         const globalIndex = this.getGlobalIndex(index);
         if (globalIndex >= 0 && globalIndex < this.config.data.length) {
-            // Soft delete: set isDisabled = true instead of removing record
-            this.config.data[globalIndex].isDisabled = true;
-            this.filterData(); // Update filtered data
-            this.totalPages = Math.ceil(this.filteredData.length / this.pageSize);
-            // Adjust current page if necessary
-            if (this.currentPage > this.totalPages && this.totalPages > 0) {
-                this.currentPage = this.totalPages;
+            const record = this.config.data[globalIndex];
+            
+            // Check if custom delete handler is provided
+            if (this.config.onDeleteRecord) {
+                this.config.onDeleteRecord(globalIndex, record);
+            } else {
+                // Default behavior: soft delete (set isDisabled = true)
+                this.config.data[globalIndex].isDisabled = true;
+                this.filterData(); // Update filtered data
+                this.totalPages = Math.ceil(this.filteredData.length / this.pageSize);
+                // Adjust current page if necessary
+                if (this.currentPage > this.totalPages && this.totalPages > 0) {
+                    this.currentPage = this.totalPages;
+                }
+                if (this.totalPages === 0) {
+                    this.currentPage = 1;
+                }
+                this.render();
             }
-            if (this.totalPages === 0) {
-                this.currentPage = 1;
-            }
-            this.render();
         }
     }
     createContainer() {
@@ -102,16 +158,13 @@ export class DataGridPaginator {
                     font-family: Arial, sans-serif;
                     background: white;
                     border-radius: 8px;
-                    padding: 0 0 1px 0;
-                    margin: 0;
                     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
                 }
                 .paginator-header {
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
-                    margin: 0;
-                    padding: 0 0 1px 0;
+                    padding: 16px;
                     border-bottom: 2px solid #e9ecef;
                 }
                 .paginator-title {
@@ -122,30 +175,6 @@ export class DataGridPaginator {
                 .paginator-info {
                     font-size: 14px;
                     color: #666;
-                }
-                .add-record-btn {
-                    width: 40px;
-                    height: 40px;
-                    border: 2px solid #28a745;
-                    border-radius: 50%;
-                    cursor: pointer;
-                    font-size: 20px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    background: #28a745;
-                    color: white;
-                    transition: all 0.2s;
-                    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
-                }
-                .add-record-btn:hover {
-                    transform: scale(1.1);
-                    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.4);
-                    background: #218838;
-                    border-color: #218838;
-                }
-                .add-record-btn:active {
-                    transform: scale(0.95);
                 }
                 .delete-selected-btn {
                     padding: 0 0 1px 0;
@@ -172,19 +201,15 @@ export class DataGridPaginator {
                     transform: scale(0.95);
                 }
                 .records-container {
-                    min-height: 200px;
                     overflow-x: auto;
-                    padding: 0 0 1px 0;
-                    margin: 0;
                 }
                 .header-row {
                     display: flex;
                     flex-wrap: nowrap;
                     gap: 15px;
                     align-items: center;
-                    padding: 0 0 1px 0;
+                    padding: 12px 16px;
                     border-bottom: 2px solid #007bff;
-                    margin: 0;
                     background: #f8f9fa;
                     font-weight: bold;
                     color: #495057;
@@ -226,8 +251,7 @@ export class DataGridPaginator {
                     justify-content: center;
                     align-items: center;
                     gap: 10px;
-                    margin: 0;
-                    padding: 0 0 1px 0;
+                    padding: 12px 16px;
                     border-top: 1px solid #e9ecef;
                     background: #f8f9fa;
                     border-radius: 0 0 8px 8px;
@@ -289,43 +313,6 @@ export class DataGridPaginator {
                     color: #666;
                     font-style: italic;
                 }
-                .toggle-container {
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                    margin-top: 5px;
-                }
-                .toggle-switch {
-                    position: relative;
-                    width: 50px;
-                    height: 24px;
-                    background: #ccc;
-                    border-radius: 12px;
-                    cursor: pointer;
-                    transition: background 0.3s;
-                }
-                .toggle-switch.active {
-                    background: #ff6b6b;
-                }
-                .toggle-slider {
-                    position: absolute;
-                    top: 2px;
-                    left: 2px;
-                    width: 20px;
-                    height: 20px;
-                    background: white;
-                    border-radius: 50%;
-                    transition: transform 0.3s;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-                }
-                .toggle-switch.active .toggle-slider {
-                    transform: translateX(26px);
-                }
-                .toggle-label {
-                    font-size: 14px;
-                    color: #666;
-                    user-select: none;
-                }
             </style>
             
             <div class="paginator-header">
@@ -333,13 +320,6 @@ export class DataGridPaginator {
                     <div class="paginator-title">Position Records</div>
                     <div class="paginator-info">
                         ${this.getPaginationInfo()}
-                    </div>
-                    <div class="toggle-container">
-                        <span class="toggle-label">Show Enabled Only</span>
-                        <div class="toggle-switch ${this.showDisabled ? 'active' : ''}" data-toggle="disabled-filter">
-                            <div class="toggle-slider"></div>
-                        </div>
-                        <span class="toggle-label">Show Disabled Only</span>
                     </div>
                 </div>
                 ${this.createHeaderButtons()}
@@ -404,9 +384,6 @@ export class DataGridPaginator {
     createHeaderButtons() {
         if (this.selectedIndexes.size > 0) {
             return this.createDeleteSelectedButton();
-        }
-        else if (this.config.showAddButton !== false) {
-            return this.createAddButton();
         }
         return '';
     }
@@ -511,13 +488,6 @@ export class DataGridPaginator {
         return `Showing ${startIndex}-${endIndex} of ${currentData.length} records${filterInfo}`;
     }
     attachEventListeners() {
-        // Add record button
-        const addBtn = this.container.querySelector('#addRecordBtn');
-        if (addBtn) {
-            addBtn.addEventListener('click', () => {
-                this.handleAddRecord();
-            });
-        }
         // Delete selected button
         const deleteSelectedBtn = this.container.querySelector('#deleteSelectedBtn');
         if (deleteSelectedBtn) {
@@ -565,13 +535,7 @@ export class DataGridPaginator {
                 this.changePageSize(newPageSize);
             });
         }
-        // Toggle switch for disabled filter
-        const toggleSwitch = this.container.querySelector('[data-toggle="disabled-filter"]');
-        if (toggleSwitch) {
-            toggleSwitch.addEventListener('click', () => {
-                this.toggleDisabledFilter();
-            });
-        }
+        
         // Insert GridDataRow components
         this.gridRows.forEach((gridRow, index) => {
             const container = this.container.querySelector(`#record-${index}`);

@@ -703,5 +703,174 @@ DataGrid.prototype = Object.assign(DataGrid.prototype, {
 
         // Also trigger on document for global listeners
         document.dispatchEvent(event);
+    },
+
+    // ========================================
+    // SEARCH HELPER METHODS
+    // ========================================
+
+    /**
+     * Gets all searchable fields from the schema
+     * @returns {Array} Array of field names that are marked as searchable
+     */
+    getSearchableFields() {
+        if (!this.schema) return [];
+        
+        return Object.keys(this.schema).filter(fieldName => {
+            const field = this.schema[fieldName];
+            return field.searchable === true || field.searchable === undefined; // Default to searchable if not specified
+        });
+    },
+
+    /**
+     * Calculates relevance score for a record against a search term
+     * @param {Object} record - The record to score
+     * @param {string} searchTerm - The search term
+     * @param {Array} searchFields - Fields to search in
+     * @param {boolean} fuzzyMatch - Whether to use fuzzy matching
+     * @returns {number} Relevance score between 0 and 1
+     */
+    calculateRelevanceScore(record, searchTerm, searchFields, fuzzyMatch = true) {
+        let totalScore = 0;
+        let fieldCount = 0;
+        const term = searchTerm.toLowerCase().trim();
+
+        for (const fieldName of searchFields) {
+            const fieldValue = record[fieldName];
+            if (fieldValue === null || fieldValue === undefined) continue;
+
+            const value = fieldValue.toString().toLowerCase();
+            let fieldScore = 0;
+
+            // Exact match gets highest score
+            if (value === term) {
+                fieldScore = 1.0;
+            }
+            // Starts with search term gets high score
+            else if (value.startsWith(term)) {
+                fieldScore = 0.8;
+            }
+            // Contains search term gets medium score
+            else if (value.includes(term)) {
+                fieldScore = 0.6;
+            }
+            // Fuzzy matching for partial matches
+            else if (fuzzyMatch && this.fuzzyMatch(value, term)) {
+                fieldScore = 0.3;
+            }
+
+            // Apply field weighting if available
+            const fieldWeight = this.schema[fieldName]?.searchWeight || 1;
+            totalScore += fieldScore * fieldWeight;
+            fieldCount++;
+        }
+
+        return fieldCount > 0 ? totalScore / fieldCount : 0;
+    },
+
+    /**
+     * Simple fuzzy matching implementation
+     * @param {string} text - Text to search in
+     * @param {string} term - Term to search for
+     * @returns {boolean} Whether there's a fuzzy match
+     */
+    fuzzyMatch(text, term) {
+        let termIndex = 0;
+        for (let i = 0; i < text.length && termIndex < term.length; i++) {
+            if (text[i] === term[termIndex]) {
+                termIndex++;
+            }
+        }
+        return termIndex === term.length;
+    },
+
+    /**
+     * Gets the fields that matched the search term for a record
+     * @param {Object} record - The record to check
+     * @param {string} searchTerm - The search term
+     * @param {Array} searchFields - Fields to search in
+     * @returns {Array} Array of field names that matched
+     */
+    getMatchedFields(record, searchTerm, searchFields) {
+        const matchedFields = [];
+        const term = searchTerm.toLowerCase().trim();
+
+        for (const fieldName of searchFields) {
+            const fieldValue = record[fieldName];
+            if (fieldValue === null || fieldValue === undefined) continue;
+
+            const value = fieldValue.toString().toLowerCase();
+            if (value.includes(term) || this.fuzzyMatch(value, term)) {
+                matchedFields.push(fieldName);
+            }
+        }
+
+        return matchedFields;
+    },
+
+    /**
+     * Renders search results (placeholder - to be implemented with actual UI)
+     * @param {Array} results - Search results with relevance scores
+     */
+    renderSearchResults(results) {
+        // This method should update the UI with search results
+        // For now, we'll just trigger an event that the UI components can listen to
+        this.triggerEvent('searchResultsReady', {
+            results,
+            resultCount: results.length
+        });
+        
+        // Store results for other components to access
+        this.currentSearchResults = results;
+    },
+
+    /**
+     * Clears the current search and returns all data
+     * @returns {Array} All non-deleted records
+     */
+    clearSearch() {
+        this.currentSearch = null;
+        this.currentSearchResults = null;
+        
+        const allResults = this.data
+            .filter(record => !record.isDeleted)
+            .map((record, index) => ({
+                record,
+                index,
+                relevanceScore: 1,
+                matchedFields: []
+            }));
+
+        this.renderSearchResults(allResults);
+        this.triggerEvent('searchCleared');
+        
+        return allResults;
+    },
+
+    /**
+     * Adds search term to search history (placeholder)
+     * @param {string} searchTerm - The search term to add to history
+     */
+    addToSearchHistory(searchTerm) {
+        if (!this.searchHistory) {
+            this.searchHistory = [];
+        }
+        
+        // Remove if already exists and add to front
+        const index = this.searchHistory.indexOf(searchTerm);
+        if (index > -1) {
+            this.searchHistory.splice(index, 1);
+        }
+        
+        this.searchHistory.unshift(searchTerm);
+        
+        // Keep only last 10 searches
+        if (this.searchHistory.length > 10) {
+            this.searchHistory = this.searchHistory.slice(0, 10);
+        }
+        
+        this.triggerEvent('searchHistoryUpdated', {
+            history: this.searchHistory
+        });
     }
 });
