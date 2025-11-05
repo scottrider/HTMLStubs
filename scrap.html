@@ -1,0 +1,512 @@
+
+// todo: 
+//      this is refactoring of the datagrid paginator html and css
+//      it is to cover the title row and pagination unit 
+//      replace the existing functionality and support information
+//      anywhere denoted by <dgp> and </dgp> is the dgp and <dgr> and </dgr> are the records
+            
+<dgp>            
+            <style>
+                .data-grid-paginator {
+                    font-family: Arial, sans-serif;
+                    background: white;
+                    border-radius: 8px;
+                    padding: 0 0 1px 0;
+                    margin: 0;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                }
+                .paginator-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin: 0;
+                    padding: 0 0 1px 0;
+                    border-bottom: 2px solid #e9ecef;
+                }
+                .paginator-title {
+                    font-size: 18px;
+                    font-weight: bold;
+                    color: #333;
+                }
+                .paginator-info {
+                    font-size: 14px;
+                    color: #666;
+                }
+                .add-record-btn {
+                    width: 40px;
+                    height: 40px;
+                    border: 2px solid #28a745;
+                    border-radius: 50%;
+                    cursor: pointer;
+                    font-size: 20px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: #28a745;
+                    color: white;
+                    transition: all 0.2s;
+                    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+                }
+                .add-record-btn:hover {
+                    transform: scale(1.1);
+                    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.4);
+                    background: #218838;
+                    border-color: #218838;
+                }
+                .add-record-btn:active {
+                    transform: scale(0.95);
+                }
+                .delete-selected-btn {
+                    padding: 0 0 1px 0;
+                    border: 2px solid #dc3545;
+                    border-radius: 20px;
+                    cursor: pointer;
+                    font-size: 14px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: #dc3545;
+                    color: white;
+                    transition: all 0.2s;
+                    box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+                    font-weight: 500;
+                }
+                .delete-selected-btn:hover {
+                    transform: scale(1.05);
+                    box-shadow: 0 4px 8px rgba(220, 53, 69, 0.4);
+                    background: #c82333;
+                    border-color: #c82333;
+                }
+                .delete-selected-btn:active {
+                    transform: scale(0.95);
+                }
+                .records-container {
+                    display: block;
+                    min-height: 200px;
+                    overflow-x: auto;
+                    padding: 0 0 1px 0;
+                    margin: 0;
+                }
+                .header-row {
+                    display: flex;
+                    flex-wrap: nowrap;
+                    gap: 15px;
+                    align-items: center;
+                    padding: 0 0 1px 0;
+                    border-bottom: 2px solid #007bff;
+                    margin: 0;
+                    background: #f8f9fa;
+                    font-weight: bold;
+                    color: #495057;
+                    white-space: nowrap;
+                    min-width: fit-content;
+                }
+                .header-checkbox {
+                    display: flex;
+                    flex-direction: column;
+                    width: 30px;
+                    flex-shrink: 0;
+                    align-items: center;
+                    justify-content: center;
+                }
+                .master-checkbox {
+                    width: 16px;
+                    height: 16px;
+                    cursor: pointer;
+                }
+                .header-field {
+                    display: flex;
+                    flex-direction: column;
+                    width: 120px;
+                    flex-shrink: 0;
+                    font-size: 12px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                }
+                .record-item {
+                    margin: 0;
+                    padding: 0 0 1px 0;
+                    min-width: fit-content;
+                }
+                .record-content {
+                    padding: 0;
+                }
+                .pagination-controls {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    gap: 10px;
+                    margin: 0;
+                    padding: 0 0 1px 0;
+                    border-top: 1px solid #e9ecef;
+                    background: #f8f9fa;
+                    border-radius: 0 0 8px 8px;
+                    overflow-x: auto;
+                    white-space: nowrap;
+                    min-width: fit-content;
+                    min-height: 30px;
+                }
+                .pagination-btn {
+                    padding: 0 0 1px 0;
+                    border: 1px solid #ccc;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    background: white;
+                    font-size: 14px;
+                    transition: all 0.2s;
+                }
+                .pagination-btn:hover {
+                    background: #f8f9fa;
+                    border-color: #007bff;
+                }
+                .pagination-btn:disabled {
+                    opacity: 0.5;
+                    cursor: not-allowed;
+                    background: #e9ecef;
+                }
+                .pagination-btn.active {
+                    background: #007bff;
+                    color: white;
+                    border-color: #007bff;
+                }
+                .page-size-container {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    margin-right: 20px;
+                }
+                .page-size-container label {
+                    font-size: 14px;
+                    color: #666;
+                    white-space: nowrap;
+                }
+                .page-size-select {
+                    padding: 4px 8px;
+                    border: 1px solid #ccc;
+                    border-radius: 4px;
+                    font-size: 14px;
+                    background: white;
+                    cursor: pointer;
+                }
+                .page-info {
+                    font-size: 14px;
+                    color: #666;
+                    margin: 0 15px;
+                }
+                .no-records {
+                    text-align: center;
+                    padding: 0 0 1px 0;
+                    margin: 0;
+                    color: #666;
+                    font-style: italic;
+                }
+                .grid-data-row {
+                    background: white;
+                    font-family: Arial, sans-serif;
+                    position: relative;
+                    transition: background-color 0.2s ease;
+                    padding-bottom: 1px;
+                    margin-bottom: 1px;
+                }
+                .grid-data-row:hover,
+                .grid-data-row:focus-within {
+                    background-color: #f8f9fa;
+                    outline: 2px solid #007bff;
+                    outline-offset: 1px;
+                }
+                .row-form {
+                    display: flex;
+                    flex-wrap: nowrap;
+                    gap: 15px;
+                    align-items: center;
+                    overflow: visible;
+                    white-space: nowrap;
+                }
+                .checkbox-group {
+                    display: flex;
+                    flex-direction: column;
+                    width: 30px;
+                    flex-shrink: 0;
+                    align-items: center;
+                    justify-content: center;
+                }
+                .record-checkbox {
+                    width: 16px;
+                    height: 16px;
+                    cursor: pointer;
+                }
+                .field-group {
+                    display: flex;
+                    flex-direction: column;
+                    width: 120px;
+                    flex-shrink: 0;
+                }
+                .field-label {
+                    font-weight: bold;
+                    margin: 0;
+                    font-size: 12px;
+                    color: #666;
+                    white-space: nowrap;
+                }
+                .field-input {
+                    padding: 0 0 1px 0;
+                    border: 1px solid #ccc;
+                    border-radius: 4px;
+                    font-size: 14px;
+                    width: 100%;
+                    box-sizing: border-box;
+                }
+                .field-input:focus {
+                    border-color: #007cba;
+                    outline: none;
+                    box-shadow: 0 0 3px rgba(0, 124, 186, 0.3);
+                }
+                .field-input.required {
+                    border-left: 3px solid #e74c3c;
+                }
+                .field-select {
+                    padding: 0 0 1px 0;
+                    border: 1px solid #ccc;
+                    border-radius: 4px;
+                    font-size: 14px;
+                    background: white;
+                    min-width: 150px;
+                }
+                .field-label-display {
+                    padding: 0 0 1px 0;
+                    background: #f8f9fa;
+                    border: 1px solid #e9ecef;
+                    border-radius: 4px;
+                    font-size: 14px;
+                    color: #666;
+                    min-width: 100px;
+                }
+                .field-readonly {
+                    padding: 0 0 1px 0;
+                    background: #f8f9fa;
+                    border: 1px solid #e9ecef;
+                    border-radius: 4px;
+                    font-size: 14px;
+                    color: #666;
+                    min-width: 100px;
+                }
+                .action-buttons {
+                    position: absolute;
+                    top: -30px;
+                    right: 10px;
+                    display: none;
+                    gap: 8px;
+                    align-items: center;
+                    width: auto;
+                    flex-shrink: 0;
+                    background: white;
+                    padding: 0 0 1px 0;
+                    margin: 0;
+                    border-radius: 4px;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+                    z-index: 100;
+                }
+                .grid-data-row:hover .action-buttons,
+                .grid-data-row:focus-within .action-buttons {
+                    display: flex;
+                }
+                .btn-emoji {
+                    width: 32px;
+                    height: 32px;
+                    border: 1px solid #ccc;
+                    border-radius: 50%;
+                    cursor: pointer;
+                    font-size: 16px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: white;
+                    transition: transform 0.1s;
+                }
+                .btn-emoji:hover {
+                    transform: scale(1.1);
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                }
+                .btn-save {
+                    background: #28a745;
+                    border-color: #28a745;
+                }
+                .btn-save:hover {
+                    background: #218838;
+                }
+                .btn-cancel {
+                    background: #6c757d;
+                    border-color: #6c757d;
+                }
+                .btn-cancel:hover {
+                    background: #5a6268;
+                }
+                .btn-edit {
+                    background: #007bff;
+                    border-color: #007bff;
+                }
+                .btn-edit:hover {
+                    background: #0056b3;
+                }
+                .btn-delete {
+                    background: #dc3545;
+                    border-color: #dc3545;
+                }
+                .btn-delete:hover {
+                    background: #c82333;
+                }
+            </style>
+</dgp>
+
+<dgp>
+<div class="records-container">
+    
+    
+    <div class="record-container">
+        <div class="header-checkbox">
+            <input type="checkbox" class="master-checkbox" id="masterCheckbox">
+        </div>
+        <div class="header-field">
+            Position
+        </div>
+        <div class="header-field">
+            Company
+        </div>
+        <div class="header-field">
+            Email
+        </div>
+        <div class="header-field">
+            Cell Phone
+        </div>
+        <div class="header-field">
+            Office Phone
+        </div>
+        <div class="header-field">
+            Initial Contact
+        </div>
+        <div class="header-field">
+            Last Contact
+        </div>
+    </div>
+    
+    <div class="record-container" style="min-height:30px;">
+
+ </dgp> 
+ 
+
+<dgr>
+        <div class="record-row">
+            <div class="record-row-content" id="record-0">
+                <div class="grid-data-row">
+                    <div class="row-form">
+                        <div class="checkbox-group">
+                            <input type="checkbox" class="record-checkbox" id="recordCheckbox">
+                        </div>
+                        <div class="field-group">
+                            <div class="field-readonly">Senior Software Engineer</div>
+                        </div>
+                        <div class="field-group">
+                            <div class="field-readonly">TechCorp Inc</div>
+                        </div>
+                        <div class="field-group">
+                            <div class="field-readonly">careers@techcorp.com</div>
+                        </div>
+                        <div class="field-group">
+                            <div class="field-readonly">(555) 123-4567</div>
+                        </div>
+                        <div class="field-group">
+                            <div class="field-readonly">(555) 123-4568</div>
+                        </div>
+                        <div class="field-group">
+                            <div class="field-readonly">2024-01-15</div>
+                        </div>
+                        <div class="field-group">
+                            <div class="field-readonly">2024-03-01</div>
+                        </div>
+                        <div class="action-buttons">
+                            <button class="btn-emoji btn-edit" id="editBtn" title="Edit">✏️</button>
+                            <button class="btn-emoji btn-delete" id="deleteBtn" title="Delete">🗑️</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+</dgr>
+<dgr>
+        <div class="record-row">
+            <div class="record-row-content" id="record-1">
+                <div class="grid-data-row">
+                    <div class="row-form">
+                        <div class="checkbox-group">
+                            <input type="checkbox" class="record-checkbox" id="recordCheckbox">
+                        </div>
+                        <div class="field-group">
+                            <div class="field-readonly">Product Manager</div>
+                        </div>
+                        <div class="field-group">
+                            <div class="field-readonly">InnovateHub</div>
+                        </div>
+                        <div class="field-group">
+                            <div class="field-readonly">hr@innovate.com</div>
+                        </div>
+                        <div class="field-group">
+                            <div class="field-readonly">(555) 234-5678</div>
+                        </div>
+                        <div class="field-group">
+                            <div class="field-readonly">(555) 234-5679</div>
+                        </div>
+                        <div class="field-group">
+                            <div class="field-readonly">2024-02-01</div>
+                        </div>
+                        <div class="field-group">
+                            <div class="field-readonly">2024-02-28</div>
+                        </div>
+                        <div class="action-buttons">
+                            <button class="btn-emoji btn-edit" id="editBtn" title="Edit">✏️</button>
+                            <button class="btn-emoji btn-delete" id="deleteBtn" title="Delete">🗑️</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+</dgr>
+
+
+<dgp>
+    </div>
+
+    <div class="record-container">
+        <div class="pagination-controls">
+            <div class="page-size-container">
+                <label for="pageSizeSelect">Rows per page:</label>
+                <select id="pageSizeSelect" class="page-size-select">
+                    <option value="5" selected="">5</option>
+                    <option value="10">10</option>
+                    <option value="15">15</option>
+                    <option value="20">20</option>
+                </select>
+            </div>
+            <button class="pagination-btn" id="firstBtn" disabled="">
+                First
+            </button>
+            <button class="pagination-btn" id="prevBtn" disabled="">
+                Previous
+            </button>
+            <button class="pagination-btn active" data-page="1">1</button>
+            <button class="pagination-btn " data-page="2">2</button>
+            <button class="pagination-btn " data-page="3">3</button>
+            <button class="pagination-btn" id="nextBtn">
+                Next
+            </button>
+            <button class="pagination-btn" id="lastBtn">
+                Last
+            </button>
+            <span class="page-info">
+                Page 1 of 3
+            </span>
+        </div>
+    </div>
+</div>
+</dgp>
+
+

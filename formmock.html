@@ -1,0 +1,212 @@
+<style id="gdr">
+        /* Grid Data Row Form Styles */
+        
+        .grid-data-row {
+            padding: 0;
+            margin: 0;
+            border: 0;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .grid-data-row * {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .row-form {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 4px;
+            align-items: center;
+            white-space: nowrap;
+        } 
+
+        .action-buttons {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .record-checkbox {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .btn-emoji {
+            width: 24px;
+            height: 24px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            line-height: 1.4;
+        }
+
+        .btn-save {
+            background: #28a745;
+            border-color: #28a745;
+            color: white;
+        }
+
+        .btn-cancel {
+            background: #6c757d;
+            border-color: #6c757d;
+            color: white;
+        }
+
+        .field-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 120px;
+        }
+
+        /* Phone and calendar fields - fixed smaller width */
+        .field-group:has(input[type="tel"]),
+        .field-group:has(input[type="date"]),
+        .field-group:has(.field-label-display) {
+            min-width: 120px;
+            max-width: 120px;
+            flex-shrink: 0;
+        }
+
+        /* Position, company, email fields - dynamic equal width */
+        .field-group:has(input[data-field="position"]),
+        .field-group:has(select[data-field="company"]),
+        .field-group:has(input[data-field="email"]) {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .field-input {
+            padding: 4px 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: Arial, sans-serif;
+            line-height: 1.4;
+            height: 32px;
+            box-sizing: border-box;
+        }
+        
+        .field-input.required {
+            border-left: 3px solid #e74c3c;
+        }
+
+        .field-select {
+            padding: 4px 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: Arial, sans-serif;
+            line-height: 1.4;
+            height: 32px;
+            background: white;
+            box-sizing: border-box;
+        }
+
+        .field-label-display {
+            padding: 4px 8px;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: Arial, sans-serif;
+            line-height: 1.4;
+            height: 32px;
+            color: #666;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+        }
+
+</style>
+
+<div class="grid-data-row">
+  <div class="row-form">
+
+    <div class="action-buttons">
+      <input 
+        type="checkbox" 
+        class="record-checkbox" 
+        id="recordCheckbox" 
+      />
+      <button class="btn-emoji btn-cancel" id="cancelBtn" title="Cancel">❌</button>
+      <button class="btn-emoji btn-save" id="saveBtn" title="Save">💾</button>
+    </div>
+
+    <div class="field-group">
+      <input
+        type="text"
+        class="field-input required"
+        value="Mobile Developer"
+        data-field="position"
+        placeholder="Enter position title"
+      />
+    </div>
+
+    <div class="field-group">
+      <select class="field-select required" data-field="company">
+        <option value="">Select Company...</option>
+        <option value="TechCorp Inc">TechCorp Inc</option>
+        <option value="InnovateSoft">InnovateSoft</option>
+        <option value="DataDrive Systems">DataDrive Systems</option>
+        <option value="CloudFirst Technologies">CloudFirst Technologies</option>
+        <option value="NextGen Solutions">NextGen Solutions</option>
+        <option value="DesignWorks Studio">DesignWorks Studio</option>
+        <option value="ServerTech Corp">ServerTech Corp</option>
+        <option value="TestPro Solutions">TestPro Solutions</option>
+        <option value="AI Innovations Ltd">AI Innovations Ltd</option>
+        <option value="SecureNet Corp">SecureNet Corp</option>
+      </select>
+    </div>
+
+    <div class="field-group">
+      <input
+        type="email"
+        class="field-input"
+        data-field="email"
+        placeholder="Enter contact email"
+      />
+    </div>
+
+    <div class="field-group">
+      <input
+        type="tel"
+        class="field-input"
+        data-field="cphone"
+        placeholder="(555) 123-4567"
+      />
+    </div>
+
+    <div class="field-group">
+      <input
+        type="tel"
+        class="field-input"
+        data-field="ophone"
+        placeholder="(555) 123-4567"
+      />
+    </div>
+
+    <div class="field-group">
+      <label class="field-label-display" data-field="icontact">2024-01-12</label>
+    </div>
+
+    <div class="field-group">
+      <input
+        type="date"
+        class="field-input"
+        value="2024-02-26"
+        data-field="lcontact" />
+    </div>
+
+
+  </div>
+</div>

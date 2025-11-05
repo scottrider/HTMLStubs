@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module Test</title>
+</head>
+<body>
+    <h1>Module Loading Test</h1>
+    <div id="test-output"></div>
+
+    <script type="module">
+        console.log('Script started');
+        
+        try {
+            console.log('Attempting to import DataGridPaginator...');
+            const { DataGridPaginator } = await import('./dist/datagridpaginator.js');
+            console.log('DataGridPaginator imported successfully:', DataGridPaginator);
+            document.getElementById('test-output').innerHTML = '<p style="color: green;">✅ DataGridPaginator loaded successfully!</p>';
+        } catch (error) {
+            console.error('Error importing DataGridPaginator:', error);
+            document.getElementById('test-output').innerHTML = `<p style="color: red;">❌ Error: ${error.message}</p>`;
+        }
+    </script>
+    <script>
+    // Force MIME type for ES6 modules
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded, checking modules...');
+    });
+    </script>
+</body>
+</html>

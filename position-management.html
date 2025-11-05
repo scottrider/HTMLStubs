@@ -12,16 +12,15 @@
         }
 
         html, body {
-            height: 100%;
+            min-height: 100%;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #f8f9fa;
-            overflow: hidden;
         }
 
         .app-container {
             display: flex;
             flex-direction: column;
-            height: 100vh;
+            min-height: 100vh;
             width: 100vw;
         }
 
@@ -81,14 +80,12 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
         }
 
         .tab-panel {
             display: none;
             flex: 1;
             flex-direction: column;
-            overflow: hidden;
             background: white;
         }
 
@@ -119,7 +116,6 @@
         .content-body {
             flex: 1;
             padding: 20px 30px;
-            overflow: auto;
             background: #f8f9fa;
         }
 
@@ -331,16 +327,14 @@
             background: white;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            overflow: hidden;
             flex: 1;
             display: flex;
             flex-direction: column;
-            min-height: 0;
+            min-height: 20px;
         }
 
         .datagrid-wrapper {
             flex: 1;
-            overflow: hidden;
             display: flex;
             flex-direction: column;
         }
@@ -503,6 +497,12 @@
                         </div>
                     </div>
 
+                    <!-- Debug Messages -->
+                    <div id="debug-messages" style="background: #f8f9fa; border: 1px solid #dee2e6; padding: 10px; margin: 10px 0; border-radius: 4px; font-family: monospace; font-size: 12px; max-height: 100px; overflow-y: auto;">
+                        <strong>Debug Log:</strong><br>
+                        <span id="debug-content">System ready - waiting for actions...</span>
+                    </div>
+
                     <!-- DataGrid Container -->
                     <div class="datagrid-container">
                         <div class="datagrid-wrapper">
@@ -559,7 +559,11 @@
     </div>
 
     <script type="module">
+        console.log('🚀 Starting Position Management System...');
+        
         import { DataGridPaginator } from './dist/datagridpaginator.js';
+        
+        console.log('✅ DataGridPaginator imported successfully');
 
         // Sample position data
         const positionData = [
@@ -568,12 +572,12 @@
             { id: 3, position: "UX Designer", company: "DesignWorks Studio", email: "jobs@designworks.com", cphone: "(555) 345-6789", ophone: "(555) 345-6790", icontact: "2024-01-20", lcontact: "2024-03-05", isDisabled: false },
             { id: 4, position: "DevOps Engineer", company: "CloudTech Solutions", email: "recruiting@cloudtech.com", cphone: "(555) 456-7890", ophone: "(555) 456-7891", icontact: "2024-02-10", lcontact: "2024-02-25", isDisabled: true },
             { id: 5, position: "Data Scientist", company: "Analytics Pro", email: "talent@analytics.com", cphone: "(555) 567-8901", ophone: "(555) 567-8902", icontact: "2024-01-25", lcontact: "2024-03-03", isDisabled: false },
-            { id: 6, position: "Frontend Developer", company: "WebCraft Agency", email: "opportunities@webcraft.com", cphone: "(555) 678-9012", ophone: "(555) 678-9013", icontact: "2024-02-05", lcontact: "2024-02-29", isDisabled: false },
-            { id: 7, position: "Backend Engineer", company: "ServerSide Systems", email: "careers@serverside.com", cphone: "(555) 789-0123", ophone: "(555) 789-0124", icontact: "2024-01-30", lcontact: "2024-03-02", isDisabled: false },
-            { id: 8, position: "QA Engineer", company: "QualityFirst Labs", email: "jobs@quality.com", cphone: "(555) 890-1234", ophone: "(555) 890-1235", icontact: "2024-02-15", lcontact: "2024-02-27", isDisabled: true },
-            { id: 9, position: "System Administrator", company: "TechOps Corp", email: "hiring@techops.com", cphone: "(555) 901-2345", ophone: "(555) 901-2346", icontact: "2024-01-10", lcontact: "2024-03-04", isDisabled: false },
+            { id: 6, position: "Frontend Developer", company: "WebCraft Agency", email: "opportunities@webcraft.com", cphone: "(555) 678-9012", ophone: "(555) 678-9013", icontact: "2024-02-05", lcontact: "2024-02-29", isDisabled: true },
+            { id: 7, position: "Backend Engineer", company: "ServerSide Systems", email: "careers@serverside.com", cphone: "(555) 789-0123", ophone: "(555) 789-0124", icontact: "2024-01-30", lcontact: "2024-03-02", isDisabled: true },
+            { id: 8, position: "QA Engineer", company: "QualityFirst Labs", email: "jobs@quality.com", cphone: "(555) 890-1234", ophone: "(555) 890-1235", icontact: "2024-02-15", lcontact: "2024-02-27", isDisabled: false },
+            { id: 9, position: "System Administrator", company: "TechOps Corp", email: "hiring@techops.com", cphone: "(555) 901-2345", ophone: "(555) 901-2346", icontact: "2024-01-10", lcontact: "2024-03-04", isDisabled: true },
             { id: 10, position: "Full Stack Developer", company: "CodeCraft Inc", email: "apply@codecraft.com", cphone: "(555) 012-3456", ophone: "(555) 012-3457", icontact: "2024-02-20", lcontact: "2024-03-01", isDisabled: false },
-            { id: 11, position: "Mobile Developer", company: "AppForge Studios", email: "careers@appforge.com", cphone: "(555) 111-2222", ophone: "(555) 111-2223", icontact: "2024-01-12", lcontact: "2024-02-26", isDisabled: false },
+            { id: 11, position: "Mobile Developer", company: "AppForge Studios", email: "careers@appforge.com", cphone: "(555) 111-2222", ophone: "(555) 111-2223", icontact: "2024-01-12", lcontact: "2024-02-26", isDisabled: true },
             { id: 12, position: "Security Engineer", company: "CyberDefense Inc", email: "security-jobs@cyberdefense.com", cphone: "(555) 222-3333", ophone: "(555) 222-3334", icontact: "2024-02-08", lcontact: "2024-03-06", isDisabled: false }
         ];
 
@@ -659,24 +663,55 @@
                 searchable: false,
                 canFilter: true,
                 css: {} 
+            },
+            isDisabled: {
+                type: 'boolean',
+                displayName: 'Disabled',
+                htmlElement: 'input',
+                htmlType: 'checkbox',
+                required: false,
+                searchable: false,
+                canFilter: true,
+                visible: false,
+                css: {}
             }
         };
 
         // Global variables
         let positionsPaginator;
 
+        // Debug logging function
+        function debugLog(message) {
+            const debugContent = document.getElementById('debug-content');
+            if (debugContent) {
+                const timestamp = new Date().toLocaleTimeString();
+                debugContent.innerHTML += `<br>[${timestamp}] ${message}`;
+                debugContent.scrollTop = debugContent.scrollHeight;
+            }
+            console.log(message);
+        }
+
         // Initialize the application
         async function initializeApp() {
+            debugLog('🔧 Initializing Position Management System...');
             try {
+                debugLog('📊 Creating DataGridPaginator configuration...');
                 // Initialize positions DataGrid
                 const paginatorConfig = {
                     schema: positionSchema,
                     data: [...positionData],
                     pageSize: 5,
                     showCheckboxes: true,
+                    onNewRecord: () => {
+                        // Use our custom add function instead of default
+                        addNewPosition();
+                    },
                     onDeleteRecord: async (index, record) => {
-                        // Custom delete handler with API call
+                        debugLog(`🗑️ Attempting to delete position: ${record.position} (ID: ${record.id})`);
+                        
+                        // Real API call for soft delete
                         try {
+                            debugLog(`📡 Making API call to DELETE /api/positions/${record.id}`);
                             const response = await fetch(`http://localhost:8000/api/positions/${record.id}`, {
                                 method: 'DELETE',
                                 headers: {
@@ -685,6 +720,7 @@
                             });
                             
                             if (response.ok) {
+                                debugLog(`✅ API call successful - marking position ${record.id} as disabled`);
                                 // Update local data to mark as disabled
                                 const dataIndex = positionsPaginator.config.data.findIndex(p => p.id === record.id);
                                 if (dataIndex !== -1) {
@@ -692,50 +728,53 @@
                                     positionsPaginator.filterData();
                                     positionsPaginator.render();
                                     updateStatistics();
-                                    console.log(`✅ Position ${record.id} marked as disabled via API`);
+                                    debugLog(`✅ Position ${record.id} marked as disabled via API`);
                                 }
                             } else {
-                                console.error('❌ Failed to delete position via API:', response.status);
+                                debugLog(`❌ API call failed with status: ${response.status}`);
                                 alert('Failed to update position status. Please try again.');
                             }
                         } catch (error) {
-                            console.error('❌ Error calling delete API:', error);
-                            alert('Network error. Please check your connection and try again.');
+                            debugLog(`❌ API call error: ${error.message}`);
+                            debugLog(`🔄 Switching to offline mode...`);
+                            
+                            // Fallback to mock behavior if API is not available
+                            const dataIndex = positionsPaginator.config.data.findIndex(p => p.id === record.id);
+                            if (dataIndex !== -1) {
+                                positionsPaginator.config.data[dataIndex].isDisabled = true;
+                                positionsPaginator.filterData();
+                                positionsPaginator.render();
+                                updateStatistics();
+                                debugLog(`✅ Position ${record.id} marked as disabled (offline mode)`);
+                            } else {
+                                debugLog(`❌ Could not find position ${record.id} in data array`);
+                            }
                         }
                     },
                     onDeleteSelected: async (selectedIndexes) => {
-                        // Custom bulk delete handler with API calls
+                        // Mock bulk delete handler
                         if (selectedIndexes.length === 0) return;
                         
                         if (confirm(`Mark ${selectedIndexes.length} selected record(s) as disabled?`)) {
+                            debugLog(`🔄 Bulk deleting ${selectedIndexes.length} positions...`);
+                            
+                            // Process each selected record
                             const promises = selectedIndexes.map(async (index) => {
                                 const record = positionsPaginator.config.data[index];
-                                try {
-                                    const response = await fetch(`http://localhost:8000/api/positions/${record.id}`, {
-                                        method: 'DELETE',
-                                        headers: {
-                                            'Content-Type': 'application/json',
-                                        }
-                                    });
-                                    
-                                    if (response.ok) {
-                                        // Mark as disabled locally
-                                        positionsPaginator.config.data[index].isDisabled = true;
-                                        return { success: true, id: record.id };
-                                    } else {
-                                        console.error(`❌ Failed to delete position ${record.id}:`, response.status);
-                                        return { success: false, id: record.id };
-                                    }
-                                } catch (error) {
-                                    console.error(`❌ Error deleting position ${record.id}:`, error);
-                                    return { success: false, id: record.id };
-                                }
+                                debugLog(`🗑️ Processing position: ${record.position} (ID: ${record.id})`);
+                                
+                                // Simulate API call delay
+                                await new Promise(resolve => setTimeout(resolve, 200));
+                                
+                                // Actually set the record as disabled
+                                positionsPaginator.config.data[index].isDisabled = true;
+                                debugLog(`✅ Position ${record.id} marked as disabled`);
+                                return { success: true, id: record.id };
                             });
                             
                             try {
                                 const results = await Promise.all(promises);
                                 const successful = results.filter(r => r.success);
-                                const failed = results.filter(r => !r.success);
                                 
                                 if (successful.length > 0) {
                                     // Clear selection and update UI
@@ -744,47 +783,50 @@
                                     positionsPaginator.filterData();
                                     positionsPaginator.render();
                                     updateStatistics();
-                                    console.log(`✅ Successfully disabled ${successful.length} position(s)`);
-                                }
-                                
-                                if (failed.length > 0) {
-                                    alert(`Failed to disable ${failed.length} position(s). Please try again.`);
+                                    debugLog(`✅ Successfully disabled ${successful.length} position(s)`);
                                 }
                             } catch (error) {
-                                console.error('❌ Error in bulk delete operation:', error);
+                                debugLog(`❌ Error during bulk delete: ${error.message}`);
+                                console.error('❌ Bulk delete error:', error);
                                 alert('Error occurred during bulk operation. Please try again.');
                             }
                         }
                     },
                     onSaveRecord: async (index, updatedData) => {
-                        // Custom save handler with API call
+                        // Mock save handler
                         try {
-                            const response = await fetch(`http://localhost:8000/api/positions/${updatedData.id}`, {
-                                method: 'PUT',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify(updatedData)
-                            });
+                            console.log(`🔄 Mock API: Saving position ${updatedData.id}...`);
                             
-                            if (response.ok) {
-                                console.log(`✅ Position ${updatedData.id} updated via API`);
+                            // Simulate API call delay
+                            await new Promise(resolve => setTimeout(resolve, 300));
+                            
+                            // Simulate successful response
+                            const mockSuccess = true;
+                            
+                            if (mockSuccess) {
+                                console.log(`✅ Position ${updatedData.id} updated (mock API)`);
+                                console.log('🔍 About to call updateStatistics...');
                                 updateStatistics();
+                                console.log('🔍 updateStatistics completed');
                             } else {
-                                console.error('❌ Failed to save position via API:', response.status);
+                                console.error('❌ Mock API: Failed to save position');
                                 alert('Failed to save changes. Please try again.');
                             }
                         } catch (error) {
-                            console.error('❌ Error calling save API:', error);
+                            console.error('❌ Mock API error:', error);
                             alert('Network error. Please check your connection and try again.');
                         }
                     }
                 };
 
+                debugLog('🏗️ Creating DataGridPaginator instance...');
                 positionsPaginator = new DataGridPaginator(paginatorConfig);
+                debugLog('✅ DataGridPaginator created successfully');
+                
                 const positionsContainer = document.getElementById('positions-datagrid');
                 positionsContainer.innerHTML = '';
                 positionsContainer.appendChild(positionsPaginator.getElement());
+                debugLog('📋 DataGrid attached to DOM');
 
                 // Set up global toggle switch event listener
                 const globalToggle = document.getElementById('global-toggle');
@@ -798,8 +840,10 @@
                 // Update statistics
                 updateStatistics();
 
+                debugLog('✅ Position Management System initialized successfully');
                 console.log('✅ Position Management System initialized successfully');
             } catch (error) {
+                debugLog(`❌ Error initializing application: ${error.message}`);
                 console.error('❌ Error initializing application:', error);
                 const errorMsg = `
                     <div style="padding: 40px; text-align: center; color: #dc3545;">
@@ -851,20 +895,32 @@
         // Add new position
         window.addNewPosition = function() {
             if (positionsPaginator) {
+                console.log('🚀 Starting addNewPosition...');
                 const newPosition = {
                     id: Date.now(),
-                    position: `New Position ${Math.floor(Math.random() * 1000)}`,
-                    company: "New Company",
-                    email: `contact${Math.floor(Math.random() * 1000)}@example.com`,
-                    cphone: "(555) 000-0000",
-                    ophone: "(555) 000-0001",
-                    icontact: new Date().toISOString().split('T')[0],
-                    lcontact: new Date().toISOString().split('T')[0],
+                    position: "",
+                    company: "",
+                    email: "",
+                    cphone: "",
+                    ophone: "",
+                    icontact: "",
+                    lcontact: "",
                     isDisabled: false
                 };
                 
+                console.log('� BEFORE calling addNewRecord - newPosition:', newPosition);
+                console.log('🔍 BEFORE calling addNewRecord - newPosition keys:', Object.keys(newPosition));
+                console.log('🔍 BEFORE calling addNewRecord - id:', newPosition.id, 'isDisabled:', newPosition.isDisabled);
+                
+                console.log('�👤 Before add - showDisabled:', positionsPaginator.showDisabled);
                 positionsPaginator.addNewRecord(newPosition);
+                console.log('👤 After add - showDisabled:', positionsPaginator.showDisabled);
+                
+                // Force update the UI state synchronously  
+                updateToggleLabel(); // Update toggle UI to match new filter state
                 updateStatistics();
+                
+                console.log('✅ addNewPosition complete');
             }
         };
 
@@ -949,12 +1005,16 @@
             const toggleLabel = document.getElementById('toggle-label');
             const toggleSwitch = document.getElementById('global-toggle');
             
+            console.log('🔄 Updating toggle label - showDisabled:', positionsPaginator?.showDisabled);
+            
             if (positionsPaginator && positionsPaginator.showDisabled) {
                 toggleLabel.textContent = 'Disabled';
                 toggleSwitch.classList.add('active');
+                console.log('📴 Toggle set to: Disabled (showing disabled records)');
             } else {
                 toggleLabel.textContent = 'Enabled';
                 toggleSwitch.classList.remove('active');
+                console.log('📶 Toggle set to: Enabled (showing enabled records)');
             }
         };
 
