@@ -7,7 +7,7 @@ let jobSearchData = null;
 // Pagination state
 let currentPage = 1;
 let totalPages = 1;
-let pageSize = 1;
+let pageSize = 10;
 let storedRecords = []; // Array to store saved records for pagination
 
 // Selection state
@@ -18,12 +18,32 @@ let masterCheckboxState = false;
 let editingIndex = -1; // Track which row is being edited (-1 = none)
 let originalRecordData = null; // Store original data for cancel functionality
 
+// Toggle state
+let viewingEnabled = true; // Track whether viewing enabled (true) or disabled (false) records
+
 // Load job search data from consolidated JSON file
 async function loadJobSearchData() {
   try {
     const response = await fetch('./jobsearch.json');
     jobSearchData = await response.json();
     populateCompanyDropdown();
+    
+    // Load position records into storedRecords
+    if (jobSearchData?.jobsearch?.positions?.data) {
+      storedRecords = [...jobSearchData.jobsearch.positions.data];
+      // Add ID and isDisabled field to each record if not present
+      storedRecords.forEach((record, index) => {
+        if (!record.id) {
+          record.id = index + 1;
+        }
+        if (record.isDisabled === undefined) {
+          record.isDisabled = false; // Default to enabled
+        }
+      });
+      console.log('Position records loaded:', storedRecords.length);
+      updatePagination();
+      renderRecordsDisplay();
+    }
   } catch (error) {
     console.error('Error loading job search data:', error);
     // Fallback to hardcoded options if file load fails
@@ -54,6 +74,24 @@ function getCompanyNameById(companyId) {
   if (!jobSearchData?.jobsearch?.companies?.data) return 'Unknown Company';
   const company = jobSearchData.jobsearch.companies.data.find(c => c.id === parseInt(companyId));
   return company ? company.name : 'Unknown Company';
+}
+
+// Get filtered records based on current view mode
+function getFilteredRecords() {
+  return storedRecords.filter(record => {
+    if (viewingEnabled) {
+      return !record.isDisabled; // Show only enabled records
+    } else {
+      return record.isDisabled; // Show only disabled records
+    }
+  });
+}
+
+// Get filtered record by index (accounting for filtering)
+function getFilteredRecordIndex(filteredIndex) {
+  const filteredRecords = getFilteredRecords();
+  const targetRecord = filteredRecords[filteredIndex];
+  return storedRecords.findIndex(record => record.id === targetRecord.id);
 }
 
 // Clear method for datagrid-checkbox - clears all row-form children values
@@ -152,6 +190,10 @@ function storeRecord(formData) {
   if (!formData.timestamp) {
     formData.timestamp = new Date().toISOString();
   }
+  // Add isDisabled field for new records (default to false = enabled)
+  if (formData.isDisabled === undefined) {
+    formData.isDisabled = false;
+  }
   
   storedRecords.push(formData);
   console.log('Record stored. Total records:', storedRecords.length);
@@ -159,7 +201,8 @@ function storeRecord(formData) {
 
 // Update pagination display and controls
 function updatePagination() {
-  totalPages = Math.max(1, Math.ceil(storedRecords.length / pageSize));
+  const filteredRecords = getFilteredRecords();
+  totalPages = Math.max(1, Math.ceil(filteredRecords.length / pageSize));
   
   // Ensure current page is valid
   if (currentPage > totalPages) {
@@ -174,7 +217,7 @@ function updatePagination() {
   // Hide pagination controls when no records exist
   const paginationContainer = document.getElementById('paginationControls');
   if (paginationContainer) {
-    if (storedRecords.length === 0) {
+    if (filteredRecords.length === 0) {
       paginationContainer.style.display = 'none';
     } else {
       paginationContainer.style.display = 'flex';
@@ -256,12 +299,15 @@ function updateHeaderSummary() {
   const headerSummary = document.getElementById('headerSummary');
   if (!headerSummary) return;
   
-  if (storedRecords.length === 0) {
-    headerSummary.textContent = 'No records - Click ➕ to add your first record';
+  const filteredRecords = getFilteredRecords();
+  const viewType = viewingEnabled ? 'enabled' : 'disabled';
+  
+  if (filteredRecords.length === 0) {
+    headerSummary.textContent = `No ${viewType} records - ${viewingEnabled ? 'Click ➕ to add your first record' : 'All records are currently enabled'}`;
   } else {
     const startRecord = (currentPage - 1) * pageSize + 1;
-    const endRecord = Math.min(currentPage * pageSize, storedRecords.length);
-    headerSummary.textContent = `Showing ${startRecord}-${endRecord} of ${storedRecords.length} records`;
+    const endRecord = Math.min(currentPage * pageSize, filteredRecords.length);
+    headerSummary.textContent = `Showing ${startRecord}-${endRecord} of ${filteredRecords.length} ${viewType} records`;
   }
 }
 
@@ -275,19 +321,23 @@ function renderRecordsDisplay() {
   const recordsContainer = document.getElementById('recordsDisplay');
   if (!recordsContainer) return;
   
-  if (storedRecords.length === 0) {
-    recordsContainer.innerHTML = '<div class="no-records-message">No records found. Click ➕ to add your first record.</div>';
+  const filteredRecords = getFilteredRecords();
+  const viewType = viewingEnabled ? 'enabled' : 'disabled';
+  
+  if (filteredRecords.length === 0) {
+    recordsContainer.innerHTML = `<div class="no-records-message">No ${viewType} records found. ${viewingEnabled ? 'Click ➕ to add your first record.' : 'All records are currently enabled.'}</div>`;
     return;
   }
   
   // Calculate which records to show on current page
   const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = Math.min(startIndex + pageSize, storedRecords.length);
-  const pageRecords = storedRecords.slice(startIndex, endIndex);
+  const endIndex = Math.min(startIndex + pageSize, filteredRecords.length);
+  const pageRecords = filteredRecords.slice(startIndex, endIndex);
   
   // Render each record as a row
   recordsContainer.innerHTML = pageRecords.map((record, index) => {
-    const globalIndex = startIndex + index;
+    const filteredIndex = startIndex + index;
+    const globalIndex = getFilteredRecordIndex(filteredIndex);
     return createRecordRowHTML(record, globalIndex);
   }).join('');
   
@@ -504,8 +554,10 @@ function saveInlineEdit(index) {
     return;
   }
   
-  // Update the stored record
+  // Update the stored record (preserve isDisabled state)
+  const currentIsDisabled = storedRecords[index].isDisabled;
   storedRecords[index] = { ...storedRecords[index], ...formData };
+  storedRecords[index].isDisabled = currentIsDisabled; // Preserve the disabled state
   
   // Clear editing state
   editingIndex = -1;
@@ -560,7 +612,7 @@ function deleteRecord(index) {
     }
     
     // Recalculate pagination
-    calculatePagination();
+    totalPages = Math.max(1, Math.ceil(storedRecords.length / pageSize));
     
     // If current page is now empty, go to previous page
     if (currentPage > totalPages && totalPages > 0) {
@@ -653,42 +705,79 @@ function updateMasterCheckboxState() {
 
 // Update header to show selection info or add button
 function updateHeaderForSelection() {
-  const header = document.querySelector('.formmock-header');
-  if (!header) return;
+  const headerInfo = document.querySelector('.header-info');
+  const headerControls = document.querySelector('.header-controls');
+  if (!headerInfo || !headerControls) return;
   
   if (selectedRecords.size > 0) {
-    // Show delete selected button
-    header.innerHTML = `
-      <div class="header-info">
-        <div class="header-title">Position Records</div>
-        <div class="header-summary" id="headerSummary">
-          ${selectedRecords.size} record(s) selected
-        </div>
+    // Update header info for selection
+    headerInfo.innerHTML = `
+      <div class="header-title">Position Records</div>
+      <div class="header-summary" id="headerSummary">
+        ${selectedRecords.size} record(s) selected
       </div>
-      <button class="btn-emoji btn-delete-selected" id="deleteSelectedBtn" title="Delete Selected Records">
-        ❌
-      </button>
     `;
     
-    // Attach delete selected event listener
-    const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
-    if (deleteSelectedBtn) {
-      deleteSelectedBtn.addEventListener('click', handleDeleteSelected);
+    // Update controls to show appropriate action button based on current view (preserve toggle)
+    const toggleContainer = headerControls.querySelector('.toggle-container');
+    const toggleHTML = toggleContainer ? toggleContainer.outerHTML : '';
+    
+    if (viewingEnabled) {
+      // Show delete button for enabled records
+      headerControls.innerHTML = `
+        ${toggleHTML}
+        <button class="btn-emoji btn-delete-selected" id="deleteSelectedBtn" title="Delete Selected Records">
+          ❌
+        </button>
+      `;
+      
+      // Attach delete selected event listener
+      const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+      if (deleteSelectedBtn) {
+        deleteSelectedBtn.addEventListener('click', handleDeleteSelected);
+      }
+    } else {
+      // Show restore button for disabled records
+      headerControls.innerHTML = `
+        ${toggleHTML}
+        <button class="btn-emoji btn-restore-selected" id="restoreSelectedBtn" title="Restore Selected Records">
+          ♻️
+        </button>
+      `;
+      
+      // Attach restore selected event listener
+      const restoreSelectedBtn = document.getElementById('restoreSelectedBtn');
+      if (restoreSelectedBtn) {
+        restoreSelectedBtn.addEventListener('click', handleRestoreSelected);
+      }
     }
+    
+    // Re-initialize toggle after DOM update
+    initializeToggle();
+    
   } else {
-    // Show normal add button and summary
+    // Update header info for normal state
     updateHeaderSummary();
-    header.innerHTML = `
-      <div class="header-info">
-        <div class="header-title">Position Records</div>
-        <div class="header-summary" id="headerSummary">
-          ${document.getElementById('headerSummary')?.textContent || ''}
-        </div>
+    headerInfo.innerHTML = `
+      <div class="header-title">Position Records</div>
+      <div class="header-summary" id="headerSummary">
+        ${document.getElementById('headerSummary')?.textContent || ''}
       </div>
+    `;
+    
+    // Update controls to show add button (preserve toggle)
+    const toggleContainer = headerControls.querySelector('.toggle-container');
+    const toggleHTML = toggleContainer ? toggleContainer.outerHTML : '';
+    
+    headerControls.innerHTML = `
+      ${toggleHTML}
       <button class="btn-emoji btn-add" id="addBtn" title="Add New Record">
         ➕
       </button>
     `;
+    
+    // Restore toggle state and re-initialize
+    initializeToggle();
     
     // Re-attach add button event listener
     const addBtn = document.getElementById('addBtn');
@@ -703,18 +792,93 @@ function updateHeaderForSelection() {
   }
 }
 
-// Handle delete selected records
+// Handle restore selected records (set isDisabled=false)
+function handleRestoreSelected() {
+  if (selectedRecords.size === 0) {
+    // If no records selected, restore all disabled records
+    const disabledRecords = storedRecords.filter(record => record.isDisabled);
+    if (disabledRecords.length === 0) {
+      alert('No disabled records to restore');
+      return;
+    }
+    
+    if (confirm(`Restore all ${disabledRecords.length} disabled record(s)?`)) {
+      disabledRecords.forEach(record => {
+        record.isDisabled = false;
+      });
+      
+      // Update display
+      updatePagination();
+      renderRecordsDisplay();
+      updateHeaderForSelection();
+      
+      console.log('All disabled records restored');
+    }
+    return;
+  }
+  
+  if (confirm(`Restore ${selectedRecords.size} selected record(s)?`)) {
+    // Convert filtered indices to actual record indices and restore them
+    const filteredRecords = getFilteredRecords();
+    selectedRecords.forEach(filteredIndex => {
+      const actualRecord = filteredRecords[filteredIndex];
+      if (actualRecord) {
+        const actualIndex = storedRecords.findIndex(record => record.id === actualRecord.id);
+        if (actualIndex >= 0) {
+          storedRecords[actualIndex].isDisabled = false;
+        }
+      }
+    });
+    
+    // Clear selection
+    selectedRecords.clear();
+    masterCheckboxState = false;
+    
+    // Update display
+    updatePagination();
+    renderRecordsDisplay();
+    updateHeaderForSelection();
+    
+    console.log('Selected records restored');
+  }
+}
+
+// Handle delete selected records  
 function handleDeleteSelected() {
   if (selectedRecords.size === 0) return;
   
   if (confirm(`Delete ${selectedRecords.size} selected record(s)?`)) {
-    // Convert to array and sort in descending order to maintain indexes during deletion
-    const indexesToDelete = Array.from(selectedRecords).sort((a, b) => b - a);
+    const filteredRecords = getFilteredRecords();
     
-    // Delete records in reverse order
-    indexesToDelete.forEach(index => {
-      storedRecords.splice(index, 1);
-    });
+    if (viewingEnabled) {
+      // Soft delete: set isDisabled=true
+      selectedRecords.forEach(filteredIndex => {
+        const actualRecord = filteredRecords[filteredIndex];
+        if (actualRecord) {
+          const actualIndex = storedRecords.findIndex(record => record.id === actualRecord.id);
+          if (actualIndex >= 0) {
+            storedRecords[actualIndex].isDisabled = true;
+          }
+        }
+      });
+    } else {
+      // Hard delete: remove from array (work backwards to avoid index issues)
+      const actualIndices = [];
+      selectedRecords.forEach(filteredIndex => {
+        const actualRecord = filteredRecords[filteredIndex];
+        if (actualRecord) {
+          const actualIndex = storedRecords.findIndex(record => record.id === actualRecord.id);
+          if (actualIndex >= 0) {
+            actualIndices.push(actualIndex);
+          }
+        }
+      });
+      
+      // Sort in descending order and delete
+      actualIndices.sort((a, b) => b - a).forEach(index => {
+        storedRecords.splice(index, 1);
+      });
+    }
     
     // Clear selection
     selectedRecords.clear();
@@ -722,6 +886,10 @@ function handleDeleteSelected() {
     
     // Update pagination and re-render
     updatePagination();
+    renderRecordsDisplay();
+    updateHeaderForSelection();
+    
+    console.log(`Selected records ${viewingEnabled ? 'soft deleted' : 'permanently deleted'}`);
   }
 }
 
@@ -846,6 +1014,65 @@ function clearFormAfterSave(rowForm) {
   });
 }
 
+// Toggle view between enabled/disabled records
+function toggleView(showEnabled) {
+  viewingEnabled = showEnabled;
+  const toggleLabel = document.querySelector('.toggle-label');
+  const addBtn = document.getElementById('addBtn');
+  const enableToggle = document.getElementById('enableToggle');
+  
+  // Update toggle checkbox state to match the view
+  if (enableToggle) {
+    enableToggle.checked = showEnabled;
+  }
+  
+  // Update toggle label
+  if (toggleLabel) {
+    toggleLabel.textContent = showEnabled ? 'Enabled' : 'Disabled';
+  }
+  
+  // Update add button icon and functionality
+  if (addBtn) {
+    if (showEnabled) {
+      addBtn.innerHTML = '➕';
+      addBtn.title = 'Add New Record';
+      addBtn.className = 'btn-emoji btn-add';
+    } else {
+      addBtn.innerHTML = '♻️'; 
+      addBtn.title = 'Restore Selected Records';
+      addBtn.className = 'btn-emoji btn-restore';
+    }
+  }
+  
+  // Clear any existing selections when switching views
+  selectedRecords.clear();
+  masterCheckboxState = false;
+  
+  // Reset to first page when switching views
+  currentPage = 1;
+  
+  // Cancel any ongoing inline editing
+  if (editingIndex >= 0) {
+    editingIndex = -1;
+    originalRecordData = null;
+  }
+  
+  // Update the display
+  updatePagination();
+  renderRecordsDisplay();
+  updateHeaderForSelection();
+  
+  console.log(`Switched to viewing ${showEnabled ? 'enabled' : 'disabled'} records`);
+}
+
+// Handle toggle switch change
+// Handle toggle switch change
+function handleToggleChange(event) {
+  const checked = event.target.checked;
+  console.log(`Toggle changed: checked=${checked}, viewingEnabled=${viewingEnabled}`);
+  toggleView(checked);
+}
+
 // Hide the record form and show the title row
 function hideRecordForm() {
   const rowForm = document.getElementById('rowForm');
@@ -859,27 +1086,86 @@ function hideRecordForm() {
   }
 }
 
+// Properly initialize toggle with correct state and event handling
+function initializeToggle() {
+  const enableToggle = document.getElementById('enableToggle');
+  if (!enableToggle) return;
+  
+  // Remove any existing event listeners to prevent duplicates
+  enableToggle.removeEventListener('change', handleToggleChange);
+  
+  // Set correct initial state
+  enableToggle.checked = viewingEnabled;
+  
+  // Add fresh event listener
+  enableToggle.addEventListener('change', handleToggleChange);
+  
+  // Ensure visibility
+  initializeToggleVisibility();
+  
+  console.log(`Toggle initialized: checked=${enableToggle.checked}, viewingEnabled=${viewingEnabled}`);
+}
+
+// Initialize toggle visibility function
+function initializeToggleVisibility() {
+  const toggleContainer = document.querySelector('.toggle-container');
+  const toggleSwitch = document.querySelector('.toggle-switch');
+  const toggleLabel = document.querySelector('.toggle-label');
+  const headerControls = document.querySelector('.header-controls');
+  
+  if (toggleContainer) {
+    toggleContainer.style.display = 'flex';
+    toggleContainer.style.visibility = 'visible';
+    toggleContainer.style.opacity = '1';
+  }
+  
+  if (toggleSwitch) {
+    toggleSwitch.style.display = 'inline-block';
+    toggleSwitch.style.visibility = 'visible';
+    toggleSwitch.style.opacity = '1';
+  }
+  
+  if (toggleLabel) {
+    toggleLabel.style.display = 'inline-block';
+    toggleLabel.style.visibility = 'visible';
+    toggleLabel.style.opacity = '1';
+  }
+  
+  if (headerControls) {
+    headerControls.style.display = 'flex';
+    headerControls.style.visibility = 'visible';
+    headerControls.style.opacity = '1';
+  }
+}
+
 // Attach event listeners when page loads
 document.addEventListener('DOMContentLoaded', function() {
-  // Load job search data first (for company dropdown only)
+  // Ensure toggle is visible immediately
+  initializeToggleVisibility();
+  
+  // Load job search data and position records
   loadJobSearchData();
   
   // Initialize pagination display
   updatePagination();
   
-  // Add sample data for demonstration (can be removed later)
-  addSampleData(); // TEMPORARILY ENABLED - for testing pagination layout
+  // Sample data disabled - now loading from jobsearch.json
+  // addSampleData(); // DISABLED - using real data from JSON file
   
   // Ensure form starts in clean state
   clearFormFields();
   hideRecordForm(); // Show title row initially
   
-  // Attach add button to show form
+  // Attach add button to show form or restore records
   const addBtn = document.querySelector('#addBtn');
   if (addBtn) {
     addBtn.addEventListener('click', function(event) {
       event.preventDefault();
-      showRecordForm();
+      if (viewingEnabled) {
+        showRecordForm();
+      } else {
+        handleRestoreSelected();
+      }
     });
   }
   
@@ -911,6 +1197,14 @@ document.addEventListener('DOMContentLoaded', function() {
       handleMasterCheckboxChange(e.target.checked);
     });
   }
+  
+  // Initialize toggle switch with proper state management
+  initializeToggle();
+  
+  // Backup visibility enforcement after a short delay
+  setTimeout(() => {
+    initializeToggle();
+  }, 100);
 });
 
 // Add sample data for demonstration

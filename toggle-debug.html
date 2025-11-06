@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toggle Debug Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        
+        .test-header {
+            background: white;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .header-controls {
+            display: flex !important;
+            align-items: center;
+            gap: 15px;
+            background: rgba(255, 255, 0, 0.3) !important;
+            border: 2px solid orange !important;
+            padding: 10px !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+        
+        .toggle-container {
+            display: flex !important;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 0, 0, 0.1) !important;
+            border: 2px solid red !important;
+            padding: 5px !important;
+            min-width: 100px !important;
+            min-height: 30px !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+        
+        .toggle-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            cursor: pointer;
+            user-select: none;
+            background: rgba(0, 0, 255, 0.2) !important;
+            border: 1px solid blue !important;
+            padding: 2px 4px !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            display: inline-block !important;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block !important;
+            width: 50px;
+            height: 24px;
+            background: rgba(0, 255, 0, 0.3) !important;
+            border: 1px solid green !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc !important;
+            transition: 0.3s;
+            border-radius: 12px;
+            border: 3px solid #999 !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            display: block !important;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            border: 1px solid #ddd;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: #28a745 !important;
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+    </style>
+</head>
+<body>
+    <h1>Toggle Debug Test</h1>
+    
+    <div class="test-header">
+        <h2>Isolated Toggle Test</h2>
+        <div class="header-controls" style="display: flex !important; visibility: visible !important; opacity: 1 !important;">
+            <div class="toggle-container" style="display: flex !important; visibility: visible !important; opacity: 1 !important;">
+                <label for="enableToggle" class="toggle-label" style="display: inline-block !important; visibility: visible !important; opacity: 1 !important;">Enabled</label>
+                <label class="toggle-switch" style="display: inline-block !important; visibility: visible !important; opacity: 1 !important;">
+                    <input type="checkbox" id="enableToggle" checked>
+                    <span class="toggle-slider" style="display: block !important; visibility: visible !important; opacity: 1 !important;"></span>
+                </label>
+            </div>
+            <button style="padding: 8px 16px; background: #28a745; color: white; border: none; border-radius: 4px;">➕</button>
+        </div>
+    </div>
+    
+    <div class="test-header">
+        <h2>Basic Toggle (No Styles)</h2>
+        <div>
+            <label for="basicToggle">Basic Toggle:</label>
+            <input type="checkbox" id="basicToggle" checked>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Debug page loaded');
+            
+            const toggle = document.getElementById('enableToggle');
+            const basicToggle = document.getElementById('basicToggle');
+            
+            if (toggle) {
+                console.log('Main toggle found and visible');
+                toggle.addEventListener('change', function() {
+                    console.log('Main toggle changed:', this.checked);
+                });
+            } else {
+                console.log('Main toggle NOT found');
+            }
+            
+            if (basicToggle) {
+                console.log('Basic toggle found');
+                basicToggle.addEventListener('change', function() {
+                    console.log('Basic toggle changed:', this.checked);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toggle Test</title>
+    <style>
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 20px;
+            padding: 10px;
+            border: 2px solid red;
+            background: yellow;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+            border: 2px solid blue;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.3s;
+            border-radius: 12px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: #28a745;
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+        
+        .toggle-label {
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Toggle Test Page</h1>
+    
+    <div class="toggle-container">
+        <label for="enableToggle" class="toggle-label">Enabled</label>
+        <label class="toggle-switch">
+            <input type="checkbox" id="enableToggle" checked>
+            <span class="toggle-slider"></span>
+        </label>
+    </div>
+    
+    <p>If you can see the yellow box with a toggle switch, then the HTML/CSS is working.</p>
+    
+    <script>
+        const toggle = document.getElementById('enableToggle');
+        const label = document.querySelector('.toggle-label');
+        
+        if (toggle && label) {
+            toggle.addEventListener('change', function() {
+                label.textContent = this.checked ? 'Enabled' : 'Disabled';
+                console.log('Toggle changed:', this.checked);
+            });
+            console.log('Toggle test initialized');
+        } else {
+            console.error('Toggle elements not found');
+        }
+    </script>
+</body>
+</html>

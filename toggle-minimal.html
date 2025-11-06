@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FormMock Toggle Minimal Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .formmock-header { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #f8f9fa; border: 1px solid #ccc; }
+        .header-info { display: flex; flex-direction: column; }
+        .header-title { font-size: 18px; font-weight: bold; }
+        .header-summary { font-size: 14px; color: #666; }
+        .header-controls { display: flex; align-items: center; gap: 15px; background: yellow; border: 2px solid orange; padding: 10px; }
+        .toggle-container { display: flex; align-items: center; gap: 8px; background: pink; border: 2px solid red; padding: 5px; }
+        .toggle-label { font-size: 14px; color: #333; background: lightblue; border: 1px solid blue; padding: 2px 4px; }
+        .toggle-switch { position: relative; display: inline-block; width: 50px; height: 24px; background: lightgreen; border: 1px solid green; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; border-radius: 12px; border: 2px solid #999; }
+        .toggle-slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; border-radius: 50%; transition: 0.3s; }
+        input:checked + .toggle-slider { background-color: #28a745; }
+        input:checked + .toggle-slider:before { transform: translateX(26px); }
+        .btn-add { padding: 8px 16px; background: #28a745; color: white; border: none; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>FormMock Toggle Minimal Test</h1>
+    
+    <!-- Header with Add Record Button and Info -->
+    <div class="formmock-header">
+        <div class="header-info">
+            <div class="header-title">Position Records</div>
+            <div class="header-summary">Showing 1 of 1 records</div>
+        </div>
+        <div class="header-controls">
+            <div class="toggle-container">
+                <label for="enableToggle" class="toggle-label">Enabled</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="enableToggle" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            <button class="btn-add">➕</button>
+        </div>
+    </div>
+    
+    <p>If you can see colored backgrounds around the toggle elements, they are being rendered correctly.</p>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Minimal test loaded');
+            const toggle = document.getElementById('enableToggle');
+            if (toggle) {
+                console.log('Toggle found in minimal test');
+                toggle.addEventListener('change', function() {
+                    console.log('Toggle changed:', this.checked);
+                });
+            } else {
+                console.log('Toggle NOT found in minimal test');
+            }
+        });
+    </script>
+</body>
+</html>

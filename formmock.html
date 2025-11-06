@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="./formmock.css" />
-    <script src="./formmock.js"></script>
+    <link rel="stylesheet" href="./formmock.css?v=1.0.7" />
+    <script src="./formmock.js?v=1.0.7"></script>
   </head>
   <body>
     <!-- Header with Add Record Button and Info -->
@@ -15,9 +15,18 @@
           Showing 1 of 1 records
         </div>
       </div>
-      <button class="btn-emoji btn-add" id="addBtn" title="Add New Record">
-        ➕
-      </button>
+      <div class="header-controls">
+        <div class="toggle-container">
+          <label for="enableToggle" class="toggle-label">Enabled</label>
+          <label class="toggle-switch">
+            <input type="checkbox" id="enableToggle" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <button class="btn-emoji btn-add" id="addBtn" title="Add New Record">
+          ➕
+        </button>
+      </div>
     </div>
 
     <form>
@@ -156,9 +165,9 @@
       <div class="page-size-container">
         <label for="pageSizeSelect">Records per page:</label>
         <select id="pageSizeSelect" class="page-size-select">
-          <option value="1" selected>1</option>
-          <option value="5">5</option>
-          <option value="10">10</option>
+          <option value="10" selected>10</option>
+          <option value="15">15</option>
+          <option value="20">20</option>
         </select>
       </div>
       
