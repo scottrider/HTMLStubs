@@ -1,0 +1,154 @@
+{
+    "companies": {
+        "schema": {
+            "id": {
+                "type": "number",
+                "displayName": "ID",
+                "htmlElement": "input",
+                "htmlType": "hidden",
+                "required": true,
+                "primaryKey": true
+            },
+            "name": {
+                "type": "string",
+                "displayName": "Company Name",
+                "htmlElement": "input",
+                "htmlType": "text",
+                "css": { "placeholder": "Enter company name", "maxlength": "100" },
+                "required": true
+            },
+            "industry": {
+                "type": "string",
+                "displayName": "Industry",
+                "htmlElement": "input",
+                "htmlType": "text",
+                "css": { "placeholder": "e.g., Technology, Healthcare", "maxlength": "50" },
+                "required": false
+            },
+            "size": {
+                "type": "string",
+                "displayName": "Company Size",
+                "htmlElement": "select",
+                "htmlType": "select",
+                "options": ["", "Startup (1-10)", "Small (11-50)", "Medium (51-200)", "Large (201-1000)", "Enterprise (1000+)"],
+                "required": false
+            },
+            "location": {
+                "type": "string",
+                "displayName": "Location",
+                "htmlElement": "input",
+                "htmlType": "text",
+                "css": { "placeholder": "City, State or Remote", "maxlength": "100" },
+                "required": false
+            },
+            "website": {
+                "type": "url",
+                "displayName": "Website",
+                "htmlElement": "input",
+                "htmlType": "url",
+                "css": { "placeholder": "https://company.com" },
+                "required": false
+            },
+            "notes": {
+                "type": "text",
+                "displayName": "Notes",
+                "htmlElement": "textarea",
+                "htmlType": "textarea",
+                "css": { "placeholder": "Company notes, culture info, etc.", "rows": "3" },
+                "required": false
+            }
+        },
+        "data": [
+            { 
+                "id": 1, 
+                "name": "TechCorp Inc", 
+                "industry": "Technology", 
+                "size": "Large (201-1000)", 
+                "location": "San Francisco, CA", 
+                "website": "https://techcorp.com",
+                "notes": "Leading software development company with strong engineering culture"
+            },
+            { 
+                "id": 2, 
+                "name": "InnovateSoft", 
+                "industry": "Technology", 
+                "size": "Medium (51-200)", 
+                "location": "Austin, TX", 
+                "website": "https://innovatesoft.com",
+                "notes": "Fast-growing startup focused on AI and machine learning"
+            },
+            { 
+                "id": 3, 
+                "name": "DataDrive Systems", 
+                "industry": "Data Analytics", 
+                "size": "Medium (51-200)", 
+                "location": "Seattle, WA", 
+                "website": "https://datadrive.com",
+                "notes": "Data analytics and business intelligence solutions"
+            },
+            { 
+                "id": 4, 
+                "name": "CloudFirst Technologies", 
+                "industry": "Cloud Computing", 
+                "size": "Large (201-1000)", 
+                "location": "Remote", 
+                "website": "https://cloudfirst.com",
+                "notes": "Cloud infrastructure and DevOps solutions provider"
+            },
+            { 
+                "id": 5, 
+                "name": "NextGen Solutions", 
+                "industry": "Consulting", 
+                "size": "Large (201-1000)", 
+                "location": "New York, NY", 
+                "website": "https://nextgensolutions.com",
+                "notes": "Technology consulting and digital transformation services"
+            },
+            { 
+                "id": 6, 
+                "name": "DesignWorks Studio", 
+                "industry": "Design/UX", 
+                "size": "Small (11-50)", 
+                "location": "Los Angeles, CA", 
+                "website": "https://designworks.com",
+                "notes": "Creative agency specializing in UX/UI design and branding"
+            },
+            { 
+                "id": 7, 
+                "name": "ServerTech Corp", 
+                "industry": "Infrastructure", 
+                "size": "Medium (51-200)", 
+                "location": "Denver, CO", 
+                "website": "https://servertech.com",
+                "notes": "Server hardware and infrastructure solutions"
+            },
+            { 
+                "id": 8, 
+                "name": "TestPro Solutions", 
+                "industry": "Quality Assurance", 
+                "size": "Small (11-50)", 
+                "location": "Remote", 
+                "website": "https://testpro.com",
+                "notes": "Automated testing and QA services"
+            },
+            { 
+                "id": 9, 
+                "name": "AI Innovations Ltd", 
+                "industry": "Artificial Intelligence", 
+                "size": "Startup (1-10)", 
+                "location": "Boston, MA", 
+                "website": "https://aiinnovations.com",
+                "notes": "Cutting-edge AI research and development"
+            },
+            { 
+                "id": 10, 
+                "name": "SecureNet Corp", 
+                "industry": "Cybersecurity", 
+                "size": "Medium (51-200)", 
+                "location": "Washington, DC", 
+                "website": "https://securenet.com",
+                "notes": "Enterprise cybersecurity and network protection services"
+            }
+        ]
+    }
+}

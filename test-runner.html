@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Form Mock Test Runner</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .test-container {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    .test-output {
+      background: #1a1a1a;
+      color: #00ff00;
+      padding: 15px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      white-space: pre-wrap;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .test-button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px;
+      font-size: 14px;
+    }
+    .test-button:hover {
+      background: #0056b3;
+    }
+    .clear-btn {
+      background: #6c757d;
+    }
+    .clear-btn:hover {
+      background: #545b62;
+    }
+    h1 {
+      color: #333;
+      text-align: center;
+    }
+    h2 {
+      color: #666;
+      border-bottom: 2px solid #007bff;
+      padding-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧪 Form Mock Test Suite</h1>
+  
+  <div class="test-container">
+    <h2>Method Tests</h2>
+    <p>Tests the clearRowForm() method and form manipulation functions.</p>
+    <button class="test-button" onclick="runMethodTests()">Run Method Tests</button>
+    <button class="test-button clear-btn" onclick="clearOutput('method-output')">Clear</button>
+    <div id="method-output" class="test-output"></div>
+  </div>
+
+  <div class="test-container">
+    <h2>Data Tests</h2>
+    <p>Tests data validation, transformation, and persistence functionality.</p>
+    <button class="test-button" onclick="runDataTestsInBrowser()">Run Data Tests</button>
+    <button class="test-button clear-btn" onclick="clearOutput('data-output')">Clear</button>
+    <div id="data-output" class="test-output"></div>
+  </div>
+
+  <div class="test-container">
+    <h2>All Tests</h2>
+    <p>Run complete test suite for comprehensive validation.</p>
+    <button class="test-button" onclick="runAllTestsInBrowser()">Run All Tests</button>
+    <button class="test-button clear-btn" onclick="clearAllOutputs()">Clear All</button>
+  </div>
+
+  <!-- Include source files -->
+  <script src="./formmock.js"></script>
+  
+  <!-- Include test files -->
+  <script src="./formmock.test.js"></script>
+  <script src="./formmock-data.test.js"></script>
+
+  <script>
+    // Capture console output for display
+    function captureConsole(outputId) {
+      const originalLog = console.log;
+      const outputElement = document.getElementById(outputId);
+      
+      console.log = function(...args) {
+        outputElement.textContent += args.join(' ') + '\n';
+        originalLog.apply(console, args);
+      };
+      
+      return function restore() {
+        console.log = originalLog;
+      };
+    }
+
+    function clearOutput(outputId) {
+      document.getElementById(outputId).textContent = '';
+    }
+
+    function clearAllOutputs() {
+      clearOutput('method-output');
+      clearOutput('data-output');
+    }
+
+    function runMethodTests() {
+      const restore = captureConsole('method-output');
+      try {
+        runAllTests(); // From formmock.test.js
+      } catch (error) {
+        console.log('❌ Error running method tests:', error.message);
+      } finally {
+        restore();
+      }
+    }
+
+    function runDataTestsInBrowser() {
+      const restore = captureConsole('data-output');
+      try {
+        runDataTests(); // From formmock-data.test.js
+      } catch (error) {
+        console.log('❌ Error running data tests:', error.message);
+      } finally {
+        restore();
+      }
+    }
+
+    function runAllTestsInBrowser() {
+      clearAllOutputs();
+      setTimeout(() => runMethodTests(), 100);
+      setTimeout(() => runDataTestsInBrowser(), 500);
+    }
+
+    // Auto-run tests on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('Test runner loaded. Click buttons to run tests.');
+    });
+  </script>
+</body>
+</html>
