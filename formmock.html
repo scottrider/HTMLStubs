@@ -7,8 +7,14 @@
     <script src="./formmock.js"></script>
   </head>
   <body>
-    <!-- Add Record Button -->
-    <div class="add-record-container">
+    <!-- Header with Add Record Button and Info -->
+    <div class="formmock-header">
+      <div class="header-info">
+        <div class="header-title">Position Records</div>
+        <div class="header-summary" id="headerSummary">
+          Showing 1 of 1 records
+        </div>
+      </div>
       <button class="btn-emoji btn-add" id="addBtn" title="Add New Record">
         ➕
       </button>
@@ -105,39 +111,76 @@
           <!-- Title Row from jobsearch.json positions schema -->
           <div class="row-title" id="rowTitle" style="display: flex;">
             <div class="title-buttons">
-              <!-- Empty space to align with action buttons -->
+              <input type="checkbox" class="master-checkbox" id="masterCheckbox" title="Select All" />
             </div>
 
-            <div class="title-group">
+            <div class="title-group field-position">
               <span class="title-label">Position</span>
             </div>
 
-            <div class="title-group">
+            <div class="title-group field-icontact">
               <span class="title-label">Initial Contact</span>
             </div>
 
-            <div class="title-group">
+            <div class="title-group field-lcontact">
               <span class="title-label">Last Contact</span>
             </div>
 
-            <div class="title-group">
+            <div class="title-group field-company">
               <span class="title-label">Company</span>
             </div>
 
-            <div class="title-group">
+            <div class="title-group field-email">
               <span class="title-label">Email</span>
             </div>
 
-            <div class="title-group">
+            <div class="title-group field-cphone">
               <span class="title-label">Cell</span>
             </div>
 
-            <div class="title-group">
+            <div class="title-group field-ophone">
               <span class="title-label">Office</span>
             </div>
+          </div>
+
+          <!-- Records Display Area -->
+          <div class="records-display" id="recordsDisplay">
+            <!-- Individual record rows will be displayed here -->
           </div>
         </div>
       </div>
     </form>
+
+    <!-- Pagination Controls -->
+    <div class="pagination-controls" id="paginationControls">
+      <div class="page-size-container">
+        <label for="pageSizeSelect">Records per page:</label>
+        <select id="pageSizeSelect" class="page-size-select">
+          <option value="1" selected>1</option>
+          <option value="5">5</option>
+          <option value="10">10</option>
+        </select>
+      </div>
+      
+      <button class="pagination-btn" id="firstBtn" disabled>
+        First
+      </button>
+      <button class="pagination-btn" id="prevBtn" disabled>
+        Previous
+      </button>
+      
+      <button class="pagination-btn active" data-page="1">1</button>
+      
+      <button class="pagination-btn" id="nextBtn" disabled>
+        Next
+      </button>
+      <button class="pagination-btn" id="lastBtn" disabled>
+        Last
+      </button>
+      
+      <span class="page-info" id="pageInfo">
+        Page 1 of 1
+      </span>
+    </div>
   </body>
 </html>

@@ -7,6 +7,38 @@
         line-height: 1.4;
       }
 
+      /* Header Styles */
+      .formmock-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 20px 0;
+        padding: 15px 20px;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+
+      .header-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .header-title {
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+        margin: 0;
+      }
+
+      .header-summary {
+        font-size: 14px;
+        color: #666;
+        margin: 0;
+      }
+
       .add-record-container {
         margin: 20px 0;
         text-align: center;
@@ -25,11 +57,35 @@
         background: #28a745;
         color: white;
         line-height: 1.4;
+        transition: all 0.2s;
       }
 
       .btn-add:hover {
         background: #218838;
         border-color: #1e7e34;
+        transform: scale(1.05);
+      }
+
+      .btn-delete-selected {
+        width: 32px;
+        height: 32px;
+        border: 1px solid #dc3545;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 18px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #dc3545;
+        color: white;
+        line-height: 1.4;
+        transition: all 0.2s;
+      }
+
+      .btn-delete-selected:hover {
+        background: #c82333;
+        border-color: #bd2130;
+        transform: scale(1.05);
       }
 
       .grid-data-row * {
@@ -44,6 +100,7 @@
         gap: 4px;
         align-items: center;
         white-space: nowrap;
+        padding: 8px 0;
       }
 
       .row-title {
@@ -67,6 +124,15 @@
         align-items: center;
         width: 72px; /* Match action-buttons width */
         flex-shrink: 0;
+        justify-content: flex-start; /* Align items to the left */
+        padding: 4px 4px; /* Match record-actions padding */
+      }
+
+      .master-checkbox {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+        margin-left: 0; /* Ensure left alignment, padding handles spacing */
       }
 
       .title-group {
@@ -74,8 +140,26 @@
         flex-direction: row;
         min-width: 120px;
         flex-shrink: 0;
-        justify-content: center;
+        justify-content: flex-start; /* Left-justified to match data */
         align-items: center;
+        padding: 4px 8px; /* Match field padding */
+      }
+
+      /* Title group sizing to match field groups */
+      .title-group.field-position,
+      .title-group.field-company,
+      .title-group.field-email {
+        flex: 1;
+        min-width: 150px;
+      }
+
+      .title-group.field-icontact,
+      .title-group.field-lcontact,
+      .title-group.field-cphone,
+      .title-group.field-ophone {
+        min-width: 120px;
+        max-width: 120px;
+        flex-shrink: 0;
       }
 
       .title-label {
@@ -84,7 +168,7 @@
         color: #495057;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        text-align: center;
+        text-align: left; /* Left-aligned to match data */
         white-space: nowrap;
       }
 
@@ -92,6 +176,10 @@
         display: flex;
         gap: 4px;
         align-items: center;
+        width: 72px;
+        flex-shrink: 0;
+        justify-content: flex-start; /* Align items to the left */
+        padding: 4px 4px; /* Match record-actions padding */
       }
 
       .record-checkbox {
@@ -189,4 +277,243 @@
         box-sizing: border-box;
         display: flex;
         align-items: center;
+      }
+
+      /* Records Display Area */
+      .records-display {
+        display: block;
+        margin: 0;
+        padding: 0;
+      }
+
+      .record-row {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 4px;
+        align-items: center;
+        white-space: nowrap;
+        padding: 3px 0;
+        border-bottom: 1px solid #e9ecef;
+        background: white;
+        transition: background-color 0.2s ease;
+      }
+
+      .record-row.editing {
+        background-color: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 4px;
+        padding: 3px 0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+
+      .record-row:hover {
+        background-color: #f8f9fa;
+      }
+
+      .record-row.selected {
+        background-color: #e3f2fd;
+        border-left: 3px solid #2196f3;
+      }
+
+      .record-field {
+        display: flex;
+        flex-direction: column;
+        min-width: 120px;
+        padding: 4px 8px;
+        font-size: 14px;
+        font-family: Arial, sans-serif;
+        line-height: 1.4;
+        color: #333;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        align-items: flex-start; /* Ensure left alignment */
+      }
+
+      /* Record field sizing to match field groups exactly */
+      .record-field.field-position,
+      .record-field.field-company,
+      .record-field.field-email {
+        flex: 1;
+        min-width: 150px;
+      }
+
+      .record-field.field-icontact,
+      .record-field.field-lcontact,
+      .record-field.field-cphone,
+      .record-field.field-ophone {
+        min-width: 120px;
+        max-width: 120px;
+        flex-shrink: 0;
+      }
+
+      .record-actions {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+        opacity: 1; /* Always visible */
+        width: 72px;
+        flex-shrink: 0;
+        justify-content: flex-start; /* Align items to the left */
+        padding: 4px 4px; /* Reduced padding to minimize space */
+      }
+
+      /* Expand actions area when editing to accommodate save/cancel buttons */
+      .record-row.editing .record-actions {
+        width: 80px;
+      }
+
+      .record-checkbox {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+        margin-right: 4px;
+        opacity: 1; /* Always visible */
+        margin-left: 0; /* Ensure left alignment, padding handles spacing */
+      }
+
+      .record-row:hover .record-actions {
+        opacity: 1; /* Always visible now */
+      }
+
+      .no-records-message {
+        text-align: center;
+        padding: 40px 20px;
+        color: #666;
+        font-style: italic;
+        font-size: 14px;
+        font-family: Arial, sans-serif;
+      }
+
+      /* Pagination Styles */
+      .pagination-controls {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        margin: 20px 0;
+        padding: 15px 20px;
+        border: 1px solid #e9ecef;
+        background: #f8f9fa;
+        border-radius: 8px;
+        overflow-x: auto;
+        white-space: nowrap;
+        min-width: fit-content;
+        min-height: 50px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+
+      .pagination-btn {
+        padding: 8px 12px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        cursor: pointer;
+        background: white;
+        font-size: 14px;
+        font-family: Arial, sans-serif;
+        transition: all 0.2s;
+        min-width: 40px;
+        text-align: center;
+      }
+
+      .pagination-btn:hover {
+        background: #f8f9fa;
+        border-color: #007bff;
+      }
+
+      .pagination-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background: #e9ecef;
+      }
+
+      .pagination-btn.active {
+        background: #007bff;
+        color: white;
+        border-color: #007bff;
+      }
+
+      .page-size-container {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-right: 20px;
+      }
+
+      .page-size-container label {
+        font-size: 14px;
+        color: #666;
+        white-space: nowrap;
+        font-family: Arial, sans-serif;
+      }
+
+      .page-size-select {
+        padding: 4px 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 14px;
+        font-family: Arial, sans-serif;
+        background: white;
+        cursor: pointer;
+      }
+
+      .page-info {
+        font-size: 14px;
+        color: #666;
+        margin: 0 15px;
+        font-family: Arial, sans-serif;
+        white-space: nowrap;
+      }
+
+      /* Inline editing field styles */
+      .record-field .field-input,
+      .record-field .field-select {
+        width: 100%;
+        padding: 4px 6px;
+        border: 1px solid #ced4da;
+        border-radius: 3px;
+        font-size: 13px;
+        font-family: Arial, sans-serif;
+        background: white;
+        transition: border-color 0.2s ease;
+      }
+
+      .record-field .field-input:focus,
+      .record-field .field-select:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+      }
+
+      /* Smaller inputs for date and phone fields */
+      .record-field.field-icontact .field-input,
+      .record-field.field-lcontact .field-input,
+      .record-field.field-cphone .field-input,
+      .record-field.field-ophone .field-input {
+        font-size: 12px;
+        padding: 3px 5px;
+      }
+
+      /* Button styling for save/cancel/delete */
+      .btn-save {
+        background: #28a745;
+        color: white;
+        border: 1px solid #28a745;
+      }
+
+      .btn-save:hover {
+        background: #218838;
+        border-color: #1e7e34;
+        transform: scale(1.05);
+      }
+
+      .btn-cancel {
+        background: #6c757d;
+        color: white;
+        border: 1px solid #6c757d;
+      }
+
+      .btn-cancel:hover {
+        background: #5a6268;
+        border-color: #545b62;
+        transform: scale(1.05);
       }
