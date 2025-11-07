@@ -52,11 +52,38 @@ class DataGridSearch {
         this.container = this.element.querySelector('.DataGridSearch__container');
         
         if (!this.input) {
-            throw new Error('DataGridSearch: Input element not found');
+            console.warn('DataGridSearch: Input element not found, creating default structure');
+            this.createDefaultStructure();
+            // Re-query after creating structure
+            this.input = this.element.querySelector('.DataGridSearch__input');
+            this.clearButton = this.element.querySelector('.DataGridSearch__clear');
+            this.container = this.element.querySelector('.DataGridSearch__container');
+            
+            if (!this.input) {
+                throw new Error('DataGridSearch: Unable to create or find input element');
+            }
         }
         
         // Initialize
         this.init();
+    }
+    
+    createDefaultStructure() {
+        // Create default DataGridSearch structure if missing
+        const defaultHTML = `
+            <div class="DataGridSearch">
+                <label class="DataGridSearch__label">Search:</label>
+                <div class="DataGridSearch__container">
+                    <input type="text" class="DataGridSearch__input" placeholder="Search records..." />
+                    <button type="button" class="DataGridSearch__clear" aria-label="Clear search">×</button>
+                </div>
+            </div>
+        `;
+        
+        // If element is empty or doesn't have the right structure, replace it
+        if (!this.element.innerHTML.trim() || !this.element.querySelector('.DataGridSearch__input')) {
+            this.element.innerHTML = defaultHTML;
+        }
     }
     
     init() {
@@ -305,11 +332,13 @@ class DataGridSearch {
             clearTimeout(this.searchTimeout);
         }
         
-        // Remove event listeners
-        this.input.removeEventListener('input', this.handleInput.bind(this));
-        this.input.removeEventListener('keydown', this.handleKeydown.bind(this));
-        this.input.removeEventListener('focus', this.handleFocus.bind(this));
-        this.input.removeEventListener('blur', this.handleBlur.bind(this));
+        // Remove event listeners safely
+        if (this.input) {
+            this.input.removeEventListener('input', this.handleInput.bind(this));
+            this.input.removeEventListener('keydown', this.handleKeydown.bind(this));
+            this.input.removeEventListener('focus', this.handleFocus.bind(this));
+            this.input.removeEventListener('blur', this.handleBlur.bind(this));
+        }
         
         if (this.clearButton) {
             this.clearButton.removeEventListener('click', this.handleClear.bind(this));

@@ -818,24 +818,35 @@ function updateHeaderForSelection() {
     
     // Re-initialize DataGridSearch if it exists
     if (window.formMockSearch && typeof window.formMockSearch.destroy === 'function') {
-      window.formMockSearch.destroy();
+      try {
+        window.formMockSearch.destroy();
+      } catch (error) {
+        console.warn('Error destroying DataGridSearch:', error);
+      }
+      window.formMockSearch = null;
     }
+    
     const searchElement = document.querySelector('#formmock-search');
     if (searchElement) {
-      window.formMockSearch = new DataGridSearch('#formmock-search', {
-        debounceDelay: 300,
-        placeholder: 'Search positions...',
-        onSearch: function(searchTerm, instance) {
-          if (typeof window.performGlobalSearch === 'function') {
-            window.performGlobalSearch(searchTerm);
+      try {
+        window.formMockSearch = new DataGridSearch('#formmock-search', {
+          debounceDelay: 300,
+          placeholder: 'Search positions...',
+          onSearch: function(searchTerm, instance) {
+            if (typeof window.performGlobalSearch === 'function') {
+              window.performGlobalSearch(searchTerm);
+            }
+          },
+          onClear: function(instance) {
+            if (typeof window.clearSearch === 'function') {
+              window.clearSearch();
+            }
           }
-        },
-        onClear: function(instance) {
-          if (typeof window.clearSearch === 'function') {
-            window.clearSearch();
-          }
-        }
-      });
+        });
+      } catch (error) {
+        console.error('Error creating DataGridSearch:', error);
+        window.formMockSearch = null;
+      }
     }
     
   } else {
@@ -867,24 +878,35 @@ function updateHeaderForSelection() {
     
     // Re-initialize DataGridSearch if it exists
     if (window.formMockSearch && typeof window.formMockSearch.destroy === 'function') {
-      window.formMockSearch.destroy();
+      try {
+        window.formMockSearch.destroy();
+      } catch (error) {
+        console.warn('Error destroying DataGridSearch:', error);
+      }
+      window.formMockSearch = null;
     }
+    
     const searchElement = document.querySelector('#formmock-search');
     if (searchElement) {
-      window.formMockSearch = new DataGridSearch('#formmock-search', {
-        debounceDelay: 300,
-        placeholder: 'Search positions...',
-        onSearch: function(searchTerm, instance) {
-          if (typeof window.performGlobalSearch === 'function') {
-            window.performGlobalSearch(searchTerm);
+      try {
+        window.formMockSearch = new DataGridSearch('#formmock-search', {
+          debounceDelay: 300,
+          placeholder: 'Search positions...',
+          onSearch: function(searchTerm, instance) {
+            if (typeof window.performGlobalSearch === 'function') {
+              window.performGlobalSearch(searchTerm);
+            }
+          },
+          onClear: function(instance) {
+            if (typeof window.clearSearch === 'function') {
+              window.clearSearch();
+            }
           }
-        },
-        onClear: function(instance) {
-          if (typeof window.clearSearch === 'function') {
-            window.clearSearch();
-          }
-        }
-      });
+        });
+      } catch (error) {
+        console.error('Error creating DataGridSearch:', error);
+        window.formMockSearch = null;
+      }
     }
     
     // Re-attach add/restore button event listener
