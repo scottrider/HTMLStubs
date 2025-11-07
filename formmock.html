@@ -3,36 +3,59 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="./formmock.css?v=1.0.7" />
+    <link rel="stylesheet" href="./formmock.css?v=1.1.1" />
+    <link rel="stylesheet" href="./DataGridSearch.css" />
     <script src="./formmock.js?v=1.0.7"></script>
+    <script src="./DataGridSearch.js"></script>
   </head>
   <body>
     <!-- Header with Add Record Button and Info -->
-    <div class="formmock-header">
-      <div class="header-info">
-        <div class="header-title">Position Records</div>
-        <div class="header-summary" id="headerSummary">
-          Showing 1 of 1 records
-        </div>
-      </div>
-      <div class="header-controls">
-        <div class="toggle-container">
-          <label for="enableToggle" class="toggle-label">Enabled</label>
-          <label class="toggle-switch">
-            <input type="checkbox" id="enableToggle" checked>
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-        <button class="btn-emoji btn-add" id="addBtn" title="Add New Record">
-          ➕
-        </button>
-      </div>
-    </div>
-
     <form>
       <div>
-        <div class="grid-data-row" id="recordForm" style="display: block;">
-          <div class="row-form" id="rowForm" style="display: none;">
+        <div class="formmock-header">
+          <div class="header-info">
+            <div class="header-title">Position Records</div>
+            <div class="header-summary" id="headerSummary">
+              Showing 1 of 1 records
+            </div>
+          </div>
+          <div class="header-controls">
+            <div id="hc-left">
+              <div class="toggle-container">
+                <label for="enableToggle" class="toggle-label">Enabled</label>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="enableToggle" checked />
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+            <div id="hc-middle">
+              <button
+                class="btn-emoji btn-add"
+                id="addBtn"
+                title="Add New Record"
+              >
+                ➕
+              </button>
+            </div>
+            <div id="hc-right">
+              <div class="DataGridSearch">
+                <label for="formmock-search" class="DataGridSearch__label">Search:</label>
+                <div class="DataGridSearch__container">
+                  <input type="text" id="formmock-search" class="DataGridSearch__input" 
+                         placeholder="Search positions..." autocomplete="off">
+                  <button type="button" class="DataGridSearch__clear" title="Clear search" 
+                          aria-label="Clear search">✕</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="grid-data-row" id="recordForm" style="display: block">
+          <div class="row-form" id="rowForm" style="display: none">
             <div class="action-buttons">
               <input
                 type="checkbox"
@@ -41,7 +64,11 @@
                 name="datagrid-checkbox"
                 hidden="none"
               />
-              <button class="btn-emoji btn-cancel" id="cancelBtn" title="Cancel">
+              <button
+                class="btn-emoji btn-cancel"
+                id="cancelBtn"
+                title="Cancel"
+              >
                 ❌
               </button>
               <button class="btn-emoji btn-save" id="saveBtn" title="Save">
@@ -59,7 +86,11 @@
             </div>
 
             <div class="field-group">
-              <label class="field-label-display" data-field="icontact" data-value="2024-01-12">
+              <label
+                class="field-label-display"
+                data-field="icontact"
+                data-value="2024-01-12"
+              >
                 2024-01-12
               </label>
             </div>
@@ -116,11 +147,16 @@
               />
             </div>
           </div>
-          
+
           <!-- Title Row from jobsearch.json positions schema -->
-          <div class="row-title" id="rowTitle" style="display: flex;">
+          <div class="row-title" id="rowTitle" style="display: flex">
             <div class="title-buttons">
-              <input type="checkbox" class="master-checkbox" id="masterCheckbox" title="Select All" />
+              <input
+                type="checkbox"
+                class="master-checkbox"
+                id="masterCheckbox"
+                title="Select All"
+              />
             </div>
 
             <div class="title-group field-position">
@@ -170,26 +206,43 @@
           <option value="20">20</option>
         </select>
       </div>
-      
-      <button class="pagination-btn" id="firstBtn" disabled>
-        First
-      </button>
-      <button class="pagination-btn" id="prevBtn" disabled>
-        Previous
-      </button>
-      
+
+      <button class="pagination-btn" id="firstBtn" disabled>First</button>
+      <button class="pagination-btn" id="prevBtn" disabled>Previous</button>
+
       <button class="pagination-btn active" data-page="1">1</button>
-      
-      <button class="pagination-btn" id="nextBtn" disabled>
-        Next
-      </button>
-      <button class="pagination-btn" id="lastBtn" disabled>
-        Last
-      </button>
-      
-      <span class="page-info" id="pageInfo">
-        Page 1 of 1
-      </span>
+
+      <button class="pagination-btn" id="nextBtn" disabled>Next</button>
+      <button class="pagination-btn" id="lastBtn" disabled>Last</button>
+
+      <span class="page-info" id="pageInfo"> Page 1 of 1 </span>
     </div>
+
+    <script>
+      // Initialize DataGridSearch after DOM is loaded
+      document.addEventListener('DOMContentLoaded', function() {
+        // Initialize DataGridSearch with FormMock integration
+        window.formMockSearch = new DataGridSearch('#formmock-search', {
+          debounceDelay: 300,
+          placeholder: 'Search positions...',
+          onSearch: function(searchTerm, instance) {
+            // Integration with existing FormMock search functionality
+            if (typeof window.performGlobalSearch === 'function') {
+              window.performGlobalSearch(searchTerm);
+            }
+            console.log('DataGridSearch: Searching for "' + searchTerm + '"');
+          },
+          onClear: function(instance) {
+            // Clear existing FormMock search
+            if (typeof window.clearSearch === 'function') {
+              window.clearSearch();
+            }
+            console.log('DataGridSearch: Search cleared');
+          }
+        });
+        
+        console.log('DataGridSearch initialized successfully');
+      });
+    </script>
   </body>
 </html>

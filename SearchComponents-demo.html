@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataGridSearch & CollectionSearch - Master Web Standard Components</title>
+    <link rel="stylesheet" href="DataGridSearch.css">
+    <link rel="stylesheet" href="CollectionSearch.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 50px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            font-size: 1.8em;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-description {
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 1.1em;
+        }
+
+        .demo-container {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+
+        .demo-title {
+            font-size: 1.2em;
+            color: #495057;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .demo-description {
+            color: #6c757d;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+        }
+
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+        }
+
+        .code-block pre {
+            margin: 0;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .feature-card {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .feature-card h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .feature-card p {
+            color: #666;
+            font-size: 0.95em;
+        }
+
+        .usage-example {
+            background: #fff;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .mock-datagrid {
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            margin-top: 15px;
+        }
+
+        .mock-datagrid-header {
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            padding: 10px 15px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .mock-datagrid-row {
+            padding: 10px 15px;
+            border-bottom: 1px solid #f8f9fa;
+            color: #666;
+        }
+
+        .mock-datagrid-row:last-child {
+            border-bottom: none;
+        }
+
+        .mock-datagrid-row:hover {
+            background: #f8f9fa;
+        }
+
+        .size-demo {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .alert-demo {
+            margin: 15px 0;
+        }
+
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            background: #0056b3;
+        }
+
+        .btn--secondary {
+            background: #6c757d;
+        }
+
+        .btn--secondary:hover {
+            background: #545b62;
+        }
+
+        .integration-note {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #0c5460;
+        }
+
+        .integration-note strong {
+            color: #064749;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🔍 Search Components</h1>
+            <p>Master Level Web Standard Components for DataGrid and Collection Search</p>
+        </header>
+
+        <div class="content">
+            <!-- DataGridSearch Section -->
+            <section class="section">
+                <h2 class="section-title">
+                    🔗 DataGridSearch
+                </h2>
+                <p class="section-description">
+                    A search component specifically designed to integrate with DataGrid components. 
+                    Provides real-time search functionality with proper DataGrid integration and event handling.
+                </p>
+
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h4>✅ DataGrid Integration</h4>
+                        <p>Direct integration with DataGrid components via method callbacks and event handling.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>⚡ Real-time Search</h4>
+                        <p>Debounced search input with customizable delay for optimal performance.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>🎯 Smart Clear Button</h4>
+                        <p>Automatically shows/hides clear button based on input content.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>♿ Accessibility First</h4>
+                        <p>Full ARIA support, keyboard navigation, and screen reader compatibility.</p>
+                    </div>
+                </div>
+
+                <div class="demo-container">
+                    <h3 class="demo-title">Live Demo - DataGridSearch</h3>
+                    <p class="demo-description">
+                        This example shows DataGridSearch connected to a mock DataGrid. 
+                        Try searching for terms like "John", "Developer", or "Manager".
+                    </p>
+
+                    <!-- DataGridSearch Implementation -->
+                    <div class="DataGridSearch" id="datagrid-search-demo">
+                        <label for="datagrid-search-input" class="DataGridSearch__label">Search Records:</label>
+                        <div class="DataGridSearch__container">
+                            <input type="text" id="datagrid-search-input" class="DataGridSearch__input" 
+                                   placeholder="Search employees..." autocomplete="off">
+                            <button type="button" class="DataGridSearch__clear" title="Clear search" 
+                                    aria-label="Clear search">✕</button>
+                        </div>
+                    </div>
+
+                    <!-- Mock DataGrid -->
+                    <div class="mock-datagrid" id="mock-datagrid">
+                        <div class="mock-datagrid-header">Employee Records (5 total)</div>
+                        <div class="mock-datagrid-row" data-name="john doe" data-role="developer">John Doe - Senior Developer</div>
+                        <div class="mock-datagrid-row" data-name="jane smith" data-role="manager">Jane Smith - Project Manager</div>
+                        <div class="mock-datagrid-row" data-name="mike johnson" data-role="designer">Mike Johnson - UX Designer</div>
+                        <div class="mock-datagrid-row" data-name="sarah wilson" data-role="developer">Sarah Wilson - Frontend Developer</div>
+                        <div class="mock-datagrid-row" data-name="tom brown" data-role="analyst">Tom Brown - Data Analyst</div>
+                    </div>
+                </div>
+
+                <div class="usage-example">
+                    <h4>HTML Structure</h4>
+                    <div class="code-block">
+                        <pre>&lt;div class="DataGridSearch"&gt;
+  &lt;label for="search-id" class="DataGridSearch__label"&gt;Search:&lt;/label&gt;
+  &lt;div class="DataGridSearch__container"&gt;
+    &lt;input type="text" id="search-id" class="DataGridSearch__input" 
+           placeholder="Search records..." autocomplete="off"&gt;
+    &lt;button type="button" class="DataGridSearch__clear" 
+            title="Clear search" aria-label="Clear search"&gt;✕&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</pre>
+                    </div>
+
+                    <h4>JavaScript Integration</h4>
+                    <div class="code-block">
+                        <pre>// Initialize with DataGrid integration
+const search = new DataGridSearch('#my-search', {
+  dataGrid: myDataGridInstance,
+  searchMethod: 'handleSearch',
+  onSearch: (term, instance) => {
+    console.log('Searching for:', term);
+  }
+});
+
+// Or connect to existing DataGrid
+search.options.dataGrid = myDataGrid;</pre>
+                    </div>
+                </div>
+
+                <div class="integration-note">
+                    <strong>Integration Note:</strong> DataGridSearch is designed to work seamlessly with any DataGrid component 
+                    that implements a search method. Simply pass your DataGrid instance and method name to the options.
+                </div>
+            </section>
+
+            <!-- CollectionSearch Section -->
+            <section class="section">
+                <h2 class="section-title">
+                    📋 CollectionSearch
+                </h2>
+                <p class="section-description">
+                    A general-purpose search component for collections with alert-based results. 
+                    Independent of DataGrid components, provides flexible search functionality for any data collection.
+                </p>
+
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h4>🎯 Alert-Based Results</h4>
+                        <p>Beautiful alert system for displaying search results and status messages.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>🔧 Flexible Search Logic</h4>
+                        <p>Customizable search functions or built-in search for arrays and objects.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>📊 Collection Support</h4>
+                        <p>Works with arrays, objects, or any custom data structure via callbacks.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>🎨 Multiple Layouts</h4>
+                        <p>Supports vertical and horizontal layouts with multiple size variants.</p>
+                    </div>
+                </div>
+
+                <div class="demo-container">
+                    <h3 class="demo-title">Live Demo - CollectionSearch</h3>
+                    <p class="demo-description">
+                        This example shows CollectionSearch with a collection of programming languages. 
+                        Try searching for "Java", "Python", or "Script".
+                    </p>
+
+                    <!-- CollectionSearch Implementation -->
+                    <div class="CollectionSearch" id="collection-search-demo">
+                        <div class="CollectionSearch__header">
+                            <label for="collection-search-input" class="CollectionSearch__label">Search Languages:</label>
+                            <div class="CollectionSearch__container">
+                                <input type="text" id="collection-search-input" class="CollectionSearch__input" 
+                                       placeholder="Search programming languages..." autocomplete="off">
+                                <button type="button" class="CollectionSearch__clear" title="Clear search" 
+                                        aria-label="Clear search">✕</button>
+                            </div>
+                        </div>
+                        <div class="CollectionSearch__loading">
+                            <div class="CollectionSearch__loading-spinner"></div>
+                            <span>Searching...</span>
+                        </div>
+                        <div class="CollectionSearch__results" id="collection-results"></div>
+                    </div>
+                </div>
+
+                <div class="alert-demo">
+                    <h4>Alert Examples</h4>
+                    <div class="CollectionSearch__alert CollectionSearch__alert--success">
+                        <div class="CollectionSearch__alert-title">3 Results Found</div>
+                        <div class="CollectionSearch__alert-message">Found 3 items matching "Script".</div>
+                    </div>
+                    <div class="CollectionSearch__alert CollectionSearch__alert--warning">
+                        <div class="CollectionSearch__alert-title">No Results Found</div>
+                        <div class="CollectionSearch__alert-message">No items found matching "COBOL".</div>
+                    </div>
+                    <div class="CollectionSearch__alert CollectionSearch__alert--info">
+                        <div class="CollectionSearch__alert-title">Search Query Too Short</div>
+                        <div class="CollectionSearch__alert-message">Please enter at least 2 characters.</div>
+                    </div>
+                </div>
+
+                <div class="usage-example">
+                    <h4>HTML Structure</h4>
+                    <div class="code-block">
+                        <pre>&lt;div class="CollectionSearch"&gt;
+  &lt;div class="CollectionSearch__header"&gt;
+    &lt;label for="search-id" class="CollectionSearch__label"&gt;Search:&lt;/label&gt;
+    &lt;div class="CollectionSearch__container"&gt;
+      &lt;input type="text" id="search-id" class="CollectionSearch__input" 
+             placeholder="Search collection..." autocomplete="off"&gt;
+      &lt;button type="button" class="CollectionSearch__clear" 
+              title="Clear search" aria-label="Clear search"&gt;✕&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class="CollectionSearch__results"&gt;&lt;/div&gt;
+&lt;/div&gt;</pre>
+                    </div>
+
+                    <h4>JavaScript Integration</h4>
+                    <div class="code-block">
+                        <pre>// Initialize with collection data
+const search = new CollectionSearch('#my-search', {
+  collection: ['JavaScript', 'Python', 'Java', 'C#'],
+  onResult: (term, results, instance) => {
+    console.log(`Found ${results.length} results for "${term}"`);
+  }
+});
+
+// Or with object collection
+const objectSearch = new CollectionSearch('#object-search', {
+  collection: [
+    { name: 'John', role: 'Developer' },
+    { name: 'Jane', role: 'Manager' }
+  ],
+  searchFields: ['name', 'role']
+});</pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Size Variants Section -->
+            <section class="section">
+                <h2 class="section-title">📏 Size Variants</h2>
+                <p class="section-description">Both components support small, standard, and large size variants.</p>
+
+                <div class="size-demo">
+                    <div>
+                        <h4>Small Variant</h4>
+                        <div class="DataGridSearch DataGridSearch--small">
+                            <label for="small-search" class="DataGridSearch__label">Search:</label>
+                            <div class="DataGridSearch__container">
+                                <input type="text" id="small-search" class="DataGridSearch__input" 
+                                       placeholder="Small search...">
+                                <button type="button" class="DataGridSearch__clear">✕</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4>Standard Variant (Default)</h4>
+                        <div class="DataGridSearch">
+                            <label for="standard-search" class="DataGridSearch__label">Search:</label>
+                            <div class="DataGridSearch__container">
+                                <input type="text" id="standard-search" class="DataGridSearch__input" 
+                                       placeholder="Standard search...">
+                                <button type="button" class="DataGridSearch__clear">✕</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4>Large Variant</h4>
+                        <div class="DataGridSearch DataGridSearch--large">
+                            <label for="large-search" class="DataGridSearch__label">Search:</label>
+                            <div class="DataGridSearch__container">
+                                <input type="text" id="large-search" class="DataGridSearch__input" 
+                                       placeholder="Large search...">
+                                <button type="button" class="DataGridSearch__clear">✕</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <pre>&lt;!-- Add size modifier classes --&gt;
+&lt;div class="DataGridSearch DataGridSearch--small"&gt;...&lt;/div&gt;
+&lt;div class="DataGridSearch"&gt;...&lt;/div&gt; &lt;!-- Standard --&gt;
+&lt;div class="DataGridSearch DataGridSearch--large"&gt;...&lt;/div&gt;
+
+&lt;div class="CollectionSearch CollectionSearch--small"&gt;...&lt;/div&gt;
+&lt;div class="CollectionSearch"&gt;...&lt;/div&gt; &lt;!-- Standard --&gt;
+&lt;div class="CollectionSearch CollectionSearch--large"&gt;...&lt;/div&gt;</pre>
+                </div>
+            </section>
+
+            <!-- API Reference -->
+            <section class="section">
+                <h2 class="section-title">📚 API Reference</h2>
+
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h4>DataGridSearch Methods</h4>
+                        <div class="code-block">
+                            <pre>search.getSearchTerm()
+search.setSearchTerm(term)
+search.focus()
+search.clear()
+search.disable()
+search.enable()
+search.destroy()</pre>
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <h4>CollectionSearch Methods</h4>
+                        <div class="code-block">
+                            <pre>search.getResults()
+search.setCollection(data)
+search.getSearchTerm()
+search.setSearchTerm(term)
+search.focus()
+search.clear()
+search.destroy()</pre>
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <h4>Events</h4>
+                        <div class="code-block">
+                            <pre>// DataGridSearch
+'datagrid-search'
+'datagrid-search-clear'
+
+// CollectionSearch
+'collection-search'
+'collection-search-clear'</pre>
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <h4>Static Methods</h4>
+                        <div class="code-block">
+                            <pre>// Initialize all instances
+DataGridSearch.initAll()
+CollectionSearch.initAll()
+
+// With options
+DataGridSearch.initAll(
+  '.my-search', 
+  { debounceDelay: 500 }
+)</pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="DataGridSearch.js"></script>
+    <script src="CollectionSearch.js"></script>
+    <script>
+        console.log('🚀 Initializing Search Components Demo');
+
+        // Sample data for demos
+        const employees = [
+            { name: 'john doe', role: 'developer', element: null },
+            { name: 'jane smith', role: 'manager', element: null },
+            { name: 'mike johnson', role: 'designer', element: null },
+            { name: 'sarah wilson', role: 'developer', element: null },
+            { name: 'tom brown', role: 'analyst', element: null }
+        ];
+
+        const languages = [
+            'JavaScript', 'Python', 'Java', 'C#', 'C++', 'PHP', 'Ruby', 
+            'Go', 'Swift', 'Kotlin', 'TypeScript', 'Rust', 'Scala', 'Dart'
+        ];
+
+        // Get DOM elements for mock DataGrid
+        const mockDataGrid = document.getElementById('mock-datagrid');
+        const mockRows = mockDataGrid.querySelectorAll('.mock-datagrid-row');
+        const mockHeader = mockDataGrid.querySelector('.mock-datagrid-header');
+
+        // Store original elements
+        employees.forEach((emp, index) => {
+            emp.element = mockRows[index];
+        });
+
+        // Mock DataGrid object with search method
+        const mockDataGridObj = {
+            handleSearch: function(searchTerm) {
+                console.log(`Mock DataGrid: Searching for "${searchTerm}"`);
+                
+                if (!searchTerm) {
+                    // Show all rows
+                    mockRows.forEach(row => row.style.display = 'block');
+                    mockHeader.textContent = `Employee Records (${mockRows.length} total)`;
+                    return;
+                }
+
+                let visibleCount = 0;
+                const lowerTerm = searchTerm.toLowerCase();
+                
+                mockRows.forEach(row => {
+                    const name = row.dataset.name || '';
+                    const role = row.dataset.role || '';
+                    
+                    if (name.includes(lowerTerm) || role.includes(lowerTerm)) {
+                        row.style.display = 'block';
+                        visibleCount++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+
+                mockHeader.textContent = `Employee Records (${visibleCount} of ${mockRows.length} shown)`;
+            }
+        };
+
+        // Initialize DataGridSearch
+        const dataGridSearch = new DataGridSearch('#datagrid-search-demo', {
+            dataGrid: mockDataGridObj,
+            searchMethod: 'handleSearch',
+            onSearch: (term, instance) => {
+                console.log(`DataGridSearch: User searched for "${term}"`);
+            },
+            onClear: (instance) => {
+                console.log('DataGridSearch: Search cleared by user');
+            }
+        });
+
+        // Initialize CollectionSearch
+        const collectionSearch = new CollectionSearch('#collection-search-demo', {
+            collection: languages,
+            minSearchLength: 2,
+            onSearch: (term, collection, instance) => {
+                console.log(`CollectionSearch: Custom search for "${term}"`);
+                // Use default search
+                return instance.defaultSearch(term);
+            },
+            onResult: (term, results, instance) => {
+                console.log(`CollectionSearch: Found ${results.length} results for "${term}"`);
+                
+                // Custom result display
+                if (!term) {
+                    instance.clearResults();
+                    return;
+                }
+
+                if (results.length === 0) {
+                    instance.displayAlert('warning', 'No Programming Languages Found', 
+                        `No languages found matching "${term}". Try "Java", "Python", or "Script".`);
+                } else {
+                    const count = results.length;
+                    const languageList = results.slice(0, 5).join(', ') + 
+                        (results.length > 5 ? ` and ${results.length - 5} more...` : '');
+                    
+                    instance.displayAlert('success', 
+                        `${count} Language${count === 1 ? '' : 's'} Found`, 
+                        `Found: ${languageList}`);
+                }
+            }
+        });
+
+        // Demo button handlers
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('btn')) {
+                const action = e.target.dataset.action;
+                
+                switch (action) {
+                    case 'search-dev':
+                        dataGridSearch.setSearchTerm('developer');
+                        break;
+                    case 'search-manager':
+                        dataGridSearch.setSearchTerm('manager');
+                        break;
+                    case 'clear-datagrid':
+                        dataGridSearch.clear();
+                        break;
+                    case 'search-script':
+                        collectionSearch.setSearchTerm('Script');
+                        break;
+                    case 'search-java':
+                        collectionSearch.setSearchTerm('Java');
+                        break;
+                    case 'clear-collection':
+                        collectionSearch.clear();
+                        break;
+                }
+            }
+        });
+
+        console.log('✅ Search Components Demo initialized successfully');
+        console.log('DataGridSearch instance:', dataGridSearch);
+        console.log('CollectionSearch instance:', collectionSearch);
+    </script>
+</body>
+</html>

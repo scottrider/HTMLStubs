@@ -1,0 +1,275 @@
+/**
+ * ToggleSwitch - Master Level Web Standard Component
+ * 
+ * A reusable, accessible toggle switch component following modern web standards.
+ * Self-contained with no external dependencies.
+ * 
+ * Usage:
+ * <div class="ToggleSwitch">
+ *   <label for="uniqueId" class="ToggleSwitch__label">Label Text</label>
+ *   <label class="ToggleSwitch__control">
+ *     <input type="checkbox" id="uniqueId" class="ToggleSwitch__input" checked>
+ *     <span class="ToggleSwitch__slider"></span>
+ *   </label>
+ * </div>
+ * 
+ * @version 1.0.0
+ * @author FormMock Development Team
+ * @license MIT
+ */
+
+/* Container */
+.ToggleSwitch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  padding: 0;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Label Text */
+.ToggleSwitch__label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  cursor: pointer;
+  user-select: none;
+  display: inline-block;
+  margin: 0;
+  padding: 0;
+  transition: color 0.2s ease;
+}
+
+.ToggleSwitch__label:hover {
+  color: #007bff;
+}
+
+.ToggleSwitch__label--disabled {
+  color: #6c757d;
+  cursor: not-allowed;
+}
+
+/* Switch Control Container */
+.ToggleSwitch__control {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+  cursor: pointer;
+  margin: 0;
+  padding: 0;
+}
+
+.ToggleSwitch__control--disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Hidden Checkbox Input */
+.ToggleSwitch__input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+  pointer-events: none;
+}
+
+/* Switch Slider Track */
+.ToggleSwitch__slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  border: 1px solid #999;
+  border-radius: 12px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: block;
+}
+
+/* Switch Handle (Circle) */
+.ToggleSwitch__slider::before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Checked State - Track */
+.ToggleSwitch__input:checked + .ToggleSwitch__slider {
+  background-color: #007bff;
+  border-color: #0056b3;
+}
+
+/* Checked State - Handle */
+.ToggleSwitch__input:checked + .ToggleSwitch__slider::before {
+  transform: translateX(27px);
+  box-shadow: 0 2px 6px rgba(0, 123, 255, 0.3);
+}
+
+/* Focus State for Accessibility */
+.ToggleSwitch__input:focus + .ToggleSwitch__slider {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+.ToggleSwitch__input:focus:not(:focus-visible) + .ToggleSwitch__slider {
+  outline: none;
+}
+
+/* Hover States */
+.ToggleSwitch__slider:hover {
+  box-shadow: 
+    inset 0 1px 3px rgba(0, 0, 0, 0.3),
+    0 0 0 3px rgba(0, 123, 255, 0.15);
+}
+
+.ToggleSwitch__input:checked + .ToggleSwitch__slider:hover {
+  background-color: #0056b3;
+}
+
+/* Disabled State */
+.ToggleSwitch__input:disabled + .ToggleSwitch__slider {
+  background-color: #e9ecef;
+  border-color: #ced4da;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.ToggleSwitch__input:disabled + .ToggleSwitch__slider::before {
+  background-color: #f8f9fa;
+  border-color: #ced4da;
+  box-shadow: none;
+}
+
+.ToggleSwitch__input:disabled:checked + .ToggleSwitch__slider {
+  background-color: #6c757d;
+  border-color: #6c757d;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .ToggleSwitch__slider {
+    border-width: 2px;
+  }
+  
+  .ToggleSwitch__slider::before {
+    border-width: 2px;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .ToggleSwitch__slider,
+  .ToggleSwitch__slider::before {
+    transition: none;
+  }
+}
+
+/* Dark Theme Support */
+@media (prefers-color-scheme: dark) {
+  .ToggleSwitch__label {
+    color: #f8f9fa;
+  }
+  
+  .ToggleSwitch__label:hover {
+    color: #66b3ff;
+  }
+  
+  .ToggleSwitch__slider {
+    background-color: #495057;
+    border-color: #6c757d;
+  }
+  
+  .ToggleSwitch__slider::before {
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+  }
+  
+  .ToggleSwitch__input:checked + .ToggleSwitch__slider {
+    background-color: #0d6efd;
+    border-color: #0a58ca;
+  }
+}
+
+/* Size Variants */
+.ToggleSwitch--small {
+  gap: 6px;
+}
+
+.ToggleSwitch--small .ToggleSwitch__label {
+  font-size: 12px;
+}
+
+.ToggleSwitch--small .ToggleSwitch__control {
+  width: 40px;
+  height: 20px;
+}
+
+.ToggleSwitch--small .ToggleSwitch__slider::before {
+  height: 14px;
+  width: 12px;
+  left: 2px;
+  bottom: 2px;
+}
+
+.ToggleSwitch--small .ToggleSwitch__input:checked + .ToggleSwitch__slider::before {
+  transform: translateX(20px);
+}
+
+.ToggleSwitch--large {
+  gap: 12px;
+}
+
+.ToggleSwitch--large .ToggleSwitch__label {
+  font-size: 16px;
+}
+
+.ToggleSwitch--large .ToggleSwitch__control {
+  width: 60px;
+  height: 28px;
+}
+
+.ToggleSwitch--large .ToggleSwitch__slider::before {
+  height: 22px;
+  width: 20px;
+  left: 2px;
+  bottom: 2px;
+}
+
+.ToggleSwitch--large .ToggleSwitch__input:checked + .ToggleSwitch__slider::before {
+  transform: translateX(32px);
+}
+
+/* Color Variants */
+.ToggleSwitch--success .ToggleSwitch__input:checked + .ToggleSwitch__slider {
+  background-color: #28a745;
+  border-color: #1e7e34;
+}
+
+.ToggleSwitch--warning .ToggleSwitch__input:checked + .ToggleSwitch__slider {
+  background-color: #ffc107;
+  border-color: #d39e00;
+}
+
+.ToggleSwitch--danger .ToggleSwitch__input:checked + .ToggleSwitch__slider {
+  background-color: #dc3545;
+  border-color: #bd2130;
+}
+
+.ToggleSwitch--info .ToggleSwitch__input:checked + .ToggleSwitch__slider {
+  background-color: #17a2b8;
+  border-color: #138496;
+}

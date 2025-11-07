@@ -1,0 +1,402 @@
+/**
+ * CollectionSearch - Master Level Web Standard Component
+ * 
+ * A general-purpose search component for collections with alert-based results.
+ * Independent of DataGrid components, provides flexible search functionality.
+ * 
+ * Features:
+ * - Real-time search with debouncing
+ * - Clear button with smart visibility
+ * - Alert-based result display
+ * - Customizable search logic via callbacks
+ * - Accessibility support (ARIA labels, keyboard navigation)
+ * - Responsive design
+ * - Enterprise-grade styling
+ * 
+ * Usage:
+ * <div class="CollectionSearch">
+ *   <label for="collection-search" class="CollectionSearch__label">Search:</label>
+ *   <div class="CollectionSearch__container">
+ *     <input type="text" id="collection-search" class="CollectionSearch__input" 
+ *            placeholder="Search collection..." autocomplete="off">
+ *     <button type="button" class="CollectionSearch__clear" title="Clear search" 
+ *             aria-label="Clear search">✕</button>
+ *   </div>
+ *   <div class="CollectionSearch__results" role="status" aria-live="polite"></div>
+ * </div>
+ * 
+ * @version 1.0.0
+ * @author FormMock Development Team
+ * @license MIT
+ */
+
+/* Main Container */
+.CollectionSearch {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Header Row (Label + Input) */
+.CollectionSearch__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Label */
+.CollectionSearch__label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  margin: 0;
+  padding: 0;
+  white-space: nowrap;
+  user-select: none;
+}
+
+/* Input Container */
+.CollectionSearch__container {
+  position: relative;
+  display: inline-block;
+  min-width: 250px;
+  flex: 1;
+}
+
+/* Search Input */
+.CollectionSearch__input {
+  width: 100%;
+  padding: 8px 12px;
+  padding-right: 36px; /* Space for clear button */
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
+  background: white;
+  color: #333;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  box-sizing: border-box;
+}
+
+.CollectionSearch__input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
+}
+
+.CollectionSearch__input:hover {
+  border-color: #adb5bd;
+}
+
+.CollectionSearch__input::placeholder {
+  color: #6c757d;
+  opacity: 1;
+}
+
+/* Clear Button */
+.CollectionSearch__clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6c757d;
+  font-size: 16px;
+  padding: 4px;
+  border-radius: 3px;
+  display: none; /* Hidden by default */
+  transition: color 0.2s ease, background-color 0.2s ease;
+  line-height: 1;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.CollectionSearch__clear:hover {
+  color: #495057;
+  background-color: #f8f9fa;
+}
+
+.CollectionSearch__clear:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 1px;
+}
+
+.CollectionSearch__clear:active {
+  background-color: #e9ecef;
+}
+
+/* Show clear button when input has content */
+.CollectionSearch__input:not([value=""]) + .CollectionSearch__clear,
+.CollectionSearch__container.has-content .CollectionSearch__clear {
+  display: flex;
+}
+
+/* Results Container */
+.CollectionSearch__results {
+  min-height: 0;
+  margin-top: 4px;
+}
+
+/* Alert Styles */
+.CollectionSearch__alert {
+  padding: 12px 16px;
+  border-radius: 4px;
+  border: 1px solid;
+  margin-bottom: 8px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.CollectionSearch__alert:last-child {
+  margin-bottom: 0;
+}
+
+/* Alert Variants */
+.CollectionSearch__alert--info {
+  background-color: #d1ecf1;
+  border-color: #bee5eb;
+  color: #0c5460;
+}
+
+.CollectionSearch__alert--success {
+  background-color: #d4edda;
+  border-color: #c3e6cb;
+  color: #155724;
+}
+
+.CollectionSearch__alert--warning {
+  background-color: #fff3cd;
+  border-color: #ffeaa7;
+  color: #856404;
+}
+
+.CollectionSearch__alert--error {
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+  color: #721c24;
+}
+
+/* Alert Content */
+.CollectionSearch__alert-title {
+  font-weight: 600;
+  margin: 0 0 4px 0;
+}
+
+.CollectionSearch__alert-message {
+  margin: 0;
+}
+
+.CollectionSearch__alert-count {
+  font-weight: 500;
+  color: #007bff;
+}
+
+/* Loading State */
+.CollectionSearch__loading {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  color: #6c757d;
+  font-size: 14px;
+}
+
+.CollectionSearch__loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #dee2e6;
+  border-top: 2px solid #007bff;
+  border-radius: 50%;
+  animation: CollectionSearch-spin 1s linear infinite;
+}
+
+@keyframes CollectionSearch-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.CollectionSearch--searching .CollectionSearch__loading {
+  display: flex;
+}
+
+/* Size Variants */
+.CollectionSearch--small {
+  gap: 6px;
+}
+
+.CollectionSearch--small .CollectionSearch__header {
+  gap: 8px;
+}
+
+.CollectionSearch--small .CollectionSearch__label {
+  font-size: 12px;
+}
+
+.CollectionSearch--small .CollectionSearch__container {
+  min-width: 200px;
+}
+
+.CollectionSearch--small .CollectionSearch__input {
+  padding: 6px 10px;
+  padding-right: 32px;
+  font-size: 12px;
+}
+
+.CollectionSearch--small .CollectionSearch__clear {
+  right: 6px;
+  font-size: 14px;
+  width: 20px;
+  height: 20px;
+}
+
+.CollectionSearch--small .CollectionSearch__alert {
+  padding: 8px 12px;
+  font-size: 12px;
+}
+
+.CollectionSearch--large {
+  gap: 12px;
+}
+
+.CollectionSearch--large .CollectionSearch__header {
+  gap: 16px;
+}
+
+.CollectionSearch--large .CollectionSearch__label {
+  font-size: 16px;
+}
+
+.CollectionSearch--large .CollectionSearch__container {
+  min-width: 300px;
+}
+
+.CollectionSearch--large .CollectionSearch__input {
+  padding: 12px 16px;
+  padding-right: 44px;
+  font-size: 16px;
+}
+
+.CollectionSearch--large .CollectionSearch__clear {
+  right: 12px;
+  font-size: 18px;
+  width: 28px;
+  height: 28px;
+}
+
+.CollectionSearch--large .CollectionSearch__alert {
+  padding: 16px 20px;
+  font-size: 16px;
+}
+
+/* Horizontal Layout */
+.CollectionSearch--horizontal {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.CollectionSearch--horizontal .CollectionSearch__header {
+  flex-shrink: 0;
+}
+
+.CollectionSearch--horizontal .CollectionSearch__results {
+  flex: 1;
+  margin-top: 0;
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .CollectionSearch__label {
+    color: #e9ecef;
+  }
+  
+  .CollectionSearch__input {
+    background: #2d3748;
+    border-color: #4a5568;
+    color: #e9ecef;
+  }
+  
+  .CollectionSearch__input:focus {
+    border-color: #63b3ed;
+    box-shadow: 0 0 0 3px rgba(99, 179, 237, 0.15);
+  }
+  
+  .CollectionSearch__input::placeholder {
+    color: #a0aec0;
+  }
+  
+  .CollectionSearch__clear {
+    color: #a0aec0;
+  }
+  
+  .CollectionSearch__clear:hover {
+    color: #e9ecef;
+    background-color: #4a5568;
+  }
+  
+  .CollectionSearch__alert--info {
+    background-color: #2a4a5c;
+    border-color: #1a365d;
+    color: #90cdf4;
+  }
+  
+  .CollectionSearch__alert--success {
+    background-color: #22543d;
+    border-color: #1a202c;
+    color: #9ae6b4;
+  }
+  
+  .CollectionSearch__alert--warning {
+    background-color: #744210;
+    border-color: #553c0f;
+    color: #faf089;
+  }
+  
+  .CollectionSearch__alert--error {
+    background-color: #742a2a;
+    border-color: #553c3c;
+    color: #feb2b2;
+  }
+  
+  .CollectionSearch__loading {
+    background-color: #2d3748;
+    border-color: #4a5568;
+    color: #a0aec0;
+  }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .CollectionSearch__input {
+    border-width: 2px;
+  }
+  
+  .CollectionSearch__clear {
+    border: 1px solid;
+  }
+  
+  .CollectionSearch__alert {
+    border-width: 2px;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .CollectionSearch__input,
+  .CollectionSearch__clear,
+  .CollectionSearch__loading-spinner {
+    transition: none;
+    animation: none;
+  }
+}

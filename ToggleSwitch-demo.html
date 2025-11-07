@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToggleSwitch - Master Level Web Standard Component</title>
+    <link rel="stylesheet" href="ToggleSwitch.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            line-height: 1.6;
+            background: #f8f9fa;
+        }
+        
+        .demo-section {
+            background: white;
+            padding: 30px;
+            margin: 30px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+        }
+        
+        h2 {
+            color: #007bff;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        
+        .code-block {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+        }
+        
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .feature-item {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #2196f3;
+        }
+        
+        .demo-item {
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .demo-item h4 {
+            margin-top: 0;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>ToggleSwitch</h1>
+    <p class="subtitle">Master Level Web Standard Component v1.0.0</p>
+
+    <div class="demo-section">
+        <h2>📋 Overview</h2>
+        <p>A reusable, accessible toggle switch component following modern web standards. Self-contained with no external dependencies, fully customizable, and enterprise-ready.</p>
+        
+        <div class="feature-list">
+            <div class="feature-item">
+                <strong>🎯 Accessible</strong><br>
+                Full ARIA support, keyboard navigation, screen reader friendly
+            </div>
+            <div class="feature-item">
+                <strong>🎨 Customizable</strong><br>
+                Size variants, color themes, dark mode support
+            </div>
+            <div class="feature-item">
+                <strong>📱 Responsive</strong><br>
+                Works perfectly on all devices and screen sizes
+            </div>
+            <div class="feature-item">
+                <strong>⚡ Performance</strong><br>
+                Lightweight, efficient, smooth animations
+            </div>
+            <div class="feature-item">
+                <strong>🔧 Framework Agnostic</strong><br>
+                Pure HTML/CSS/JS, works with any framework
+            </div>
+            <div class="feature-item">
+                <strong>🌙 Modern Standards</strong><br>
+                Supports dark mode, reduced motion, high contrast
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>🚀 Basic Usage</h2>
+        
+        <div class="ToggleSwitch">
+            <label for="demo-basic" class="ToggleSwitch__label">Enable Notifications</label>
+            <label class="ToggleSwitch__control">
+                <input type="checkbox" id="demo-basic" class="ToggleSwitch__input" checked>
+                <span class="ToggleSwitch__slider"></span>
+            </label>
+        </div>
+        
+        <div class="code-block">
+&lt;div class="ToggleSwitch"&gt;
+  &lt;label for="demo-basic" class="ToggleSwitch__label"&gt;Enable Notifications&lt;/label&gt;
+  &lt;label class="ToggleSwitch__control"&gt;
+    &lt;input type="checkbox" id="demo-basic" class="ToggleSwitch__input" checked&gt;
+    &lt;span class="ToggleSwitch__slider"&gt;&lt;/span&gt;
+  &lt;/label&gt;
+&lt;/div&gt;
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>📏 Size Variants</h2>
+        
+        <div class="demo-grid">
+            <div class="demo-item">
+                <h4>Small</h4>
+                <div class="ToggleSwitch ToggleSwitch--small">
+                    <label for="demo-small" class="ToggleSwitch__label">Compact Mode</label>
+                    <label class="ToggleSwitch__control">
+                        <input type="checkbox" id="demo-small" class="ToggleSwitch__input" checked>
+                        <span class="ToggleSwitch__slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="demo-item">
+                <h4>Standard</h4>
+                <div class="ToggleSwitch">
+                    <label for="demo-standard" class="ToggleSwitch__label">Standard Size</label>
+                    <label class="ToggleSwitch__control">
+                        <input type="checkbox" id="demo-standard" class="ToggleSwitch__input">
+                        <span class="ToggleSwitch__slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="demo-item">
+                <h4>Large</h4>
+                <div class="ToggleSwitch ToggleSwitch--large">
+                    <label for="demo-large" class="ToggleSwitch__label">Large Display</label>
+                    <label class="ToggleSwitch__control">
+                        <input type="checkbox" id="demo-large" class="ToggleSwitch__input" checked>
+                        <span class="ToggleSwitch__slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>🎨 Color Variants</h2>
+        
+        <div class="demo-grid">
+            <div class="demo-item">
+                <h4>Primary (Default)</h4>
+                <div class="ToggleSwitch">
+                    <label for="demo-primary" class="ToggleSwitch__label">Primary Blue</label>
+                    <label class="ToggleSwitch__control">
+                        <input type="checkbox" id="demo-primary" class="ToggleSwitch__input" checked>
+                        <span class="ToggleSwitch__slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="demo-item">
+                <h4>Success</h4>
+                <div class="ToggleSwitch ToggleSwitch--success">
+                    <label for="demo-success" class="ToggleSwitch__label">Success Green</label>
+                    <label class="ToggleSwitch__control">
+                        <input type="checkbox" id="demo-success" class="ToggleSwitch__input" checked>
+                        <span class="ToggleSwitch__slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="demo-item">
+                <h4>Warning</h4>
+                <div class="ToggleSwitch ToggleSwitch--warning">
+                    <label for="demo-warning" class="ToggleSwitch__label">Warning Yellow</label>
+                    <label class="ToggleSwitch__control">
+                        <input type="checkbox" id="demo-warning" class="ToggleSwitch__input" checked>
+                        <span class="ToggleSwitch__slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="demo-item">
+                <h4>Danger</h4>
+                <div class="ToggleSwitch ToggleSwitch--danger">
+                    <label for="demo-danger" class="ToggleSwitch__label">Danger Red</label>
+                    <label class="ToggleSwitch__control">
+                        <input type="checkbox" id="demo-danger" class="ToggleSwitch__input" checked>
+                        <span class="ToggleSwitch__slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>🔒 States & Behavior</h2>
+        
+        <div class="demo-grid">
+            <div class="demo-item">
+                <h4>Enabled</h4>
+                <div class="ToggleSwitch">
+                    <label for="demo-enabled" class="ToggleSwitch__label">Active Toggle</label>
+                    <label class="ToggleSwitch__control">
+                        <input type="checkbox" id="demo-enabled" class="ToggleSwitch__input" checked>
+                        <span class="ToggleSwitch__slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="demo-item">
+                <h4>Disabled</h4>
+                <div class="ToggleSwitch">
+                    <label for="demo-disabled" class="ToggleSwitch__label ToggleSwitch__label--disabled">Disabled Toggle</label>
+                    <label class="ToggleSwitch__control ToggleSwitch__control--disabled">
+                        <input type="checkbox" id="demo-disabled" class="ToggleSwitch__input" checked disabled>
+                        <span class="ToggleSwitch__slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="demo-item">
+                <h4>Dynamic Label</h4>
+                <div class="ToggleSwitch">
+                    <label for="demo-dynamic" class="ToggleSwitch__label" data-enabled-text="Online" data-disabled-text="Offline">Offline</label>
+                    <label class="ToggleSwitch__control">
+                        <input type="checkbox" id="demo-dynamic" class="ToggleSwitch__input">
+                        <span class="ToggleSwitch__slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>⚙️ JavaScript API</h2>
+        
+        <div class="demo-grid">
+            <div class="demo-item">
+                <h4>Programmatic Control</h4>
+                <div class="ToggleSwitch" id="api-demo">
+                    <label for="demo-api" class="ToggleSwitch__label">API Control</label>
+                    <label class="ToggleSwitch__control">
+                        <input type="checkbox" id="demo-api" class="ToggleSwitch__input">
+                        <span class="ToggleSwitch__slider"></span>
+                    </label>
+                </div>
+                <div style="margin-top: 10px;">
+                    <button onclick="apiDemo.toggle()" style="margin-right: 5px; padding: 5px 10px; border: 1px solid #007bff; background: #007bff; color: white; border-radius: 4px; cursor: pointer;">Toggle</button>
+                    <button onclick="apiDemo.enable()" style="margin-right: 5px; padding: 5px 10px; border: 1px solid #28a745; background: #28a745; color: white; border-radius: 4px; cursor: pointer;">Enable</button>
+                    <button onclick="apiDemo.disable()" style="padding: 5px 10px; border: 1px solid #6c757d; background: #6c757d; color: white; border-radius: 4px; cursor: pointer;">Disable</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="code-block">
+// Initialize with options
+const toggle = new ToggleSwitch('#my-toggle', {
+  onChange: (checked, instance) => console.log('Changed:', checked),
+  onEnable: (instance) => console.log('Enabled'),
+  onDisable: (instance) => console.log('Disabled')
+});
+
+// API Methods
+toggle.setChecked(true);        // Set state
+toggle.isChecked();             // Get state
+toggle.toggle();                // Toggle state
+toggle.enable();                // Enable switch
+toggle.disable();               // Disable switch
+toggle.destroy();               // Clean up
+
+// Auto-initialize all toggles
+ToggleSwitch.initAll();
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>📚 Implementation Guide</h2>
+        
+        <h3>1. Include Files</h3>
+        <div class="code-block">
+&lt;link rel="stylesheet" href="ToggleSwitch.css"&gt;
+&lt;script src="ToggleSwitch.js"&gt;&lt;/script&gt;
+        </div>
+        
+        <h3>2. HTML Structure</h3>
+        <div class="code-block">
+&lt;div class="ToggleSwitch"&gt;
+  &lt;label for="uniqueId" class="ToggleSwitch__label"&gt;Label Text&lt;/label&gt;
+  &lt;label class="ToggleSwitch__control"&gt;
+    &lt;input type="checkbox" id="uniqueId" class="ToggleSwitch__input"&gt;
+    &lt;span class="ToggleSwitch__slider"&gt;&lt;/span&gt;
+  &lt;/label&gt;
+&lt;/div&gt;
+        </div>
+        
+        <h3>3. CSS Classes</h3>
+        <div class="code-block">
+.ToggleSwitch                    /* Container */
+.ToggleSwitch__label             /* Label text */
+.ToggleSwitch__control           /* Switch control wrapper */
+.ToggleSwitch__input             /* Hidden checkbox input */
+.ToggleSwitch__slider            /* Visual switch slider */
+
+/* Modifiers */
+.ToggleSwitch--small             /* Small size variant */
+.ToggleSwitch--large             /* Large size variant */
+.ToggleSwitch--success           /* Success color theme */
+.ToggleSwitch--warning           /* Warning color theme */
+.ToggleSwitch--danger            /* Danger color theme */
+.ToggleSwitch--info              /* Info color theme */
+        </div>
+    </div>
+
+    <script src="ToggleSwitch.js"></script>
+    <script>
+        // Demo API controls
+        const apiDemo = new ToggleSwitch('#api-demo', {
+            onChange: (checked) => {
+                console.log('API Demo changed:', checked);
+            }
+        });
+        
+        // Event listener example
+        document.addEventListener('toggleswitch:change', (event) => {
+            console.log('Toggle changed:', event.detail.checked);
+        });
+    </script>
+</body>
+</html>

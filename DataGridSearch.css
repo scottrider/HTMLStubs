@@ -1,0 +1,249 @@
+/**
+ * DataGridSearch - Master Level Web Standard Component
+ * 
+ * A search component specifically designed to integrate with DataGrid components.
+ * Provides real-time search functionality with clear button and proper event handling.
+ * 
+ * Features:
+ * - Real-time search with debouncing
+ * - Clear button with smart visibility
+ * - DataGrid integration via callbacks
+ * - Accessibility support (ARIA labels, keyboard navigation)
+ * - Responsive design
+ * - Enterprise-grade styling
+ * 
+ * Usage:
+ * <div class="DataGridSearch">
+ *   <label for="datagrid-search" class="DataGridSearch__label">Search:</label>
+ *   <div class="DataGridSearch__container">
+ *     <input type="text" id="datagrid-search" class="DataGridSearch__input" 
+ *            placeholder="Search records..." autocomplete="off">
+ *     <button type="button" class="DataGridSearch__clear" title="Clear search" 
+ *             aria-label="Clear search">✕</button>
+ *   </div>
+ * </div>
+ * 
+ * @version 1.0.0
+ * @author FormMock Development Team
+ * @license MIT
+ */
+
+/* Main Container */
+.DataGridSearch {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Label */
+.DataGridSearch__label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  margin: 0;
+  padding: 0;
+  white-space: nowrap;
+  user-select: none;
+}
+
+/* Input Container */
+.DataGridSearch__container {
+  position: relative;
+  display: inline-block;
+  min-width: 250px;
+}
+
+/* Search Input */
+.DataGridSearch__input {
+  width: 100%;
+  padding: 8px 12px;
+  padding-right: 36px; /* Space for clear button */
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
+  background: white;
+  color: #333;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  box-sizing: border-box;
+}
+
+.DataGridSearch__input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
+}
+
+.DataGridSearch__input:hover {
+  border-color: #adb5bd;
+}
+
+.DataGridSearch__input::placeholder {
+  color: #6c757d;
+  opacity: 1;
+}
+
+/* Clear Button */
+.DataGridSearch__clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6c757d;
+  font-size: 16px;
+  padding: 4px;
+  border-radius: 3px;
+  display: none; /* Hidden by default */
+  transition: color 0.2s ease, background-color 0.2s ease;
+  line-height: 1;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.DataGridSearch__clear:hover {
+  color: #495057;
+  background-color: #f8f9fa;
+}
+
+.DataGridSearch__clear:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 1px;
+}
+
+.DataGridSearch__clear:active {
+  background-color: #e9ecef;
+}
+
+/* Show clear button when input has content */
+.DataGridSearch__input:not([value=""]) + .DataGridSearch__clear,
+.DataGridSearch__container.has-content .DataGridSearch__clear {
+  display: flex;
+}
+
+/* Size Variants */
+.DataGridSearch--small {
+  gap: 8px;
+}
+
+.DataGridSearch--small .DataGridSearch__label {
+  font-size: 12px;
+}
+
+.DataGridSearch--small .DataGridSearch__container {
+  min-width: 200px;
+}
+
+.DataGridSearch--small .DataGridSearch__input {
+  padding: 6px 10px;
+  padding-right: 32px;
+  font-size: 12px;
+}
+
+.DataGridSearch--small .DataGridSearch__clear {
+  right: 6px;
+  font-size: 14px;
+  width: 20px;
+  height: 20px;
+}
+
+.DataGridSearch--large {
+  gap: 16px;
+}
+
+.DataGridSearch--large .DataGridSearch__label {
+  font-size: 16px;
+}
+
+.DataGridSearch--large .DataGridSearch__container {
+  min-width: 300px;
+}
+
+.DataGridSearch--large .DataGridSearch__input {
+  padding: 12px 16px;
+  padding-right: 44px;
+  font-size: 16px;
+}
+
+.DataGridSearch--large .DataGridSearch__clear {
+  right: 12px;
+  font-size: 18px;
+  width: 28px;
+  height: 28px;
+}
+
+/* Status States */
+.DataGridSearch--searching .DataGridSearch__input {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23007bff'%3E%3Cpath d='M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L23 5L22 4L20 6H18V4C18 2.9 17.1 2 16 2H8C6.9 2 6 2.9 6 4V6H4L2 4L1 5L3 7V9C1.9 9 1 9.9 1 11V20C1 21.1 1.9 22 3 22H21C22.1 22 23 21.1 23 20V11C23 9.9 22.1 9 21 9Z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 40px center;
+  background-size: 16px 16px;
+}
+
+.DataGridSearch--no-results .DataGridSearch__input {
+  border-color: #ffc107;
+  background-color: #fff3cd;
+}
+
+.DataGridSearch--error .DataGridSearch__input {
+  border-color: #dc3545;
+  background-color: #f8d7da;
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .DataGridSearch__label {
+    color: #000000;
+  }
+  
+  .DataGridSearch__input {
+    background: #007bff;
+    border-color: #4a5568;
+    color: #ffffff;
+  }
+  
+  .DataGridSearch__input:focus {
+    border-color: #63b3ed;
+    box-shadow: 0 0 0 3px rgba(99, 179, 237, 0.15);
+  }
+  
+  .DataGridSearch__input::placeholder {
+    color: #a0aec0;
+  }
+  
+  .DataGridSearch__clear {
+    color: #a0aec0;
+  }
+  
+  .DataGridSearch__clear:hover {
+    color: #e9ecef;
+    background-color: #4a5568;
+  }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .DataGridSearch__input {
+    border-width: 2px;
+  }
+  
+  .DataGridSearch__clear {
+    border: 1px solid;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .DataGridSearch__input,
+  .DataGridSearch__clear {
+    transition: none;
+  }
+}
