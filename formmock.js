@@ -201,12 +201,12 @@ function storeRecord(formData) {
 
 // Update pagination display and controls
 function updatePagination() {
-  // Use filtered records for display logic (this affects what's shown)
-  const filteredRecords = getFilteredRecords();
-  // But use all records for pagination controls when not filtering
-  const paginationRecords = filteredRecords;
+  // Use search results if searching, otherwise use filtered records for display logic
+  const displayRecords = currentSearchTerm 
+    ? filteredSearchRecords 
+    : getFilteredRecords();
   
-  totalPages = Math.max(1, Math.ceil(paginationRecords.length / pageSize));
+  totalPages = Math.max(1, Math.ceil(displayRecords.length / pageSize));
   
   // Ensure current page is valid
   if (currentPage > totalPages) {
@@ -219,10 +219,10 @@ function updatePagination() {
   updateMasterCheckboxState();
   updateGridVisibility();
   
-  // Hide pagination controls when no filtered records exist
+  // Hide pagination controls when no display records exist
   const paginationContainer = document.getElementById('paginationControls');
   if (paginationContainer) {
-    if (filteredRecords.length === 0) {
+    if (displayRecords.length === 0) {
       paginationContainer.style.display = 'none';
     } else {
       paginationContainer.style.display = 'flex';
@@ -304,16 +304,23 @@ function updateHeaderSummary() {
   const headerSummary = document.getElementById('headerSummary');
   if (!headerSummary) return;
   
-  // Use filtered records for summary (this is what the user sees as results)
-  const filteredRecords = getFilteredRecords();
+  // Use search results if searching, otherwise use filtered records for summary
+  const displayRecords = currentSearchTerm 
+    ? filteredSearchRecords 
+    : getFilteredRecords();
   const viewType = viewingEnabled ? 'enabled' : 'disabled';
+  const searchInfo = currentSearchTerm ? ` matching "${currentSearchTerm}"` : '';
   
-  if (filteredRecords.length === 0) {
-    headerSummary.textContent = `No ${viewType} records - Click ➕ to add your first record`;
+  if (displayRecords.length === 0) {
+    if (currentSearchTerm) {
+      headerSummary.textContent = `No ${viewType} records found matching "${currentSearchTerm}"`;
+    } else {
+      headerSummary.textContent = `No ${viewType} records - Click ➕ to add your first record`;
+    }
   } else {
     const startRecord = (currentPage - 1) * pageSize + 1;
-    const endRecord = Math.min(currentPage * pageSize, filteredRecords.length);
-    headerSummary.textContent = `Showing ${startRecord}-${endRecord} of ${filteredRecords.length} ${viewType} records`;
+    const endRecord = Math.min(currentPage * pageSize, displayRecords.length);
+    headerSummary.textContent = `Showing ${startRecord}-${endRecord} of ${displayRecords.length} ${viewType} records${searchInfo}`;
   }
 }
 
@@ -327,24 +334,35 @@ function renderRecordsDisplay() {
   const recordsContainer = document.getElementById('recordsDisplay');
   if (!recordsContainer) return;
   
-  // Apply filtering based on toggle state (this is the ONLY place toggle affects UI)
-  const filteredRecords = getFilteredRecords();
-  const viewType = viewingEnabled ? 'enabled' : 'disabled';
+  // Determine which records to display (search results or normal filtered records)
+  const displayRecords = currentSearchTerm 
+    ? filteredSearchRecords 
+    : getFilteredRecords();
+  const viewType = viewingEnabled ? 'enabled' : 'disabled'; 
   
-  if (filteredRecords.length === 0) {
+  // Handle no records cases
+  if (currentSearchTerm && filteredSearchRecords.length === 0) {
+    recordsContainer.innerHTML = `<div class="no-records-message">No ${viewType} records found matching "${currentSearchTerm}".</div>`;
+    return;
+  }
+  
+  if (displayRecords.length === 0) {
     recordsContainer.innerHTML = `<div class="no-records-message">No ${viewType} records found.</div>`;
     return;
   }
   
   // Calculate which records to show on current page
   const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = Math.min(startIndex + pageSize, filteredRecords.length);
-  const pageRecords = filteredRecords.slice(startIndex, endIndex);
+  const endIndex = Math.min(startIndex + pageSize, displayRecords.length);
+  const pageRecords = displayRecords.slice(startIndex, endIndex);
   
   // Render each record as a row
   recordsContainer.innerHTML = pageRecords.map((record, index) => {
     const filteredIndex = startIndex + index;
-    const globalIndex = getFilteredRecordIndex(filteredIndex);
+    // For search results, find the original global index
+    const globalIndex = currentSearchTerm
+      ? storedRecords.findIndex(r => r.id === record.id)
+      : getFilteredRecordIndex(filteredIndex);
     return createRecordRowHTML(record, globalIndex);
   }).join('');
   
@@ -1050,9 +1068,15 @@ function toggleView(showEnabled) {
     enableToggle.checked = showEnabled;
   }
   
-  // ISOLATED: Only update recordsDisplay and related grid visibility
-  updateGridVisibility();
-  renderRecordsDisplay();
+  // If there's an active search, re-execute it with the new toggle state
+  if (currentSearchTerm) {
+    window.performGlobalSearch(currentSearchTerm);
+  } else {
+    // ISOLATED: Only update recordsDisplay and related grid visibility
+    updateGridVisibility();
+    renderRecordsDisplay();
+    updatePagination();
+  }
   
   console.log(`Switched to viewing ${showEnabled ? 'enabled' : 'disabled'} records - recordsDisplay only`);
 }
@@ -1060,14 +1084,17 @@ function toggleView(showEnabled) {
 // Control grid visibility based on filtered records
 function updateGridVisibility() {
   const recordForm = document.getElementById('recordForm');
-  const filteredRecords = getFilteredRecords();
+  // Consider search results when determining grid visibility
+  const displayRecords = currentSearchTerm 
+    ? filteredSearchRecords 
+    : getFilteredRecords();
   
   if (recordForm) {
-    if (filteredRecords.length === 0) {
-      // Hide entire grid structure when no filtered records
+    if (displayRecords.length === 0) {
+      // Hide entire grid structure when no display records
       recordForm.style.display = 'none';
     } else {
-      // Show grid structure when there are filtered records
+      // Show grid structure when there are display records
       recordForm.style.display = 'block';
       // Ensure row title is visible (not in edit mode)
       const rowForm = document.getElementById('rowForm');
@@ -1291,3 +1318,56 @@ function attachPaginationListeners() {
     lastBtn.addEventListener('click', goToLastPage);
   }
 }
+
+// Global search variables
+let currentSearchTerm = '';
+let filteredSearchRecords = [];
+
+// Global search function for DataGridSearch integration
+window.performGlobalSearch = function(searchTerm) {
+  currentSearchTerm = searchTerm.toLowerCase().trim();
+  console.log('Search for:', searchTerm);
+  
+  if (!currentSearchTerm) {
+    // Clear search - show all filtered records based on toggle state
+    filteredSearchRecords = [];
+    currentPage = 1;
+    renderRecordsDisplay();
+    updatePagination();
+    return;
+  }
+  
+  // Get the base filtered records (based on toggle state)
+  const baseRecords = getFilteredRecords();
+  
+  // Further filter by search term
+  filteredSearchRecords = baseRecords.filter(record => {
+    const matches = (
+      (record.position && record.position.toLowerCase().includes(currentSearchTerm)) ||
+      (record.email && record.email.toLowerCase().includes(currentSearchTerm)) ||
+      (record.cphone && record.cphone.toLowerCase().includes(currentSearchTerm)) ||
+      (record.ophone && record.ophone.toLowerCase().includes(currentSearchTerm)) ||
+      (record.icontact && record.icontact.toLowerCase().includes(currentSearchTerm)) ||
+      (record.lcontact && record.lcontact.toLowerCase().includes(currentSearchTerm)) ||
+      (getCompanyNameById(record.companyId) && getCompanyNameById(record.companyId).toLowerCase().includes(currentSearchTerm))
+    );
+    return matches;
+  });
+  
+  console.log(`Found ${filteredSearchRecords.length} matches for "${searchTerm}"`);
+  
+  // Reset to first page and update display
+  currentPage = 1;
+  renderRecordsDisplay();
+  updatePagination();
+};
+
+// Global clear search function for DataGridSearch integration  
+window.clearSearch = function() {
+  console.log('Clearing global search');
+  currentSearchTerm = '';
+  filteredSearchRecords = [];
+  currentPage = 1;
+  renderRecordsDisplay();
+  updatePagination();
+};

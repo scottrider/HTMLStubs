@@ -222,7 +222,8 @@
       // Initialize DataGridSearch after DOM is loaded
       document.addEventListener('DOMContentLoaded', function() {
         // Initialize DataGridSearch with FormMock integration
-        window.formMockSearch = new DataGridSearch('#formmock-search', {
+        // Pass the container element, not the input element
+        window.formMockSearch = new DataGridSearch('.DataGridSearch', {
           debounceDelay: 300,
           placeholder: 'Search positions...',
           onSearch: function(searchTerm, instance) {
