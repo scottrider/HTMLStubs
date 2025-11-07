@@ -679,22 +679,39 @@ function handleRecordCheckboxChange(index, checked) {
 
 // Handle master checkbox change
 function handleMasterCheckboxChange(checked) {
+  console.log('Master checkbox changed:', checked);
   masterCheckboxState = checked;
+  
+  // Get the currently displayed records (filtered by toggle state and search)
+  const displayRecords = currentSearchTerm 
+    ? filteredSearchRecords 
+    : getFilteredRecords();
   
   // Calculate visible records on current page
   const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = Math.min(startIndex + pageSize, storedRecords.length);
+  const endIndex = Math.min(startIndex + pageSize, displayRecords.length);
+  const pageRecords = displayRecords.slice(startIndex, endIndex);
+  
+  console.log('Page records for master checkbox:', pageRecords.length, pageRecords);
   
   if (checked) {
     // Select all visible records on current page
-    for (let i = startIndex; i < endIndex; i++) {
-      selectedRecords.add(i);
-    }
+    pageRecords.forEach((record) => {
+      const globalIndex = storedRecords.findIndex(r => r.id === record.id);
+      if (globalIndex >= 0) {
+        selectedRecords.add(globalIndex);
+        console.log('Selected record:', globalIndex, record);
+      }
+    });
   } else {
     // Deselect all visible records on current page
-    for (let i = startIndex; i < endIndex; i++) {
-      selectedRecords.delete(i);
-    }
+    pageRecords.forEach((record) => {
+      const globalIndex = storedRecords.findIndex(r => r.id === record.id);
+      if (globalIndex >= 0) {
+        selectedRecords.delete(globalIndex);
+        console.log('Deselected record:', globalIndex, record);
+      }
+    });
   }
   
   renderRecordsDisplay(); // Re-render to update checkboxes
@@ -705,27 +722,51 @@ function handleMasterCheckboxChange(checked) {
 
 // Update master checkbox state based on current page selections
 function updateMasterCheckboxState() {
+  // Get the currently displayed records (filtered by toggle state and search)
+  const displayRecords = currentSearchTerm 
+    ? filteredSearchRecords 
+    : getFilteredRecords();
+  
+  // Calculate visible records on current page
   const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = Math.min(startIndex + pageSize, storedRecords.length);
+  const endIndex = Math.min(startIndex + pageSize, displayRecords.length);
+  const pageRecords = displayRecords.slice(startIndex, endIndex);
   
   let allPageRecordsSelected = true;
   let anyPageRecordsSelected = false;
   
-  for (let i = startIndex; i < endIndex; i++) {
-    if (selectedRecords.has(i)) {
-      anyPageRecordsSelected = true;
-    } else {
-      allPageRecordsSelected = false;
-    }
+  // Check if any records exist on this page
+  if (pageRecords.length === 0) {
+    allPageRecordsSelected = false;
+    anyPageRecordsSelected = false;
+  } else {
+    // Check each record on the current page
+    pageRecords.forEach((record) => {
+      const globalIndex = storedRecords.findIndex(r => r.id === record.id);
+      if (globalIndex >= 0 && selectedRecords.has(globalIndex)) {
+        anyPageRecordsSelected = true;
+      } else {
+        allPageRecordsSelected = false;
+      }
+    });
   }
   
   const masterCheckbox = document.getElementById('masterCheckbox');
   if (masterCheckbox) {
+    // Set checked state: all records on page must be selected
     masterCheckbox.checked = allPageRecordsSelected && anyPageRecordsSelected;
+    // Set indeterminate state: some but not all records are selected
     masterCheckbox.indeterminate = anyPageRecordsSelected && !allPageRecordsSelected;
   }
   
   masterCheckboxState = allPageRecordsSelected && anyPageRecordsSelected;
+  
+  console.log('Master checkbox state updated:', { 
+    allSelected: allPageRecordsSelected, 
+    anySelected: anyPageRecordsSelected,
+    checked: masterCheckboxState,
+    pageRecordsCount: pageRecords.length 
+  });
 }
 
 // Update header to show selection info or add button
@@ -749,21 +790,27 @@ function updateHeaderForSelection() {
     const hcLeftHTML = hcLeft ? hcLeft.outerHTML : '';
     const hcRightHTML = hcRight ? hcRight.outerHTML : '';
     
-    // Always show delete button (isolated from toggle state)
+    // Show appropriate action button based on toggle state
+    const actionButtonHTML = viewingEnabled 
+      ? '<button class="btn-emoji btn-delete-selected" id="actionBtn" title="Delete Selected Records">❌</button>'
+      : '<button class="btn-emoji btn-restore-selected" id="actionBtn" title="Restore Selected Records">♻️</button>';
+    
     headerControls.innerHTML = `
       ${hcLeftHTML}
       <div id="hc-middle">
-        <button class="btn-emoji btn-delete-selected" id="deleteSelectedBtn" title="Delete Selected Records">
-          ❌
-        </button>
+        ${actionButtonHTML}
       </div>
       ${hcRightHTML}
     `;
     
-    // Attach delete selected event listener
-    const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
-    if (deleteSelectedBtn) {
-      deleteSelectedBtn.addEventListener('click', handleDeleteSelected);
+    // Attach appropriate event listener based on toggle state
+    const actionBtn = document.getElementById('actionBtn');
+    if (actionBtn) {
+      if (viewingEnabled) {
+        actionBtn.addEventListener('click', handleDeleteSelected);
+      } else {
+        actionBtn.addEventListener('click', handleRestoreSelected);
+      }
     }
     
     // Re-initialize toggle after DOM update
@@ -810,9 +857,7 @@ function updateHeaderForSelection() {
     headerControls.innerHTML = `
       ${hcLeftHTML}
       <div id="hc-middle">
-        <button class="btn-emoji btn-add" id="addBtn" title="Add New Record">
-          ➕
-        </button>
+        ${createToggleAwareButton()}
       </div>
       ${hcRightHTML}
     `;
@@ -842,13 +887,10 @@ function updateHeaderForSelection() {
       });
     }
     
-    // Re-attach add button event listener
+    // Re-attach add/restore button event listener
     const addBtn = document.getElementById('addBtn');
     if (addBtn) {
-      addBtn.addEventListener('click', function(event) {
-        event.preventDefault();
-        showRecordForm();
-      });
+      addBtn.addEventListener('click', handleAddRestoreButtonClick);
     }
     
     updateHeaderSummary();
@@ -858,38 +900,55 @@ function updateHeaderForSelection() {
 // Handle restore selected records (set isDisabled=false)
 function handleRestoreSelected() {
   if (selectedRecords.size === 0) {
-    // If no records selected, restore all disabled records
-    const disabledRecords = storedRecords.filter(record => record.isDisabled);
-    if (disabledRecords.length === 0) {
+    // If no records selected, restore all disabled records on current page
+    const displayRecords = currentSearchTerm 
+      ? filteredSearchRecords 
+      : getFilteredRecords();
+    
+    if (displayRecords.length === 0) {
       alert('No disabled records to restore');
       return;
     }
     
-    if (confirm(`Restore all ${disabledRecords.length} disabled record(s)?`)) {
-      disabledRecords.forEach(record => {
-        record.isDisabled = false;
+    if (confirm(`Restore all ${displayRecords.length} disabled record(s) on this page?`)) {
+      displayRecords.forEach(record => {
+        const actualIndex = storedRecords.findIndex(r => r.id === record.id);
+        if (actualIndex >= 0) {
+          storedRecords[actualIndex].isDisabled = false;
+        }
       });
       
-      // Update display
+      // Immediately update display to remove restored records from disabled view
+      // This provides instant visual feedback - records disappear from current view
       updatePagination();
       renderRecordsDisplay();
       updateHeaderForSelection();
       
-      console.log('All disabled records restored');
+      // Check if current page is now empty and adjust pagination
+      const newDisplayRecords = currentSearchTerm 
+        ? filteredSearchRecords 
+        : getFilteredRecords();
+      
+      const totalPages = Math.max(1, Math.ceil(newDisplayRecords.length / pageSize));
+      if (currentPage > totalPages && totalPages > 0) {
+        currentPage = totalPages;
+        updatePagination();
+        renderRecordsDisplay();
+      }
+      
+      // Show success notification
+      showTransferNotification(`${displayRecords.length} record(s) restored and moved to Enabled view`, 'success');
+      
+      console.log('All disabled records on page restored and removed from disabled view');
     }
     return;
   }
   
   if (confirm(`Restore ${selectedRecords.size} selected record(s)?`)) {
-    // Convert filtered indices to actual record indices and restore them
-    const filteredRecords = getFilteredRecords();
-    selectedRecords.forEach(filteredIndex => {
-      const actualRecord = filteredRecords[filteredIndex];
-      if (actualRecord) {
-        const actualIndex = storedRecords.findIndex(record => record.id === actualRecord.id);
-        if (actualIndex >= 0) {
-          storedRecords[actualIndex].isDisabled = false;
-        }
+    // Use the global indices directly from selectedRecords (same as handleDeleteSelected)
+    selectedRecords.forEach(globalIndex => {
+      if (globalIndex >= 0 && globalIndex < storedRecords.length) {
+        storedRecords[globalIndex].isDisabled = false;
       }
     });
     
@@ -897,30 +956,43 @@ function handleRestoreSelected() {
     selectedRecords.clear();
     masterCheckboxState = false;
     
-    // Update display
+    // Immediately update display to remove restored records from disabled view
+    // This provides instant visual feedback - records disappear from current view
     updatePagination();
     renderRecordsDisplay();
     updateHeaderForSelection();
     
-    console.log('Selected records restored');
+    // Check if current page is now empty and adjust pagination
+    const displayRecords = currentSearchTerm 
+      ? filteredSearchRecords 
+      : getFilteredRecords();
+    
+    const totalPages = Math.max(1, Math.ceil(displayRecords.length / pageSize));
+    if (currentPage > totalPages && totalPages > 0) {
+      currentPage = totalPages;
+      updatePagination();
+      renderRecordsDisplay();
+    }
+    
+    // Show success notification
+    const restoredCount = selectedRecords.size;
+    showTransferNotification(`${restoredCount} record(s) restored and moved to Enabled view`, 'success');
+    
+    console.log('Selected records restored and removed from disabled view');
   }
 }
 
-// Handle delete selected records (isolated from toggle state)
+// Handle delete selected records (soft delete by setting isDisabled=true)
 function handleDeleteSelected() {
   if (selectedRecords.size === 0) return;
   
-  if (confirm(`Delete ${selectedRecords.size} selected record(s)?`)) {
-    const filteredRecords = getFilteredRecords();
-    
-    // Always soft delete: set isDisabled=true (isolated behavior)
-    selectedRecords.forEach(filteredIndex => {
-      const actualRecord = filteredRecords[filteredIndex];
-      if (actualRecord) {
-        const actualIndex = storedRecords.findIndex(record => record.id === actualRecord.id);
-        if (actualIndex >= 0) {
-          storedRecords[actualIndex].isDisabled = true;
-        }
+  const deletedCount = selectedRecords.size; // Capture count before clearing
+  
+  if (confirm(`Delete ${deletedCount} selected record(s)?`)) {
+    // Use the global indices directly from selectedRecords
+    selectedRecords.forEach(globalIndex => {
+      if (globalIndex >= 0 && globalIndex < storedRecords.length) {
+        storedRecords[globalIndex].isDisabled = true;
       }
     });
     
@@ -928,12 +1000,28 @@ function handleDeleteSelected() {
     selectedRecords.clear();
     masterCheckboxState = false;
     
-    // Update pagination and re-render
+    // Immediately update display to remove deleted records from enabled view
+    // This provides instant visual feedback - records disappear from current view
     updatePagination();
     renderRecordsDisplay();
     updateHeaderForSelection();
     
-    console.log(`Selected records soft deleted`);
+    // Check if current page is now empty and adjust pagination
+    const displayRecords = currentSearchTerm 
+      ? filteredSearchRecords 
+      : getFilteredRecords();
+    
+    const totalPages = Math.max(1, Math.ceil(displayRecords.length / pageSize));
+    if (currentPage > totalPages && totalPages > 0) {
+      currentPage = totalPages;
+      updatePagination();
+      renderRecordsDisplay();
+    }
+    
+    // Show success notification
+    showTransferNotification(`${deletedCount} record(s) deleted and moved to Disabled view`, 'warning');
+    
+    console.log(`Selected records soft deleted and removed from enabled view`);
   }
 }
 
@@ -1068,6 +1156,9 @@ function toggleView(showEnabled) {
     enableToggle.checked = showEnabled;
   }
   
+  // Update UI elements based on toggle state
+  updateToggleBasedUI();
+  
   // If there's an active search, re-execute it with the new toggle state
   if (currentSearchTerm) {
     window.performGlobalSearch(currentSearchTerm);
@@ -1079,6 +1170,158 @@ function toggleView(showEnabled) {
   }
   
   console.log(`Switched to viewing ${showEnabled ? 'enabled' : 'disabled'} records - recordsDisplay only`);
+}
+
+// Update UI elements based on current toggle state
+function updateToggleBasedUI() {
+  // Update toggle label text
+  const toggleLabel = document.querySelector('.toggle-label');
+  if (toggleLabel) {
+    toggleLabel.textContent = viewingEnabled ? 'Enabled' : 'Disabled';
+  }
+  
+  // Update add/restore button
+  const addBtn = document.getElementById('addBtn');
+  if (addBtn) {
+    if (viewingEnabled) {
+      // Show add button for enabled view
+      addBtn.innerHTML = '➕';
+      addBtn.title = 'Add New Record';
+      addBtn.className = 'btn-emoji btn-add';
+    } else {
+      // Show restore button for disabled view
+      addBtn.innerHTML = '♻️';
+      addBtn.title = 'Restore Selected Records';
+      addBtn.className = 'btn-emoji btn-restore';
+    }
+  }
+}
+
+// Create toggle-aware button HTML
+function createToggleAwareButton() {
+  if (viewingEnabled) {
+    return `<button class="btn-emoji btn-add" id="addBtn" title="Add New Record">➕</button>`;
+  } else {
+    return `<button class="btn-emoji btn-restore" id="addBtn" title="Restore Selected Records">♻️</button>`;
+  }
+}
+
+// Handle add/restore button click based on current toggle state
+function handleAddRestoreButtonClick(event) {
+  event.preventDefault();
+  
+  if (viewingEnabled) {
+    // In enabled view: show add new record form
+    showRecordForm();
+  } else {
+    // In disabled view: restore all visible records on current page
+    const displayRecords = currentSearchTerm 
+      ? filteredSearchRecords 
+      : getFilteredRecords();
+    
+    if (displayRecords.length === 0) {
+      alert('No disabled records to restore');
+      return;
+    }
+    
+    // Calculate current page records
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = Math.min(startIndex + pageSize, displayRecords.length);
+    const pageRecords = displayRecords.slice(startIndex, endIndex);
+    
+    if (confirm(`Restore all ${pageRecords.length} disabled record(s) on this page?`)) {
+      pageRecords.forEach(record => {
+        const actualIndex = storedRecords.findIndex(r => r.id === record.id);
+        if (actualIndex >= 0) {
+          storedRecords[actualIndex].isDisabled = false;
+        }
+      });
+      
+      // Immediately update display to remove restored records from disabled view
+      // This provides instant visual feedback - records disappear from current view
+      updatePagination();
+      renderRecordsDisplay();
+      
+      // Check if current page is now empty and adjust pagination
+      const newDisplayRecords = currentSearchTerm 
+        ? filteredSearchRecords 
+        : getFilteredRecords();
+      
+      const totalPages = Math.max(1, Math.ceil(newDisplayRecords.length / pageSize));
+      if (currentPage > totalPages && totalPages > 0) {
+        currentPage = totalPages;
+        updatePagination();
+        renderRecordsDisplay();
+      }
+      
+      // Show success notification
+      showTransferNotification(`${pageRecords.length} record(s) restored and moved to Enabled view`, 'success');
+      
+      console.log(`All ${pageRecords.length} disabled records on page restored and removed from disabled view`);
+    }
+  }
+}
+
+// Show transfer notification with fade-out effect
+function showTransferNotification(message, type = 'info') {
+  // Remove any existing notifications
+  const existingNotification = document.querySelector('.transfer-notification');
+  if (existingNotification) {
+    existingNotification.remove();
+  }
+  
+  // Create notification element
+  const notification = document.createElement('div');
+  notification.className = `transfer-notification transfer-notification--${type}`;
+  notification.textContent = message;
+  
+  // Style the notification
+  Object.assign(notification.style, {
+    position: 'fixed',
+    top: '20px',
+    right: '20px',
+    padding: '12px 20px',
+    borderRadius: '6px',
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: '14px',
+    zIndex: '9999',
+    opacity: '0',
+    transform: 'translateX(100%)',
+    transition: 'all 0.3s ease',
+    maxWidth: '350px',
+    wordWrap: 'break-word'
+  });
+  
+  // Set background color based on type
+  if (type === 'success') {
+    notification.style.background = '#28a745';
+  } else if (type === 'warning') {
+    notification.style.background = '#ffc107';
+    notification.style.color = '#212529';
+  } else {
+    notification.style.background = '#17a2b8';
+  }
+  
+  // Add to page
+  document.body.appendChild(notification);
+  
+  // Animate in
+  setTimeout(() => {
+    notification.style.opacity = '1';
+    notification.style.transform = 'translateX(0)';
+  }, 10);
+  
+  // Animate out and remove
+  setTimeout(() => {
+    notification.style.opacity = '0';
+    notification.style.transform = 'translateX(100%)';
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 300);
+  }, 3000);
 }
 
 // Control grid visibility based on filtered records
@@ -1142,6 +1385,9 @@ function initializeToggle() {
   // Ensure visibility
   initializeToggleVisibility();
   
+  // Update UI elements based on current toggle state
+  updateToggleBasedUI();
+  
   console.log(`Toggle initialized: checked=${enableToggle.checked}, viewingEnabled=${viewingEnabled}`);
 }
 
@@ -1195,14 +1441,10 @@ document.addEventListener('DOMContentLoaded', function() {
   clearFormFields();
   hideRecordForm(); // Show title row initially
   
-  // Attach add button to show form (isolated from toggle state)
+  // Attach add/restore button to handle both functions based on toggle state
   const addBtn = document.querySelector('#addBtn');
   if (addBtn) {
-    addBtn.addEventListener('click', function(event) {
-      event.preventDefault();
-      // Always show record form regardless of toggle state
-      showRecordForm();
-    });
+    addBtn.addEventListener('click', handleAddRestoreButtonClick);
   }
   
   // Attach save method to save button
@@ -1229,9 +1471,13 @@ document.addEventListener('DOMContentLoaded', function() {
   // Attach master checkbox event listener
   const masterCheckbox = document.getElementById('masterCheckbox');
   if (masterCheckbox) {
+    console.log('Master checkbox found and event listener being attached');
     masterCheckbox.addEventListener('change', (e) => {
+      console.log('Master checkbox event fired:', e.target.checked);
       handleMasterCheckboxChange(e.target.checked);
     });
+  } else {
+    console.log('Master checkbox not found during initialization');
   }
   
   // Initialize toggle switch with proper state management

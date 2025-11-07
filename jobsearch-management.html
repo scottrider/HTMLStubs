@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Search Management System</title>
+    <link rel="stylesheet" href="./formmock.css?v=1.1.1" />
+    <link rel="stylesheet" href="./DataGridSearch.css" />
+    <style>
+        /* Tab navigation styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            min-height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            width: 100vw;
+        }
+
+        .tab-navigation {
+            background: white;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            z-index: 100;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            color: #495057;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s ease;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .tab-button:hover {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        .tab-button.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .tab-button::before {
+            font-size: 1.2em;
+        }
+
+        .tab-button[data-tab="positions"]::before {
+            content: "📋";
+        }
+
+        .tab-button[data-tab="companies"]::before {
+            content: "🏢";
+        }
+
+        .tab-button[data-tab="reports"]::before {
+            content: "📊";
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tab-panel {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            background: white;
+        }
+
+        .tab-panel.active {
+            display: flex;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 20px;
+            margin: 20px 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            text-align: center;
+            min-width: 120px;
+            border: 1px solid #dee2e6;
+        }
+
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #667eea;
+            display: block;
+            line-height: 1;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.85rem;
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .placeholder-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            height: 400px;
+            color: #6c757d;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .placeholder-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .placeholder-title {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            color: #495057;
+        }
+
+        .placeholder-text {
+            font-size: 1rem;
+            line-height: 1.5;
+            max-width: 400px;
+        }
+
+        /* Override formmock styles for tab integration */
+        .formmock-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 0 30px 30px 30px;
+        }
+
+        .formmock-header {
+            margin-bottom: 20px;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .tab-button {
+                padding: 15px 20px;
+                font-size: 14px;
+            }
+
+            .stats-bar {
+                margin: 15px 20px;
+                justify-content: center;
+            }
+
+            .formmock-container {
+                padding: 0 20px 20px 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .tab-button span {
+                display: none;
+            }
+
+            .tab-button::before {
+                font-size: 1.5em;
+            }
+
+            .stats-bar {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Tab Navigation -->
+        <nav class="tab-navigation">
+            <button class="tab-button active" data-tab="positions" onclick="switchTab('positions')">
+                <span>Positions</span>
+            </button>
+            <button class="tab-button" data-tab="companies" onclick="switchTab('companies')">
+                <span>Companies</span>
+            </button>
+            <button class="tab-button" data-tab="reports" onclick="switchTab('reports')">
+                <span>Reports</span>
+            </button>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Positions Tab -->
+            <div id="positions-panel" class="tab-panel active">
+                <!-- Statistics Bar -->
+                <div class="stats-bar">
+                    <div class="stat-item">
+                        <span class="stat-number" id="totalPositions">0</span>
+                        <div class="stat-label">Total Positions</div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="activePositions">0</span>
+                        <div class="stat-label">Active</div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="archivedPositions">0</span>
+                        <div class="stat-label">Archived</div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="currentPage">1</span>
+                        <div class="stat-label">Current Page</div>
+                    </div>
+                </div>
+
+                <!-- FormMock Integration -->
+                <div class="formmock-container">
+                    <form>
+                        <div>
+                            <div class="formmock-header">
+                                <div class="header-info">
+                                    <div class="header-title">Position Records</div>
+                                    <div class="header-summary" id="headerSummary">
+                                        Showing 1 of 1 records
+                                    </div>
+                                </div>
+                                <div class="header-controls">
+                                    <div id="hc-left">
+                                        <div class="toggle-container">
+                                            <label for="enableToggle" class="toggle-label">Enabled</label>
+                                            <label class="toggle-switch">
+                                                <input type="checkbox" id="enableToggle" checked />
+                                                <span class="toggle-slider"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div id="hc-middle">
+                                        <button
+                                            class="btn-emoji btn-add"
+                                            id="addBtn"
+                                            title="Add New Record"
+                                            type="button"
+                                        >
+                                            ➕
+                                        </button>
+                                    </div>
+                                    <div id="hc-right">
+                                        <div class="DataGridSearch">
+                                            <label for="formmock-search" class="DataGridSearch__label">Search:</label>
+                                            <div class="DataGridSearch__container">
+                                                <input type="text" id="formmock-search" class="DataGridSearch__input" 
+                                                       placeholder="Search positions..." autocomplete="off">
+                                                <button type="button" class="DataGridSearch__clear" title="Clear search" 
+                                                        aria-label="Clear search">✕</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="grid-data-row" id="recordForm" style="display: block">
+                                <div class="row-form" id="rowForm" style="display: none">
+                                    <div class="action-buttons">
+                                        <input
+                                            type="checkbox"
+                                            class="record-checkbox"
+                                            id="recordCheckbox"
+                                            name="datagrid-checkbox"
+                                            hidden="none"
+                                        />
+                                        <button
+                                            class="btn-emoji btn-cancel"
+                                            id="cancelBtn"
+                                            title="Cancel"
+                                            type="button"
+                                        >
+                                            ❌
+                                        </button>
+                                        <button class="btn-emoji btn-save" id="saveBtn" title="Save" type="button">
+                                            💾
+                                        </button>
+                                    </div>
+
+                                    <div class="field-group">
+                                        <input
+                                            type="text"
+                                            class="field-input required"
+                                            data-field="position"
+                                            placeholder="Position"
+                                        />
+                                    </div>
+
+                                    <div class="field-group">
+                                        <label
+                                            class="field-label-display"
+                                            data-field="icontact"
+                                            data-value="2024-01-12"
+                                        >
+                                            2024-01-12
+                                        </label>
+                                    </div>
+
+                                    <div class="field-group">
+                                        <input
+                                            type="date"
+                                            class="field-input"
+                                            value="2024-02-26"
+                                            data-field="lcontact"
+                                        />
+                                    </div>
+
+                                    <div class="field-group">
+                                        <select class="field-select required" data-field="companyId">
+                                            <option value="">Select Company...</option>
+                                            <option value="1">TechCorp Inc</option>
+                                            <option value="2">InnovateSoft</option>
+                                            <option value="3">DataDrive Systems</option>
+                                            <option value="4">CloudFirst Technologies</option>
+                                            <option value="5">NextGen Solutions</option>
+                                            <option value="6">DesignWorks Studio</option>
+                                            <option value="7">ServerTech Corp</option>
+                                            <option value="8">TestPro Solutions</option>
+                                            <option value="9">AI Innovations Ltd</option>
+                                            <option value="10">SecureNet Corp</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="field-group">
+                                        <input
+                                            type="email"
+                                            class="field-input"
+                                            data-field="email"
+                                            placeholder="Enter contact email"
+                                        />
+                                    </div>
+
+                                    <div class="field-group">
+                                        <input
+                                            type="tel"
+                                            class="field-input"
+                                            data-field="cphone"
+                                            placeholder="(555) 123-4567"
+                                        />
+                                    </div>
+
+                                    <div class="field-group">
+                                        <input
+                                            type="tel"
+                                            class="field-input"
+                                            data-field="ophone"
+                                            placeholder="(555) 123-4567"
+                                        />
+                                    </div>
+                                </div>
+
+                                <!-- Title Row from jobsearch.json positions schema -->
+                                <div class="row-title" id="rowTitle" style="display: flex">
+                                    <div class="title-buttons">
+                                        <input
+                                            type="checkbox"
+                                            class="master-checkbox"
+                                            id="masterCheckbox"
+                                            title="Select All"
+                                        />
+                                    </div>
+
+                                    <div class="title-group field-position">
+                                        <span class="title-label">Position</span>
+                                    </div>
+
+                                    <div class="title-group field-icontact">
+                                        <span class="title-label">Initial Contact</span>
+                                    </div>
+
+                                    <div class="title-group field-lcontact">
+                                        <span class="title-label">Last Contact</span>
+                                    </div>
+
+                                    <div class="title-group field-company">
+                                        <span class="title-label">Company</span>
+                                    </div>
+
+                                    <div class="title-group field-email">
+                                        <span class="title-label">Email</span>
+                                    </div>
+
+                                    <div class="title-group field-cphone">
+                                        <span class="title-label">Cell</span>
+                                    </div>
+
+                                    <div class="title-group field-ophone">
+                                        <span class="title-label">Office</span>
+                                    </div>
+                                </div>
+
+                                <!-- Records Display Area -->
+                                <div class="records-display" id="recordsDisplay">
+                                    <!-- Individual record rows will be displayed here -->
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Pagination Controls -->
+                    <div class="pagination-controls" id="paginationControls">
+                        <div class="page-size-container">
+                            <label for="pageSizeSelect">Records per page:</label>
+                            <select id="pageSizeSelect" class="page-size-select">
+                                <option value="10" selected>10</option>
+                                <option value="15">15</option>
+                                <option value="20">20</option>
+                            </select>
+                        </div>
+
+                        <button class="pagination-btn" id="firstBtn" disabled>First</button>
+                        <button class="pagination-btn" id="prevBtn" disabled>Previous</button>
+
+                        <button class="pagination-btn active" data-page="1">1</button>
+
+                        <button class="pagination-btn" id="nextBtn" disabled>Next</button>
+                        <button class="pagination-btn" id="lastBtn" disabled>Last</button>
+
+                        <span class="page-info" id="pageInfo"> Page 1 of 1 </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Companies Tab -->
+            <div id="companies-panel" class="tab-panel">
+                <div class="placeholder-content">
+                    <div class="placeholder-icon">🏢</div>
+                    <div class="placeholder-title">Company Management</div>
+                    <div class="placeholder-text">
+                        Company management features will be available here. This will include 
+                        adding, editing, and organizing company information that is referenced 
+                        in position records.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Tab -->
+            <div id="reports-panel" class="tab-panel">
+                <div class="placeholder-content">
+                    <div class="placeholder-icon">📊</div>
+                    <div class="placeholder-title">Reports & Analytics</div>
+                    <div class="placeholder-text">
+                        Comprehensive reports and analytics will be displayed here. This will include 
+                        application tracking, response rates, and other job search metrics.
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Load FormMock JavaScript -->
+    <script src="./formmock.js?v=1.0.7"></script>
+    <script src="./DataGridSearch.js"></script>
+
+    <script>
+        // Tab switching functionality
+        window.switchTab = function(tabName) {
+            // Remove active class from all tab buttons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            // Hide all tab panels
+            document.querySelectorAll('.tab-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            
+            // Activate selected tab
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+            document.getElementById(`${tabName}-panel`).classList.add('active');
+            
+            // Update statistics if positions tab is active
+            if (tabName === 'positions') {
+                updateStatistics();
+            }
+        };
+
+        // Update statistics function
+        function updateStatistics() {
+            if (typeof storedRecords !== 'undefined' && storedRecords) {
+                const totalRecords = storedRecords.length;
+                const enabledRecords = storedRecords.filter(record => !record.isDisabled).length;
+                const disabledRecords = storedRecords.filter(record => record.isDisabled).length;
+                
+                document.getElementById('totalPositions').textContent = totalRecords;
+                document.getElementById('activePositions').textContent = enabledRecords;
+                document.getElementById('archivedPositions').textContent = disabledRecords;
+                
+                // Update current page display
+                if (typeof currentPage !== 'undefined') {
+                    document.getElementById('currentPage').textContent = currentPage;
+                }
+            }
+        }
+
+        // Initialize DataGridSearch and hook into FormMock updates
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize DataGridSearch with FormMock integration
+            window.formMockSearch = new DataGridSearch('.DataGridSearch', {
+                debounceDelay: 300,
+                placeholder: 'Search positions...',
+                onSearch: function(searchTerm, instance) {
+                    if (typeof window.performGlobalSearch === 'function') {
+                        window.performGlobalSearch(searchTerm);
+                    }
+                    console.log('DataGridSearch: Searching for "' + searchTerm + '"');
+                },
+                onClear: function(instance) {
+                    if (typeof window.clearSearch === 'function') {
+                        window.clearSearch();
+                    }
+                    console.log('DataGridSearch: Search cleared');
+                }
+            });
+            
+            console.log('DataGridSearch initialized successfully');
+            
+            // Initial statistics update
+            setTimeout(() => {
+                updateStatistics();
+            }, 500);
+        });
+
+        // Override the original updatePagination to also update statistics
+        if (typeof window.originalUpdatePagination === 'undefined') {
+            window.originalUpdatePagination = window.updatePagination;
+            window.updatePagination = function() {
+                if (window.originalUpdatePagination) {
+                    window.originalUpdatePagination();
+                }
+                updateStatistics();
+            };
+        }
+
+        // Hook into FormMock save operations to update statistics
+        if (typeof window.originalSaveFormData === 'undefined' && typeof window.saveFormData === 'function') {
+            window.originalSaveFormData = window.saveFormData;
+            window.saveFormData = function() {
+                const result = window.originalSaveFormData();
+                updateStatistics();
+                return result;
+            };
+        }
+
+        // Hook into FormMock delete operations to update statistics  
+        if (typeof window.originalDeleteRecord === 'undefined' && typeof window.deleteRecord === 'function') {
+            window.originalDeleteRecord = window.deleteRecord;
+            window.deleteRecord = function(index) {
+                window.originalDeleteRecord(index);
+                updateStatistics();
+            };
+        }
+
+        // Hook into toggle operations to update statistics
+        if (typeof window.originalToggleView === 'undefined' && typeof window.toggleView === 'function') {
+            window.originalToggleView = window.toggleView;
+            window.toggleView = function(showEnabled) {
+                window.originalToggleView(showEnabled);
+                updateStatistics();
+            };
+        }
+
+        // Listen for window resize to handle responsive behavior
+        window.addEventListener('resize', function() {
+            // Handle responsive layout adjustments if needed
+            if (window.innerWidth <= 480) {
+                // Mobile specific adjustments
+                const statsBar = document.querySelector('.stats-bar');
+                if (statsBar) {
+                    statsBar.style.flexDirection = 'column';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
