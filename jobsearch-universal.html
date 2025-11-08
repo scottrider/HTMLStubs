@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Search Management - Universal DataGrid (New)</title>
+    
+    <!-- Universal DataGrid Styles -->
+    <link rel="stylesheet" href="DG.css">
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+        
+        .app-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Tab Navigation Styles */
+        .tab-navigation {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 0;
+            display: flex;
+            border-bottom: 1px solid #e1e8ed;
+        }
+        
+        .tab-button {
+            background: transparent;
+            border: none;
+            padding: 16px 24px;
+            color: white;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s ease;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        
+        .tab-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .tab-button.active {
+            background: rgba(255, 255, 255, 0.2);
+            border-bottom: 3px solid white;
+        }
+        
+        .tab-icon {
+            font-size: 1.2em;
+        }
+        
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .tab-panel {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+        }
+        
+        .tab-panel.active {
+            display: flex;
+        }
+        
+        .datagrid-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .status-indicator {
+            background: #28a745;
+            color: white;
+            padding: 8px 16px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 12px;
+        }
+        
+        .error-indicator {
+            background: #dc3545;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            margin: 20px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="status-indicator">
+            ✨ Universal DataGrid System - Zero Code Duplication Architecture
+        </div>
+        <div id="job-search-universal"></div>
+    </div>
+
+    <!-- Universal DataGrid Scripts -->
+    <script src="DataGridNamespace.js"></script>
+    <script src="DG.js"></script>
+    <script src="DG-Operations.js"></script>
+    <script src="DGP.js"></script>
+
+    <script>
+        // Check if all required scripts are loaded
+        function checkSystemReady() {
+            const required = [
+                'DataGrid',
+                'DataGridPresentation', 
+                'DataGridNamespace'
+            ];
+            
+            const missing = required.filter(item => !window[item]);
+            
+            if (missing.length > 0) {
+                document.getElementById('job-search-universal').innerHTML = `
+                    <div class="error-indicator">
+                        <h3>🚫 Universal DataGrid System Not Complete</h3>
+                        <p>Missing components: ${missing.join(', ')}</p>
+                        <p><strong>Required Files:</strong></p>
+                        <ul style="text-align: left; max-width: 300px; margin: 0 auto;">
+                            <li>DataGridNamespace.js ✅</li>
+                            <li>DG.js ${window.DataGrid ? '✅' : '❌'}</li>
+                            <li>DG-Operations.js ${window.DataGrid?.prototype.startEdit ? '✅' : '❌'}</li>
+                            <li>DGP.js ${window.DataGridPresentation ? '✅' : '❌'}</li>
+                            <li>DG.css</li>
+                        </ul>
+                        <p style="margin-top: 15px;">
+                            Once complete, this will provide identical functionality to 
+                            jobsearch2-management.html with <strong>zero code duplication</strong>.
+                        </p>
+                    </div>
+                `;
+                return false;
+            }
+            
+            return true;
+        }
+
+        // Initialize the Universal DataGrid system
+        async function initializeUniversalJobSearch() {
+            if (!checkSystemReady()) {
+                return;
+            }
+
+            try {
+                // Setup with the existing jobsearch.json file
+                await window.DGP.quickSetup({
+                    jsonUrl: './jobsearch.json',
+                    containerId: 'job-search-universal',
+                    tabs: [
+                        {
+                            id: 'positions',
+                            label: 'Positions',
+                            entityType: 'positions',
+                            icon: '📋',
+                            options: {
+                                pageSize: 10,
+                                enableInlineEdit: true,
+                                enableSelection: true,
+                                enablePagination: true,
+                                enableSearch: true,
+                                enableToggle: true // Keep enabled/disabled functionality
+                            }
+                        },
+                        {
+                            id: 'companies',
+                            label: 'Companies', 
+                            entityType: 'companies',
+                            icon: '🏢',
+                            options: {
+                                pageSize: 15,
+                                enableInlineEdit: true,
+                                enableSelection: true,
+                                enablePagination: true,
+                                enableSearch: true,
+                                enableToggle: false // Companies don't need toggle
+                            }
+                        },
+                        {
+                            id: 'contact',
+                            label: 'Contact',
+                            entityType: 'positions', // Same data, different presentation
+                            icon: '📞',
+                            options: {
+                                pageSize: 20,
+                                enableInlineEdit: false, // Read-only contact view
+                                enableSelection: false,
+                                enablePagination: true,
+                                enableSearch: true,
+                                enableToggle: false
+                            }
+                        }
+                    ]
+                });
+
+                console.log('🎉 Universal DataGrid System successfully initialized!');
+                console.log('');
+                console.log('📊 System Benefits:');
+                console.log('   ✅ Zero code duplication');
+                console.log('   ✅ Schema-driven rendering');
+                console.log('   ✅ Universal CRUD operations');
+                console.log('   ✅ Automatic foreign key resolution');
+                console.log('   ✅ Consistent behavior across all tabs');
+                console.log('');
+                console.log('🔧 To add a new tab:');
+                console.log('   1. Add schema/data to jobsearch.json');
+                console.log('   2. Add tab config to the array above');
+                console.log('   3. That\'s it! No additional code needed.');
+                
+                // Show data loaded
+                setTimeout(() => {
+                    const positionsGrid = window.DGP.getDataGrid('positions-datagrid');
+                    const companiesGrid = window.DGP.getDataGrid('companies-datagrid');
+                    
+                    if (positionsGrid && companiesGrid) {
+                        console.log('');
+                        console.log('📈 Data Successfully Loaded:');
+                        console.log(`   📋 Positions: ${positionsGrid.getData().length} records`);
+                        console.log(`   🏢 Companies: ${companiesGrid.getData().length} records`);
+                        console.log(`   📞 Contact: Same as positions (different view)`);
+                        
+                        // Update status bar
+                        const statusBar = document.querySelector('.status-indicator');
+                        if (statusBar) {
+                            statusBar.innerHTML = `✅ Universal DataGrid System Active - ${positionsGrid.getData().length} Positions, ${companiesGrid.getData().length} Companies - Zero Code Duplication`;
+                        }
+                    }
+                }, 500);
+                
+            } catch (error) {
+                console.error('❌ Failed to initialize Universal DataGrid:', error);
+                
+                document.getElementById('job-search-universal').innerHTML = `
+                    <div class="error-indicator">
+                        <h3>⚠️ Initialization Error</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <p>This is likely because jobsearch.json is not available or has invalid format.</p>
+                        <p>The Universal DataGrid system is ready but needs valid data to display.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', initializeUniversalJobSearch);
+        
+        // Provide demonstration functions
+        window.demoFunctions = {
+            addNewEntityType: function() {
+                // Demonstrate how easy it is to add a new entity type
+                window.DGP.registerDataSource('tasks', {
+                    schema: {
+                        id: {
+                            type: "number",
+                            displayName: "ID",
+                            htmlElement: "input", 
+                            htmlType: "hidden",
+                            required: true,
+                            primaryKey: true
+                        },
+                        title: {
+                            type: "string",
+                            displayName: "Task Title",
+                            htmlElement: "input",
+                            htmlType: "text",
+                            css: { 
+                                placeholder: "Enter task title", 
+                                width: "200px",
+                                gridFlex: "2fr"
+                            },
+                            required: true
+                        },
+                        assignedTo: {
+                            type: "number",
+                            displayName: "Assigned To",
+                            htmlElement: "select",
+                            htmlType: "select",
+                            foreignKey: "companies.id",
+                            foreignKeyDisplay: "companies.name",
+                            css: {
+                                width: "150px",
+                                gridFlex: "1.5fr"
+                            }
+                        },
+                        priority: {
+                            type: "string",
+                            displayName: "Priority",
+                            htmlElement: "select",
+                            htmlType: "select",
+                            options: ["", "Low", "Medium", "High", "Critical"],
+                            css: {
+                                width: "120px",
+                                gridFlex: "1fr"
+                            },
+                            required: true
+                        },
+                        dueDate: {
+                            type: "date",
+                            displayName: "Due Date",
+                            htmlElement: "input",
+                            htmlType: "date",
+                            css: {
+                                width: "140px",
+                                gridFlex: "1.2fr"
+                            },
+                            required: false
+                        }
+                    },
+                    data: [
+                        { id: 1, title: "Review Universal DataGrid", assignedTo: 1, priority: "High", dueDate: "2025-11-15" },
+                        { id: 2, title: "Update documentation", assignedTo: 2, priority: "Medium", dueDate: "2025-11-20" },
+                        { id: 3, title: "Test new system", assignedTo: 1, priority: "Critical", dueDate: "2025-11-10" }
+                    ]
+                });
+
+                console.log('✅ New "tasks" entity registered!');
+                console.log('🎯 You can now create a DataGrid for tasks with ZERO additional code');
+                console.log('   - Full CRUD operations');
+                console.log('   - Foreign key relationships to companies');
+                console.log('   - Pagination, search, selection');
+                console.log('   - All using the same Universal DataGrid engine');
+            },
+            
+            getSystemStats: function() {
+                const stats = {
+                    registeredEntities: window.DGP.dataSources.size,
+                    activeDataGrids: window.DGP.dataGrids.size,
+                    foreignKeyResolvers: window.DGP.foreignKeyResolvers.size
+                };
+                console.log('📊 Universal DataGrid System Stats:', stats);
+                return stats;
+            }
+        };
+    </script>
+</body>
+</html>

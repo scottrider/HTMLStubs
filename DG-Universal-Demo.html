@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal DataGrid System Demo</title>
+    
+    <!-- DataGrid Styles -->
+    <link rel="stylesheet" href="DG.css">
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+        
+        .app-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Tab Navigation Styles */
+        .tab-navigation {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 0;
+            display: flex;
+            border-bottom: 1px solid #e1e8ed;
+        }
+        
+        .tab-button {
+            background: transparent;
+            border: none;
+            padding: 16px 24px;
+            color: white;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s ease;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        
+        .tab-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .tab-button.active {
+            background: rgba(255, 255, 255, 0.2);
+            border-bottom: 3px solid white;
+        }
+        
+        .tab-icon {
+            font-size: 1.2em;
+        }
+        
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .tab-panel {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+        }
+        
+        .tab-panel.active {
+            display: flex;
+        }
+        
+        .datagrid-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Status Bar */
+        .status-bar {
+            background: #f8f9fa;
+            padding: 8px 16px;
+            border-top: 1px solid #e1e8ed;
+            font-size: 12px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div id="universal-datagrid-demo"></div>
+        <div class="status-bar">
+            Universal DataGrid System - Zero Code Duplication
+        </div>
+    </div>
+
+    <!-- DataGrid Core Scripts -->
+    <script src="DataGridNamespace.js"></script>
+    <script src="DG.js"></script>
+    <script src="DG-Operations.js"></script>
+    <script src="DGP.js"></script>
+
+    <script>
+        // Initialize the universal DataGrid system
+        async function initializeUniversalDataGrid() {
+            try {
+                // Quick setup with JSON data source and multiple tabs
+                await window.DGP.quickSetup({
+                    jsonUrl: './jobsearch.json',
+                    containerId: 'universal-datagrid-demo',
+                    tabs: [
+                        {
+                            id: 'positions',
+                            label: 'Positions',
+                            entityType: 'positions',
+                            icon: '📋',
+                            options: {
+                                pageSize: 10,
+                                enableInlineEdit: true,
+                                enableSelection: true,
+                                enablePagination: true,
+                                enableSearch: true,
+                                enableToggle: true
+                            }
+                        },
+                        {
+                            id: 'companies',
+                            label: 'Companies', 
+                            entityType: 'companies',
+                            icon: '🏢',
+                            options: {
+                                pageSize: 15,
+                                enableInlineEdit: true,
+                                enableSelection: true,
+                                enablePagination: true,
+                                enableSearch: true,
+                                enableToggle: false // Companies don't need enable/disable toggle
+                            }
+                        },
+                        {
+                            id: 'contacts',
+                            label: 'Contacts',
+                            entityType: 'contacts', // This would be a new entity type
+                            icon: '📞',
+                            options: {
+                                pageSize: 20,
+                                enableInlineEdit: true,
+                                enableSelection: true,
+                                enablePagination: true,
+                                enableSearch: true,
+                                enableToggle: false
+                            }
+                        }
+                    ],
+                    defaultOptions: {
+                        enableInlineEdit: true,
+                        enableSelection: true,
+                        enablePagination: true,
+                        enableSearch: true
+                    }
+                });
+
+                console.log('✅ Universal DataGrid System initialized successfully!');
+                console.log('🎯 To add a new tab, simply:');
+                console.log('   1. Add schema/data to JSON file');
+                console.log('   2. Add tab configuration');
+                console.log('   3. No code changes needed!');
+                
+            } catch (error) {
+                console.error('❌ Failed to initialize Universal DataGrid System:', error);
+            }
+        }
+
+        // Example of adding a new entity type dynamically
+        function addDynamicEntityType() {
+            // This demonstrates how easy it is to add new entity types
+            window.DGP.registerDataSource('tasks', {
+                schema: {
+                    id: {
+                        type: "number",
+                        displayName: "ID",
+                        htmlElement: "input",
+                        htmlType: "hidden",
+                        required: true,
+                        primaryKey: true
+                    },
+                    title: {
+                        type: "string",
+                        displayName: "Task Title",
+                        htmlElement: "input",
+                        htmlType: "text",
+                        css: { 
+                            placeholder: "Enter task title", 
+                            width: "200px",
+                            gridFlex: "2fr"
+                        },
+                        required: true
+                    },
+                    priority: {
+                        type: "string",
+                        displayName: "Priority",
+                        htmlElement: "select",
+                        htmlType: "select",
+                        options: ["Low", "Medium", "High", "Critical"],
+                        css: {
+                            width: "120px",
+                            gridFlex: "1fr"
+                        },
+                        required: true
+                    },
+                    dueDate: {
+                        type: "date",
+                        displayName: "Due Date",
+                        htmlElement: "input",
+                        htmlType: "date",
+                        css: {
+                            width: "140px",
+                            gridFlex: "1.2fr"
+                        },
+                        required: false
+                    }
+                },
+                data: [
+                    { id: 1, title: "Review code", priority: "High", dueDate: "2025-11-15" },
+                    { id: 2, title: "Update documentation", priority: "Medium", dueDate: "2025-11-20" },
+                    { id: 3, title: "Deploy to production", priority: "Critical", dueDate: "2025-11-10" }
+                ]
+            });
+
+            console.log('✅ New "tasks" entity type registered!');
+            console.log('🎯 You can now create a DataGrid for tasks with zero additional code');
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeUniversalDataGrid();
+            
+            // Show how easy it is to add new entity types
+            setTimeout(() => {
+                addDynamicEntityType();
+            }, 2000);
+        });
+
+        // Example of programmatic access to DataGrids
+        function getDataGridExample() {
+            const positionsGrid = window.DGP.getDataGrid('positions-datagrid');
+            const companiesGrid = window.DGP.getDataGrid('companies-datagrid');
+            
+            console.log('Positions data:', positionsGrid?.getData());
+            console.log('Companies data:', companiesGrid?.getData());
+            
+            // You can call any DataGrid method on any entity type
+            // positionsGrid.refresh();
+            // companiesGrid.goToPage(2);
+        }
+    </script>
+</body>
+</html>

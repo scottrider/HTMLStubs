@@ -1,0 +1,468 @@
+/* DataGrid Universal Styles (DG.css) */
+/* Generic, data-agnostic styling for any entity type */
+
+* {
+    box-sizing: border-box;
+}
+
+/* Container Structure */
+.DG-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    background: #ffffff;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-size: 14px;
+}
+
+/* Search Container */
+.DG-search-container {
+    padding: 12px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e1e8ed;
+}
+
+.DG-search {
+    display: flex;
+    gap: 8px;
+    max-width: 400px;
+}
+
+.DG-search-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.DG-search-clear {
+    padding: 8px 16px;
+    background: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.DG-search-clear:hover {
+    background: #5a6268;
+}
+
+/* Header Info */
+.DG-header-info {
+    padding: 12px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e1e8ed;
+}
+
+.header-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 4px;
+}
+
+.header-summary {
+    font-size: 14px;
+    color: #6c757d;
+}
+
+/* Header Controls */
+.DG-header-controls {
+    padding: 12px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e1e8ed;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
+.DG-controls-left,
+.DG-controls-middle,
+.DG-controls-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.DG-controls-middle {
+    flex: 1;
+    justify-content: center;
+}
+
+/* Buttons */
+.DG-add-button,
+.DG-action-button,
+.DG-form-save,
+.DG-form-cancel {
+    padding: 8px 16px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    background: #ffffff;
+    color: #495057;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.DG-add-button:hover,
+.DG-form-save:hover {
+    background: #e9ecef;
+    border-color: #adb5bd;
+}
+
+.DG-action-button {
+    background: #dc3545;
+    color: white;
+    border-color: #dc3545;
+}
+
+.DG-action-button:hover {
+    background: #c82333;
+    border-color: #bd2130;
+}
+
+.DG-form-save {
+    background: #28a745;
+    color: white;
+    border-color: #28a745;
+}
+
+.DG-form-save:hover {
+    background: #218838;
+    border-color: #1e7e34;
+}
+
+/* Pagination Controls */
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pagination-controls button {
+    padding: 6px 12px;
+    border: 1px solid #ced4da;
+    background: #ffffff;
+    color: #495057;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.pagination-controls button:hover:not(:disabled) {
+    background: #e9ecef;
+}
+
+.pagination-controls button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.page-info {
+    font-size: 12px;
+    color: #6c757d;
+    white-space: nowrap;
+}
+
+/* Page Size Control */
+.DG-page-size {
+    padding: 6px 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 12px;
+    background: #ffffff;
+}
+
+/* Toggle Container */
+.DG-toggle-container {
+    padding: 12px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e1e8ed;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.DG-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.3s;
+    border-radius: 24px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+    background-color: #28a745;
+}
+
+input:checked + .toggle-slider:before {
+    transform: translateX(26px);
+}
+
+.toggle-label {
+    font-size: 14px;
+    color: #495057;
+}
+
+/* Grid Container */
+.DG-grid-container {
+    flex: 1;
+    overflow: auto;
+    background: #ffffff;
+}
+
+/* Grid Rows */
+.DG-row {
+    display: grid;
+    grid-template-columns: var(--dg-grid-columns, 1fr);
+    align-items: center;
+    min-height: 40px;
+    border-bottom: 1px solid #e1e8ed;
+    transition: background-color 0.2s ease;
+}
+
+.DG-header-row {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    color: white;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 2px solid #1a252f;
+}
+
+.DG-data-row:hover {
+    background-color: #f8f9fa;
+}
+
+.DG-data-row:nth-child(even) {
+    background-color: #fbfcfd;
+}
+
+.DG-data-row:nth-child(even):hover {
+    background-color: #f1f3f5;
+}
+
+/* Grid Cells */
+.DG-cell {
+    padding: 8px 12px;
+    border-right: 1px solid #e1e8ed;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+}
+
+.DG-cell:last-child {
+    border-right: none;
+}
+
+.DG-cell-header {
+    font-weight: 600;
+}
+
+.DG-cell-checkbox {
+    width: 40px;
+    justify-content: center;
+}
+
+.DG-cell-actions {
+    width: 100px;
+    justify-content: center;
+    gap: 4px;
+}
+
+.DG-cell-editable input,
+.DG-cell-editable select,
+.DG-cell-editable textarea {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+    padding: 2px 4px;
+    outline: none;
+    border-radius: 2px;
+}
+
+.DG-cell-editable input:focus,
+.DG-cell-editable select:focus,
+.DG-cell-editable textarea:focus {
+    background-color: rgba(40, 167, 69, 0.1);
+    border: 1px solid #28a745;
+}
+
+.DG-cell-editable input:invalid,
+.DG-cell-editable select:invalid,
+.DG-cell-editable textarea:invalid {
+    background-color: rgba(220, 53, 69, 0.1);
+    border: 1px solid #dc3545;
+}
+
+.DG-cell-readonly a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.DG-cell-readonly a:hover {
+    text-decoration: underline;
+}
+
+/* Action Buttons */
+.DG-action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.DG-action-btn:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Form Container */
+.DG-form-container {
+    padding: 16px;
+    background: #ffffff;
+    border-top: 1px solid #e1e8ed;
+}
+
+.DG-form-fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.field-group label {
+    font-weight: 600;
+    color: #495057;
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
+.field-group input,
+.field-group select,
+.field-group textarea {
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: inherit;
+}
+
+.field-group input:focus,
+.field-group select:focus,
+.field-group textarea:focus {
+    outline: none;
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.field-group textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.DG-form-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+/* Checkboxes */
+.DG-master-checkbox,
+.DG-record-checkbox {
+    cursor: pointer;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .DG-header-controls {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .DG-controls-left,
+    .DG-controls-middle,
+    .DG-controls-right {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .DG-form-fields {
+        grid-template-columns: 1fr;
+    }
+    
+    .pagination-controls {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .DG-cell {
+        padding: 4px 8px;
+        font-size: 12px;
+    }
+    
+    .DG-search {
+        flex-direction: column;
+    }
+    
+    .DG-action-btn {
+        font-size: 14px;
+    }
+}

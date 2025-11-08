@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JobSearch Data Validation Test</title>
+    <link rel="stylesheet" href="DG.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .validation-container {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .test-grid {
+            margin: 20px 0;
+            min-height: 400px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>JobSearch Data Validation Test</h1>
+    
+    <div class="validation-container">
+        <h2>Step 1: Load JobSearch JSON Data</h2>
+        <div id="dataLoadStatus" class="status warning">Loading jobsearch.json...</div>
+        <button onclick="loadJobSearchData()">Reload Data</button>
+        <pre id="dataPreview"></pre>
+    </div>
+
+    <div class="validation-container">
+        <h2>Step 2: Validate Schema Structure</h2>
+        <div id="schemaValidationStatus" class="status warning">Waiting for data...</div>
+        <pre id="schemaDetails"></pre>
+    </div>
+
+    <div class="validation-container">
+        <h2>Step 3: Test Universal DataGrid with Companies</h2>
+        <div id="companiesTestStatus" class="status warning">Waiting for validation...</div>
+        <div id="companiesGrid" class="test-grid"></div>
+        <button onclick="testCompaniesGrid()">Test Companies Grid</button>
+    </div>
+
+    <div class="validation-container">
+        <h2>Step 4: Test Universal DataGrid with Positions</h2>
+        <div id="positionsTestStatus" class="status warning">Waiting for validation...</div>
+        <div id="positionsGrid" class="test-grid"></div>
+        <button onclick="testPositionsGrid()">Test Positions Grid</button>
+    </div>
+
+    <div class="validation-container">
+        <h2>Step 5: Test Foreign Key Resolution</h2>
+        <div id="foreignKeyTestStatus" class="status warning">Waiting for grids...</div>
+        <button onclick="testForeignKeyResolution()">Test Foreign Keys</button>
+        <pre id="foreignKeyResults"></pre>
+    </div>
+
+    <script src="DataGridNamespace.js"></script>
+    <script src="DG.js"></script>
+    <script src="DG-Operations.js"></script>
+    <script src="DGP.js"></script>
+    
+    <script>
+        let jobSearchData = null;
+        let companiesGrid = null;
+        let positionsGrid = null;
+
+        function updateStatus(elementId, type, message) {
+            const element = document.getElementById(elementId);
+            element.className = `status ${type}`;
+            element.textContent = message;
+        }
+
+        function updatePreview(elementId, content) {
+            const element = document.getElementById(elementId);
+            element.textContent = typeof content === 'object' ? JSON.stringify(content, null, 2) : content;
+        }
+
+        async function loadJobSearchData() {
+            updateStatus('dataLoadStatus', 'warning', 'Loading jobsearch.json...');
+            
+            try {
+                const response = await fetch('jobsearch.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                jobSearchData = await response.json();
+                updateStatus('dataLoadStatus', 'success', 'JobSearch data loaded successfully');
+                
+                // Show preview
+                const preview = {
+                    companies: {
+                        schemaFields: Object.keys(jobSearchData.jobsearch.companies.schema || {}),
+                        dataCount: (jobSearchData.jobsearch.companies.data || []).length
+                    },
+                    positions: {
+                        schemaFields: Object.keys(jobSearchData.jobsearch.positions.schema || {}),
+                        dataCount: (jobSearchData.jobsearch.positions.data || []).length
+                    }
+                };
+                updatePreview('dataPreview', preview);
+                
+                validateSchemaStructure();
+                
+            } catch (error) {
+                updateStatus('dataLoadStatus', 'error', `Failed to load data: ${error.message}`);
+                updatePreview('dataPreview', `Error: ${error.message}`);
+            }
+        }
+
+        function validateSchemaStructure() {
+            updateStatus('schemaValidationStatus', 'warning', 'Validating schema structure...');
+            
+            try {
+                const companies = jobSearchData.jobsearch.companies;
+                const positions = jobSearchData.jobsearch.positions;
+                
+                const validation = {
+                    companies: {
+                        hasSchema: !!companies.schema,
+                        hasData: !!companies.data,
+                        schemaFields: companies.schema ? Object.keys(companies.schema).length : 0,
+                        dataRecords: companies.data ? companies.data.length : 0
+                    },
+                    positions: {
+                        hasSchema: !!positions.schema,
+                        hasData: !!positions.data,
+                        schemaFields: positions.schema ? Object.keys(positions.schema).length : 0,
+                        dataRecords: positions.data ? positions.data.length : 0
+                    }
+                };
+
+                // Check for required structure
+                const isValid = validation.companies.hasSchema && validation.companies.hasData &&
+                              validation.positions.hasSchema && validation.positions.hasData &&
+                              validation.companies.schemaFields > 0 && validation.positions.schemaFields > 0;
+
+                if (isValid) {
+                    updateStatus('schemaValidationStatus', 'success', 'Schema structure is valid');
+                } else {
+                    updateStatus('schemaValidationStatus', 'error', 'Schema structure is incomplete');
+                }
+
+                updatePreview('schemaDetails', validation);
+                
+            } catch (error) {
+                updateStatus('schemaValidationStatus', 'error', `Schema validation failed: ${error.message}`);
+                updatePreview('schemaDetails', `Error: ${error.message}`);
+            }
+        }
+
+        function convertJobSearchSchemaToUniversal(jsSchema, entityName) {
+            const fields = [];
+            
+            for (const [fieldName, fieldDef] of Object.entries(jsSchema)) {
+                const field = {
+                    name: fieldName,
+                    type: fieldDef.type === 'string' ? 'text' : fieldDef.type,
+                    label: fieldDef.displayName || fieldName,
+                    required: fieldDef.required || false,
+                    readOnly: fieldDef.primaryKey || false
+                };
+
+                // Add foreign key information if present
+                if (fieldDef.foreignKey) {
+                    field.foreignKey = {
+                        table: fieldDef.foreignKey.table,
+                        key: fieldDef.foreignKey.key,
+                        display: fieldDef.foreignKey.display
+                    };
+                }
+
+                fields.push(field);
+            }
+
+            return {
+                entityName: entityName,
+                fields: fields,
+                dimensions: {
+                    containerWidth: "100%",
+                    containerHeight: "400px"
+                },
+                pagination: {
+                    enabled: true,
+                    pageSize: 10
+                }
+            };
+        }
+
+        function testCompaniesGrid() {
+            updateStatus('companiesTestStatus', 'warning', 'Creating companies DataGrid...');
+            
+            try {
+                if (!jobSearchData) {
+                    throw new Error('JobSearch data not loaded');
+                }
+
+                const companiesData = jobSearchData.jobsearch.companies.data;
+                const companiesSchema = convertJobSearchSchemaToUniversal(
+                    jobSearchData.jobsearch.companies.schema, 
+                    'companies'
+                );
+
+                console.log('Companies Schema:', companiesSchema);
+                console.log('Companies Data (first 2):', companiesData.slice(0, 2));
+
+                companiesGrid = new DataGrid('companiesGrid', companiesData, companiesSchema);
+                companiesGrid.render();
+
+                updateStatus('companiesTestStatus', 'success', 
+                    `Companies grid created successfully with ${companiesData.length} records`);
+                
+            } catch (error) {
+                updateStatus('companiesTestStatus', 'error', `Companies grid failed: ${error.message}`);
+                console.error('Companies grid error:', error);
+            }
+        }
+
+        function testPositionsGrid() {
+            updateStatus('positionsTestStatus', 'warning', 'Creating positions DataGrid...');
+            
+            try {
+                if (!jobSearchData) {
+                    throw new Error('JobSearch data not loaded');
+                }
+
+                const positionsData = jobSearchData.jobsearch.positions.data;
+                const positionsSchema = convertJobSearchSchemaToUniversal(
+                    jobSearchData.jobsearch.positions.schema, 
+                    'positions'
+                );
+
+                console.log('Positions Schema:', positionsSchema);
+                console.log('Positions Data (first 2):', positionsData.slice(0, 2));
+
+                positionsGrid = new DataGrid('positionsGrid', positionsData, positionsSchema);
+                positionsGrid.render();
+
+                updateStatus('positionsTestStatus', 'success', 
+                    `Positions grid created successfully with ${positionsData.length} records`);
+                
+            } catch (error) {
+                updateStatus('positionsTestStatus', 'error', `Positions grid failed: ${error.message}`);
+                console.error('Positions grid error:', error);
+            }
+        }
+
+        function testForeignKeyResolution() {
+            updateStatus('foreignKeyTestStatus', 'warning', 'Testing foreign key resolution...');
+            
+            try {
+                if (!companiesGrid || !positionsGrid) {
+                    throw new Error('Both grids must be created first');
+                }
+
+                // Test if positions have company references
+                const positionsData = jobSearchData.jobsearch.positions.data;
+                const companiesData = jobSearchData.jobsearch.companies.data;
+
+                let foreignKeyTests = [];
+
+                // Look for company_id field in positions
+                const samplePosition = positionsData[0];
+                if (samplePosition && samplePosition.company_id) {
+                    const companyId = samplePosition.company_id;
+                    const relatedCompany = companiesData.find(c => c.id === companyId);
+                    
+                    foreignKeyTests.push({
+                        test: 'Position -> Company lookup',
+                        positionId: samplePosition.id,
+                        companyId: companyId,
+                        companyFound: !!relatedCompany,
+                        companyName: relatedCompany ? relatedCompany.name : 'Not found'
+                    });
+                }
+
+                // Test DGP foreign key resolution
+                const dgp = new DataGridPresentation();
+                dgp.registerDataSource('companies', companiesData, 
+                    convertJobSearchSchemaToUniversal(jobSearchData.jobsearch.companies.schema, 'companies'));
+                dgp.registerDataSource('positions', positionsData, 
+                    convertJobSearchSchemaToUniversal(jobSearchData.jobsearch.positions.schema, 'positions'));
+
+                foreignKeyTests.push({
+                    test: 'DGP registration',
+                    companiesRegistered: dgp.dataSources.has('companies'),
+                    positionsRegistered: dgp.dataSources.has('positions')
+                });
+
+                updateStatus('foreignKeyTestStatus', 'success', 'Foreign key resolution tests completed');
+                updatePreview('foreignKeyResults', foreignKeyTests);
+                
+            } catch (error) {
+                updateStatus('foreignKeyTestStatus', 'error', `Foreign key test failed: ${error.message}`);
+                updatePreview('foreignKeyResults', `Error: ${error.message}`);
+            }
+        }
+
+        // Auto-load data when page loads
+        window.onload = function() {
+            console.log('JobSearch Data Validation Test Starting...');
+            setTimeout(loadJobSearchData, 500);
+        };
+    </script>
+</body>
+</html>

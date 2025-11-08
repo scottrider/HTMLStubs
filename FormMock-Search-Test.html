@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FormMock Search Functionality Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .search-controls {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        input[type="text"] {
+            padding: 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            margin: 5px;
+            width: 200px;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>FormMock Search Functionality Test</h1>
+    
+    <div class="test-container">
+        <h3>Step 1: Check Search Functions</h3>
+        <div id="functions-status" class="status warning">Checking functions...</div>
+        <button onclick="checkSearchFunctions()">Check Functions</button>
+        <pre id="functions-details"></pre>
+    </div>
+
+    <div class="test-container">
+        <h3>Step 2: Load Test Data</h3>
+        <div id="data-status" class="status warning">Loading data...</div>
+        <button onclick="loadTestData()">Load Test Data</button>
+        <pre id="data-details"></pre>
+    </div>
+
+    <div class="test-container">
+        <h3>Step 3: Test Search Operations</h3>
+        <div id="search-status" class="status warning">Waiting for data...</div>
+        
+        <div class="search-controls">
+            <input type="text" id="search-input" placeholder="Enter search term..." />
+            <button onclick="testApplySearch()">Test applySearch</button>
+            <button onclick="testFilterRecords()">Test filterRecords</button>
+            <button onclick="testClearSearch()">Clear Search</button>
+        </div>
+        
+        <pre id="search-details"></pre>
+    </div>
+
+    <script src="FormMock.js"></script>
+
+    <script>
+        let testJobSearchData = null;
+        
+        function updateStatus(elementId, type, message) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.className = `status ${type}`;
+                element.textContent = message;
+            }
+        }
+        
+        function updateDetails(elementId, content) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = typeof content === 'object' ? JSON.stringify(content, null, 2) : content;
+            }
+        }
+        
+        function checkSearchFunctions() {
+            updateStatus('functions-status', 'warning', 'Checking search functions...');
+            
+            try {
+                const functions = {
+                    applySearch: typeof applySearch === 'function',
+                    filterRecords: typeof filterRecords === 'function',
+                    clearSearchFilter: typeof clearSearchFilter === 'function',
+                    windowApplySearch: typeof window.applySearch === 'function',
+                    windowFilterRecords: typeof window.filterRecords === 'function',
+                    windowClearSearchFilter: typeof window.clearSearchFilter === 'function'
+                };
+                
+                const availableCount = Object.values(functions).filter(Boolean).length;
+                const totalCount = Object.keys(functions).length;
+                
+                const allAvailable = availableCount === totalCount;
+                
+                updateStatus('functions-status', allAvailable ? 'success' : 'error',
+                    `✅ Search functions: ${availableCount}/${totalCount} available`);
+                updateDetails('functions-details', functions);
+                
+            } catch (error) {
+                updateStatus('functions-status', 'error', `❌ Function check failed: ${error.message}`);
+                updateDetails('functions-details', error.stack);
+            }
+        }
+        
+        async function loadTestData() {
+            updateStatus('data-status', 'warning', 'Loading test data...');
+            
+            try {
+                // Load jobsearch.json data
+                const response = await fetch('jobsearch.json');
+                testJobSearchData = await response.json();
+                
+                // Set global data for FormMock
+                if (window.jobSearchData === null || window.jobSearchData === undefined) {
+                    window.jobSearchData = testJobSearchData;
+                }
+                
+                // Also populate storedRecords if available
+                if (testJobSearchData?.jobsearch?.positions?.data) {
+                    window.storedRecords = testJobSearchData.jobsearch.positions.data.slice(0, 10); // Use first 10 for testing
+                }
+                
+                const verification = {
+                    dataLoaded: !!testJobSearchData,
+                    hasPositions: !!testJobSearchData?.jobsearch?.positions?.data,
+                    positionsCount: testJobSearchData?.jobsearch?.positions?.data?.length || 0,
+                    hasCompanies: !!testJobSearchData?.jobsearch?.companies?.data,
+                    companiesCount: testJobSearchData?.jobsearch?.companies?.data?.length || 0,
+                    storedRecordsCount: window.storedRecords ? window.storedRecords.length : 0
+                };
+                
+                const success = verification.dataLoaded && verification.hasPositions;
+                
+                updateStatus('data-status', success ? 'success' : 'error',
+                    success ? '✅ Test data loaded successfully' : '❌ Failed to load test data');
+                updateDetails('data-details', verification);
+                
+                if (success) {
+                    updateStatus('search-status', 'warning', 'Ready for search testing');
+                }
+                
+            } catch (error) {
+                updateStatus('data-status', 'error', `❌ Data loading failed: ${error.message}`);
+                updateDetails('data-details', error.stack);
+            }
+        }
+        
+        function testApplySearch() {
+            updateStatus('search-status', 'warning', 'Testing applySearch...');
+            
+            try {
+                const searchTerm = document.getElementById('search-input').value || 'developer';
+                
+                if (typeof applySearch !== 'function') {
+                    throw new Error('applySearch function not available');
+                }
+                
+                // Test the function
+                applySearch(searchTerm);
+                
+                const results = {
+                    functionCalled: true,
+                    searchTerm: searchTerm,
+                    globalSearchAvailable: typeof window.applyGlobalSearch === 'function'
+                };
+                
+                updateStatus('search-status', 'success', '✅ applySearch test completed');
+                updateDetails('search-details', results);
+                
+            } catch (error) {
+                updateStatus('search-status', 'error', `❌ applySearch test failed: ${error.message}`);
+                updateDetails('search-details', error.stack);
+            }
+        }
+        
+        function testFilterRecords() {
+            updateStatus('search-status', 'warning', 'Testing filterRecords...');
+            
+            try {
+                const searchTerm = document.getElementById('search-input').value || 'developer';
+                
+                if (typeof filterRecords !== 'function') {
+                    throw new Error('filterRecords function not available');
+                }
+                
+                // Test the function
+                const filteredResults = filterRecords(searchTerm);
+                
+                // Test with empty search
+                const allResults = filterRecords('');
+                
+                const results = {
+                    functionExists: typeof filterRecords === 'function',
+                    searchTerm: searchTerm,
+                    filteredCount: filteredResults ? filteredResults.length : 0,
+                    allRecordsCount: allResults ? allResults.length : 0,
+                    sampleFilteredRecord: filteredResults && filteredResults.length > 0 ? filteredResults[0] : null
+                };
+                
+                updateStatus('search-status', 'success', `✅ filterRecords test completed - found ${results.filteredCount} matches`);
+                updateDetails('search-details', results);
+                
+            } catch (error) {
+                updateStatus('search-status', 'error', `❌ filterRecords test failed: ${error.message}`);
+                updateDetails('search-details', error.stack);
+            }
+        }
+        
+        function testClearSearch() {
+            updateStatus('search-status', 'warning', 'Testing clear search...');
+            
+            try {
+                if (typeof clearSearchFilter !== 'function') {
+                    throw new Error('clearSearchFilter function not available');
+                }
+                
+                // Clear the search
+                clearSearchFilter();
+                
+                // Clear the input
+                document.getElementById('search-input').value = '';
+                
+                const results = {
+                    functionExists: typeof clearSearchFilter === 'function',
+                    searchCleared: true,
+                    inputCleared: true
+                };
+                
+                updateStatus('search-status', 'success', '✅ Clear search test completed');
+                updateDetails('search-details', results);
+                
+            } catch (error) {
+                updateStatus('search-status', 'error', `❌ Clear search test failed: ${error.message}`);
+                updateDetails('search-details', error.stack);
+            }
+        }
+        
+        // Auto-run sequence
+        window.onload = function() {
+            console.log('FormMock search test loaded. Starting checks...');
+            setTimeout(() => {
+                checkSearchFunctions();
+                setTimeout(() => {
+                    loadTestData();
+                }, 1000);
+            }, 500);
+        };
+    </script>
+</body>
+</html>

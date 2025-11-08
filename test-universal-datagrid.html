@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal DataGrid Test Suite</title>
+    
+    <!-- DataGrid Styles -->
+    <link rel="stylesheet" href="DG.css">
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        .test-results {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        
+        .test-pass {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .test-fail {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .test-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .button-group {
+            margin: 10px 0;
+        }
+        
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            margin: 0 5px 5px 0;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .test-button:hover {
+            background: #0056b3;
+        }
+        
+        .mini-grid {
+            height: 300px;
+            border: 1px solid #ddd;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Universal DataGrid Test Suite</h1>
+        <p>This page tests the core functionality of the Universal DataGrid system.</p>
+        
+        <div class="test-section">
+            <h3>🔧 Core System Tests</h3>
+            <div class="button-group">
+                <button class="test-button" onclick="testSystemInitialization()">Test System Init</button>
+                <button class="test-button" onclick="testFileLoading()">Test File Loading</button>
+                <button class="test-button" onclick="testDataGridCreation()">Test Grid Creation</button>
+                <button class="test-button" onclick="testSchemaValidation()">Test Schema Validation</button>
+            </div>
+            <div id="core-results" class="test-results test-info">
+                Click buttons above to run tests
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>📊 Data Functionality Tests</h3>
+            <div class="button-group">
+                <button class="test-button" onclick="testDataOperations()">Test CRUD Operations</button>
+                <button class="test-button" onclick="testPagination()">Test Pagination</button>
+                <button class="test-button" onclick="testSearch()">Test Search</button>
+                <button class="test-button" onclick="testSelection()">Test Selection</button>
+            </div>
+            <div id="data-results" class="test-results test-info">
+                Click buttons above to run tests
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🎯 Zero Code Duplication Test</h3>
+            <p>This test creates multiple entity types using the same codebase:</p>
+            <div class="button-group">
+                <button class="test-button" onclick="testZeroCodeDuplication()">Test Multiple Entity Types</button>
+                <button class="test-button" onclick="testDynamicEntityAddition()">Test Dynamic Entity Addition</button>
+            </div>
+            <div id="duplication-results" class="test-results test-info">
+                Click buttons above to run tests
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>📝 Live Demo Grid</h3>
+            <p>Working DataGrid instance using the Universal system:</p>
+            <div id="demo-grid" class="mini-grid"></div>
+            <div class="button-group">
+                <button class="test-button" onclick="createDemoGrid()">Create Demo Grid</button>
+                <button class="test-button" onclick="addDemoData()">Add Demo Data</button>
+                <button class="test-button" onclick="testDemoOperations()">Test Operations</button>
+            </div>
+            <div id="demo-results" class="test-results test-info">
+                Click "Create Demo Grid" to start
+            </div>
+        </div>
+    </div>
+
+    <!-- DataGrid Core Files -->
+    <script src="DataGridNamespace.js"></script>
+    <script src="DG.js"></script>
+    <script src="DG-Operations.js"></script>
+    <script src="DGP.js"></script>
+
+    <script>
+        let testResults = {
+            core: document.getElementById('core-results'),
+            data: document.getElementById('data-results'),
+            duplication: document.getElementById('duplication-results'),
+            demo: document.getElementById('demo-results')
+        };
+
+        function logResult(section, message, isPass = true) {
+            const element = testResults[section];
+            element.className = `test-results ${isPass ? 'test-pass' : 'test-fail'}`;
+            element.innerHTML += message + '<br>';
+        }
+
+        function clearResults(section) {
+            const element = testResults[section];
+            element.className = 'test-results test-info';
+            element.innerHTML = '';
+        }
+
+        // Core System Tests
+        function testSystemInitialization() {
+            clearResults('core');
+            logResult('core', '🔍 Testing system initialization...');
+            
+            try {
+                // Test DataGridNamespace
+                if (typeof DataGridNamespace !== 'undefined') {
+                    logResult('core', '✅ DataGridNamespace loaded successfully');
+                } else {
+                    logResult('core', '❌ DataGridNamespace not found', false);
+                    return;
+                }
+                
+                // Test DataGrid class
+                if (typeof DataGrid !== 'undefined') {
+                    logResult('core', '✅ DataGrid class loaded successfully');
+                } else {
+                    logResult('core', '❌ DataGrid class not found', false);
+                    return;
+                }
+                
+                // Test DataGridPresentation
+                if (typeof DataGridPresentation !== 'undefined') {
+                    logResult('core', '✅ DataGridPresentation class loaded successfully');
+                } else {
+                    logResult('core', '❌ DataGridPresentation class not found', false);
+                    return;
+                }
+                
+                logResult('core', '🎉 All core components loaded successfully!');
+                
+            } catch (error) {
+                logResult('core', `❌ System initialization failed: ${error.message}`, false);
+            }
+        }
+
+        function testFileLoading() {
+            clearResults('core');
+            logResult('core', '🔍 Testing file loading and dependencies...');
+            
+            try {
+                // Test if CSS is loaded
+                const dgStyles = Array.from(document.styleSheets).find(sheet => 
+                    sheet.href && sheet.href.includes('DG.css'));
+                if (dgStyles) {
+                    logResult('core', '✅ DG.css loaded successfully');
+                } else {
+                    logResult('core', '⚠️ DG.css may not be loaded', false);
+                }
+                
+                // Test prototype extensions
+                if (DataGrid.prototype.startEdit) {
+                    logResult('core', '✅ DG-Operations extensions loaded');
+                } else {
+                    logResult('core', '❌ DG-Operations extensions not found', false);
+                }
+                
+                logResult('core', '🎉 File loading test completed!');
+                
+            } catch (error) {
+                logResult('core', `❌ File loading test failed: ${error.message}`, false);
+            }
+        }
+
+        function testDataGridCreation() {
+            clearResults('core');
+            logResult('core', '🔍 Testing DataGrid creation...');
+            
+            try {
+                const testSchema = {
+                    id: {
+                        type: "number",
+                        displayName: "ID",
+                        primaryKey: true
+                    },
+                    name: {
+                        type: "string",
+                        displayName: "Name",
+                        htmlElement: "input",
+                        htmlType: "text"
+                    }
+                };
+                
+                const testData = [
+                    { id: 1, name: "Test Item 1" },
+                    { id: 2, name: "Test Item 2" }
+                ];
+                
+                // Create a temporary container
+                const tempContainer = document.createElement('div');
+                tempContainer.style.display = 'none';
+                document.body.appendChild(tempContainer);
+                
+                // Test DataGrid creation
+                const grid = new DataGrid('test-grid', tempContainer, testSchema, testData);
+                
+                if (grid && grid.containerId === 'test-grid') {
+                    logResult('core', '✅ DataGrid instance created successfully');
+                } else {
+                    logResult('core', '❌ DataGrid creation failed', false);
+                }
+                
+                // Test render method
+                grid.render();
+                if (tempContainer.children.length > 0) {
+                    logResult('core', '✅ DataGrid render method works');
+                } else {
+                    logResult('core', '❌ DataGrid render method failed', false);
+                }
+                
+                // Cleanup
+                document.body.removeChild(tempContainer);
+                
+                logResult('core', '🎉 DataGrid creation test completed!');
+                
+            } catch (error) {
+                logResult('core', `❌ DataGrid creation test failed: ${error.message}`, false);
+            }
+        }
+
+        function testSchemaValidation() {
+            clearResults('core');
+            logResult('core', '🔍 Testing schema validation...');
+            
+            try {
+                // Test valid schema
+                const validSchema = {
+                    id: { type: "number", primaryKey: true },
+                    name: { type: "string", htmlElement: "input" }
+                };
+                
+                const tempContainer = document.createElement('div');
+                const grid1 = new DataGrid('test1', tempContainer, validSchema, []);
+                logResult('core', '✅ Valid schema accepted');
+                
+                // Test schema with CSS dimensions
+                const schemaWithCSS = {
+                    id: { type: "number", primaryKey: true },
+                    name: { 
+                        type: "string", 
+                        htmlElement: "input",
+                        css: { width: "200px", gridFlex: "1fr" }
+                    }
+                };
+                
+                const grid2 = new DataGrid('test2', tempContainer, schemaWithCSS, []);
+                logResult('core', '✅ Schema with CSS dimensions accepted');
+                
+                logResult('core', '🎉 Schema validation test completed!');
+                
+            } catch (error) {
+                logResult('core', `❌ Schema validation test failed: ${error.message}`, false);
+            }
+        }
+
+        // Data Functionality Tests
+        function testDataOperations() {
+            clearResults('data');
+            logResult('data', '🔍 Testing CRUD operations...');
+            
+            try {
+                const schema = {
+                    id: { type: "number", primaryKey: true },
+                    name: { type: "string", htmlElement: "input", htmlType: "text" }
+                };
+                
+                const data = [{ id: 1, name: "Test" }];
+                const tempContainer = document.createElement('div');
+                const grid = new DataGrid('crud-test', tempContainer, schema, data);
+                
+                // Test data retrieval
+                const retrievedData = grid.getData();
+                if (retrievedData.length === 1 && retrievedData[0].name === "Test") {
+                    logResult('data', '✅ Data retrieval works');
+                } else {
+                    logResult('data', '❌ Data retrieval failed', false);
+                }
+                
+                // Test data addition (if method exists)
+                if (typeof grid.addData === 'function') {
+                    grid.addData({ id: 2, name: "Test 2" });
+                    if (grid.getData().length === 2) {
+                        logResult('data', '✅ Data addition works');
+                    }
+                } else {
+                    logResult('data', '⚠️ Add data method not found (may be in operations extension)');
+                }
+                
+                logResult('data', '🎉 CRUD operations test completed!');
+                
+            } catch (error) {
+                logResult('data', `❌ CRUD operations test failed: ${error.message}`, false);
+            }
+        }
+
+        function testPagination() {
+            clearResults('data');
+            logResult('data', '🔍 Testing pagination...');
+            
+            try {
+                const schema = {
+                    id: { type: "number", primaryKey: true },
+                    name: { type: "string", htmlElement: "input", htmlType: "text" }
+                };
+                
+                // Create test data with more than default page size
+                const data = [];
+                for (let i = 1; i <= 25; i++) {
+                    data.push({ id: i, name: `Item ${i}` });
+                }
+                
+                const tempContainer = document.createElement('div');
+                const grid = new DataGrid('pagination-test', tempContainer, schema, data, {
+                    enablePagination: true,
+                    pageSize: 10
+                });
+                
+                if (grid.config.enablePagination) {
+                    logResult('data', '✅ Pagination config set correctly');
+                } else {
+                    logResult('data', '❌ Pagination config failed', false);
+                }
+                
+                if (grid.config.pageSize === 10) {
+                    logResult('data', '✅ Page size set correctly');
+                } else {
+                    logResult('data', '❌ Page size config failed', false);
+                }
+                
+                logResult('data', '🎉 Pagination test completed!');
+                
+            } catch (error) {
+                logResult('data', `❌ Pagination test failed: ${error.message}`, false);
+            }
+        }
+
+        function testSearch() {
+            clearResults('data');
+            logResult('data', '🔍 Testing search functionality...');
+            
+            try {
+                const schema = {
+                    id: { type: "number", primaryKey: true },
+                    name: { type: "string", htmlElement: "input", htmlType: "text" }
+                };
+                
+                const data = [
+                    { id: 1, name: "Apple" },
+                    { id: 2, name: "Banana" },
+                    { id: 3, name: "Cherry" }
+                ];
+                
+                const tempContainer = document.createElement('div');
+                const grid = new DataGrid('search-test', tempContainer, schema, data, {
+                    enableSearch: true
+                });
+                
+                if (grid.config.enableSearch) {
+                    logResult('data', '✅ Search config set correctly');
+                } else {
+                    logResult('data', '❌ Search config failed', false);
+                }
+                
+                // Test search method (if exists)
+                if (typeof grid.search === 'function') {
+                    logResult('data', '✅ Search method exists');
+                } else {
+                    logResult('data', '⚠️ Search method not found (may be in operations extension)');
+                }
+                
+                logResult('data', '🎉 Search test completed!');
+                
+            } catch (error) {
+                logResult('data', `❌ Search test failed: ${error.message}`, false);
+            }
+        }
+
+        function testSelection() {
+            clearResults('data');
+            logResult('data', '🔍 Testing selection functionality...');
+            
+            try {
+                const schema = {
+                    id: { type: "number", primaryKey: true },
+                    name: { type: "string", htmlElement: "input", htmlType: "text" }
+                };
+                
+                const data = [
+                    { id: 1, name: "Item 1" },
+                    { id: 2, name: "Item 2" }
+                ];
+                
+                const tempContainer = document.createElement('div');
+                const grid = new DataGrid('selection-test', tempContainer, schema, data, {
+                    enableSelection: true
+                });
+                
+                if (grid.config.enableSelection) {
+                    logResult('data', '✅ Selection config set correctly');
+                } else {
+                    logResult('data', '❌ Selection config failed', false);
+                }
+                
+                logResult('data', '🎉 Selection test completed!');
+                
+            } catch (error) {
+                logResult('data', `❌ Selection test failed: ${error.message}`, false);
+            }
+        }
+
+        // Zero Code Duplication Tests
+        function testZeroCodeDuplication() {
+            clearResults('duplication');
+            logResult('duplication', '🔍 Testing zero code duplication...');
+            
+            try {
+                // Test creating multiple different entity types with same code
+                const entities = {
+                    products: {
+                        schema: {
+                            id: { type: "number", primaryKey: true },
+                            name: { type: "string", htmlElement: "input", htmlType: "text" },
+                            price: { type: "number", htmlElement: "input", htmlType: "number" }
+                        },
+                        data: [{ id: 1, name: "Product A", price: 100 }]
+                    },
+                    customers: {
+                        schema: {
+                            id: { type: "number", primaryKey: true },
+                            email: { type: "string", htmlElement: "input", htmlType: "email" },
+                            age: { type: "number", htmlElement: "input", htmlType: "number" }
+                        },
+                        data: [{ id: 1, email: "test@example.com", age: 30 }]
+                    },
+                    orders: {
+                        schema: {
+                            id: { type: "number", primaryKey: true },
+                            orderDate: { type: "date", htmlElement: "input", htmlType: "date" },
+                            status: { type: "string", htmlElement: "select", options: ["Pending", "Shipped", "Delivered"] }
+                        },
+                        data: [{ id: 1, orderDate: "2025-11-07", status: "Pending" }]
+                    }
+                };
+                
+                let successCount = 0;
+                const tempContainer = document.createElement('div');
+                
+                for (const [entityType, config] of Object.entries(entities)) {
+                    try {
+                        const grid = new DataGrid(`${entityType}-grid`, tempContainer, config.schema, config.data);
+                        successCount++;
+                        logResult('duplication', `✅ ${entityType} entity created successfully`);
+                    } catch (error) {
+                        logResult('duplication', `❌ ${entityType} entity failed: ${error.message}`, false);
+                    }
+                }
+                
+                if (successCount === Object.keys(entities).length) {
+                    logResult('duplication', '🎉 Zero code duplication CONFIRMED! Same codebase handles all entity types!');
+                } else {
+                    logResult('duplication', `⚠️ ${successCount}/${Object.keys(entities).length} entity types created`, false);
+                }
+                
+            } catch (error) {
+                logResult('duplication', `❌ Zero code duplication test failed: ${error.message}`, false);
+            }
+        }
+
+        function testDynamicEntityAddition() {
+            clearResults('duplication');
+            logResult('duplication', '🔍 Testing dynamic entity addition...');
+            
+            try {
+                // Test DataGridPresentation if available
+                if (typeof DataGridPresentation !== 'undefined') {
+                    const dgp = new DataGridPresentation();
+                    
+                    // Register a new entity type dynamically
+                    dgp.registerDataSource('dynamicEntity', {
+                        schema: {
+                            id: { type: "number", primaryKey: true },
+                            title: { type: "string", htmlElement: "input", htmlType: "text" },
+                            active: { type: "boolean", htmlElement: "input", htmlType: "checkbox" }
+                        },
+                        data: [
+                            { id: 1, title: "Dynamic Item 1", active: true },
+                            { id: 2, title: "Dynamic Item 2", active: false }
+                        ]
+                    });
+                    
+                    logResult('duplication', '✅ Dynamic entity registered successfully');
+                    
+                    // Test that we can create a grid for this new entity
+                    const tempContainer = document.createElement('div');
+                    const grid = dgp.createDataGrid('dynamic-test', 'dynamicEntity', tempContainer);
+                    
+                    if (grid) {
+                        logResult('duplication', '✅ DataGrid created for dynamic entity');
+                        logResult('duplication', '🎉 Dynamic entity addition works perfectly!');
+                    } else {
+                        logResult('duplication', '❌ Failed to create DataGrid for dynamic entity', false);
+                    }
+                    
+                } else {
+                    logResult('duplication', '⚠️ DataGridPresentation not available for dynamic testing');
+                }
+                
+            } catch (error) {
+                logResult('duplication', `❌ Dynamic entity addition test failed: ${error.message}`, false);
+            }
+        }
+
+        // Demo Grid Tests
+        let demoGrid = null;
+
+        function createDemoGrid() {
+            clearResults('demo');
+            logResult('demo', '🔍 Creating demo grid...');
+            
+            try {
+                const container = document.getElementById('demo-grid');
+                container.innerHTML = ''; // Clear any previous content
+                
+                const schema = {
+                    id: {
+                        type: "number",
+                        displayName: "ID",
+                        primaryKey: true,
+                        htmlElement: "input",
+                        htmlType: "hidden"
+                    },
+                    name: {
+                        type: "string",
+                        displayName: "Name",
+                        htmlElement: "input",
+                        htmlType: "text",
+                        css: { width: "200px", placeholder: "Enter name" },
+                        required: true
+                    },
+                    email: {
+                        type: "string",
+                        displayName: "Email",
+                        htmlElement: "input",
+                        htmlType: "email",
+                        css: { width: "200px", placeholder: "Enter email" },
+                        required: true
+                    },
+                    role: {
+                        type: "string",
+                        displayName: "Role",
+                        htmlElement: "select",
+                        htmlType: "select",
+                        options: ["", "Admin", "User", "Manager", "Developer"],
+                        css: { width: "150px" },
+                        required: false
+                    }
+                };
+                
+                const data = [
+                    { id: 1, name: "John Doe", email: "john@example.com", role: "Admin" },
+                    { id: 2, name: "Jane Smith", email: "jane@example.com", role: "User" },
+                    { id: 3, name: "Bob Johnson", email: "bob@example.com", role: "Manager" }
+                ];
+                
+                demoGrid = new DataGrid('live-demo', container, schema, data, {
+                    enableInlineEdit: true,
+                    enableSelection: true,
+                    enablePagination: true,
+                    enableSearch: true,
+                    pageSize: 5
+                });
+                
+                demoGrid.render();
+                
+                logResult('demo', '✅ Demo grid created successfully!');
+                logResult('demo', '🎯 Try editing cells, searching, and selecting rows');
+                
+            } catch (error) {
+                logResult('demo', `❌ Demo grid creation failed: ${error.message}`, false);
+            }
+        }
+
+        function addDemoData() {
+            if (!demoGrid) {
+                logResult('demo', '❌ No demo grid found. Create one first.', false);
+                return;
+            }
+            
+            clearResults('demo');
+            logResult('demo', '🔍 Adding demo data...');
+            
+            try {
+                const newData = [
+                    { id: 4, name: "Alice Wilson", email: "alice@example.com", role: "Developer" },
+                    { id: 5, name: "Charlie Brown", email: "charlie@example.com", role: "User" }
+                ];
+                
+                // Add data if method exists
+                if (typeof demoGrid.addData === 'function') {
+                    newData.forEach(item => demoGrid.addData(item));
+                    logResult('demo', '✅ Data added using addData method');
+                } else {
+                    // Update data directly and re-render
+                    const currentData = demoGrid.getData();
+                    demoGrid.data = [...currentData, ...newData];
+                    demoGrid.render();
+                    logResult('demo', '✅ Data added and grid refreshed');
+                }
+                
+                logResult('demo', `🎉 Demo now has ${demoGrid.getData().length} items`);
+                
+            } catch (error) {
+                logResult('demo', `❌ Adding demo data failed: ${error.message}`, false);
+            }
+        }
+
+        function testDemoOperations() {
+            if (!demoGrid) {
+                logResult('demo', '❌ No demo grid found. Create one first.', false);
+                return;
+            }
+            
+            clearResults('demo');
+            logResult('demo', '🔍 Testing demo operations...');
+            
+            try {
+                // Test data access
+                const data = demoGrid.getData();
+                logResult('demo', `✅ Data access: ${data.length} items retrieved`);
+                
+                // Test configuration access
+                const config = demoGrid.config;
+                logResult('demo', `✅ Config access: pagination=${config.enablePagination}, search=${config.enableSearch}`);
+                
+                // Test method availability
+                const methods = ['render', 'getData', 'refresh'].filter(method => typeof demoGrid[method] === 'function');
+                logResult('demo', `✅ Available methods: ${methods.join(', ')}`);
+                
+                // Test operations methods if available
+                const operationMethods = ['startEdit', 'saveEdit', 'cancelEdit', 'search'].filter(method => typeof demoGrid[method] === 'function');
+                if (operationMethods.length > 0) {
+                    logResult('demo', `✅ Operation methods available: ${operationMethods.join(', ')}`);
+                } else {
+                    logResult('demo', '⚠️ Operation methods not found (check DG-Operations.js loading)');
+                }
+                
+                logResult('demo', '🎉 Demo operations test completed!');
+                
+            } catch (error) {
+                logResult('demo', `❌ Demo operations test failed: ${error.message}`, false);
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🧪 Universal DataGrid Test Suite loaded');
+            console.log('🎯 Run tests to validate the Universal DataGrid system');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal DataGrid CRUD Test</title>
+    <link rel="stylesheet" href="DG.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .test-grid {
+            margin: 20px 0;
+            min-height: 300px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button.danger {
+            background: #dc3545;
+        }
+        button.danger:hover {
+            background: #c82333;
+        }
+        .crud-controls {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Universal DataGrid CRUD Operations Test</h1>
+    
+    <div class="test-container">
+        <h3>Step 1: Initialize DataGrid</h3>
+        <div id="init-status" class="status warning">Initializing...</div>
+        <button onclick="initializeGrid()">Initialize Grid</button>
+        <pre id="init-details"></pre>
+    </div>
+
+    <div class="test-container">
+        <h3>Step 2: CRUD Operations Test</h3>
+        <div id="crud-status" class="status warning">Waiting for initialization...</div>
+        
+        <div class="crud-controls">
+            <button onclick="testAddItem()">Test Add Item</button>
+            <button onclick="testUpdateItem()">Test Update Item</button>
+            <button onclick="testRemoveItem()" class="danger">Test Remove Item</button>
+            <button onclick="testStartEdit()">Test Start Edit</button>
+            <button onclick="showCrudMethods()">Show Available Methods</button>
+        </div>
+        
+        <div id="test-grid" class="test-grid"></div>
+        <pre id="crud-details"></pre>
+    </div>
+
+    <script src="DataGridNamespace.js"></script>
+    <script src="DG.js"></script>
+    <script src="DG-Operations.js"></script>
+    <script src="DGP.js"></script>
+
+    <script>
+        let testGrid = null;
+        let testData = [
+            { id: 1, name: 'Sample Item 1', category: 'Category A', value: 100 },
+            { id: 2, name: 'Sample Item 2', category: 'Category B', value: 200 },
+            { id: 3, name: 'Sample Item 3', category: 'Category A', value: 300 }
+        ];
+        
+        const testSchema = {
+            entityName: "test_items",
+            fields: [
+                { name: "id", type: "number", label: "ID", readOnly: true },
+                { name: "name", type: "text", label: "Name", required: true },
+                { name: "category", type: "text", label: "Category" },
+                { name: "value", type: "number", label: "Value" }
+            ],
+            dimensions: {
+                containerWidth: "100%",
+                containerHeight: "250px"
+            }
+        };
+        
+        function updateStatus(elementId, type, message) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.className = `status ${type}`;
+                element.textContent = message;
+            }
+        }
+        
+        function updateDetails(elementId, content) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = typeof content === 'object' ? JSON.stringify(content, null, 2) : content;
+            }
+        }
+        
+        function initializeGrid() {
+            updateStatus('init-status', 'warning', 'Creating DataGrid...');
+            
+            try {
+                testGrid = new DataGrid('test-grid', testData, testSchema);
+                console.log('Grid created:', testGrid);
+                
+                testGrid.render();
+                console.log('Grid rendered');
+                
+                // Check available methods
+                const methods = Object.getOwnPropertyNames(DataGrid.prototype).filter(name => 
+                    typeof testGrid[name] === 'function' && !name.startsWith('_')
+                );
+                
+                const crudMethods = methods.filter(name => 
+                    ['addItem', 'updateItem', 'removeItem', 'startEdit', 'saveEdit', 'cancelEdit', 'deleteRecord'].includes(name)
+                );
+                
+                const verification = {
+                    gridCreated: !!testGrid,
+                    dataLength: testGrid.data ? testGrid.data.length : 0,
+                    availableMethods: methods.length,
+                    crudMethods: crudMethods,
+                    hasAddItem: typeof testGrid.addItem === 'function',
+                    hasUpdateItem: typeof testGrid.updateItem === 'function',
+                    hasRemoveItem: typeof testGrid.removeItem === 'function',
+                    hasStartEdit: typeof testGrid.startEdit === 'function'
+                };
+                
+                const success = verification.gridCreated && verification.crudMethods.length > 0;
+                
+                updateStatus('init-status', success ? 'success' : 'error',
+                    success ? '✅ DataGrid initialized successfully' : '❌ DataGrid initialization failed');
+                updateDetails('init-details', verification);
+                
+                updateStatus('crud-status', success ? 'warning' : 'error',
+                    success ? 'Ready for CRUD testing' : 'Cannot test CRUD - initialization failed');
+                
+            } catch (error) {
+                updateStatus('init-status', 'error', `❌ Initialization failed: ${error.message}`);
+                updateDetails('init-details', error.stack);
+                console.error('Initialization error:', error);
+            }
+        }
+        
+        function testAddItem() {
+            updateStatus('crud-status', 'warning', 'Testing addItem...');
+            
+            try {
+                if (!testGrid) {
+                    throw new Error('Grid not initialized');
+                }
+                
+                if (typeof testGrid.addItem !== 'function') {
+                    throw new Error('addItem method not available');
+                }
+                
+                const newItem = {
+                    name: 'New Test Item',
+                    category: 'Category C',
+                    value: 400
+                };
+                
+                const result = testGrid.addItem(newItem);
+                
+                const verification = {
+                    methodExists: typeof testGrid.addItem === 'function',
+                    addResult: result,
+                    newDataLength: testGrid.data.length,
+                    addedItem: testGrid.data[testGrid.data.length - 1]
+                };
+                
+                updateStatus('crud-status', 'success', '✅ addItem test passed');
+                updateDetails('crud-details', verification);
+                
+            } catch (error) {
+                updateStatus('crud-status', 'error', `❌ addItem test failed: ${error.message}`);
+                updateDetails('crud-details', error.stack);
+                console.error('addItem error:', error);
+            }
+        }
+        
+        function testUpdateItem() {
+            updateStatus('crud-status', 'warning', 'Testing updateItem...');
+            
+            try {
+                if (!testGrid) {
+                    throw new Error('Grid not initialized');
+                }
+                
+                if (typeof testGrid.updateItem !== 'function') {
+                    throw new Error('updateItem method not available');
+                }
+                
+                if (testGrid.data.length === 0) {
+                    throw new Error('No data to update');
+                }
+                
+                const updatedData = {
+                    ...testGrid.data[0],
+                    name: 'Updated Item Name',
+                    value: 999
+                };
+                
+                const result = testGrid.updateItem(0, updatedData);
+                
+                const verification = {
+                    methodExists: typeof testGrid.updateItem === 'function',
+                    updateResult: result,
+                    updatedItem: testGrid.data[0]
+                };
+                
+                updateStatus('crud-status', 'success', '✅ updateItem test passed');
+                updateDetails('crud-details', verification);
+                
+            } catch (error) {
+                updateStatus('crud-status', 'error', `❌ updateItem test failed: ${error.message}`);
+                updateDetails('crud-details', error.stack);
+                console.error('updateItem error:', error);
+            }
+        }
+        
+        function testRemoveItem() {
+            updateStatus('crud-status', 'warning', 'Testing removeItem...');
+            
+            try {
+                if (!testGrid) {
+                    throw new Error('Grid not initialized');
+                }
+                
+                if (typeof testGrid.removeItem !== 'function') {
+                    throw new Error('removeItem method not available');
+                }
+                
+                if (testGrid.data.length === 0) {
+                    throw new Error('No data to remove');
+                }
+                
+                const originalLength = testGrid.data.length;
+                const lastIndex = originalLength - 1;
+                const itemToRemove = { ...testGrid.data[lastIndex] };
+                
+                const removedItem = testGrid.removeItem(lastIndex);
+                
+                const verification = {
+                    methodExists: typeof testGrid.removeItem === 'function',
+                    originalLength: originalLength,
+                    newLength: testGrid.data.length,
+                    removedItem: removedItem
+                };
+                
+                updateStatus('crud-status', 'success', '✅ removeItem test passed');
+                updateDetails('crud-details', verification);
+                
+            } catch (error) {
+                updateStatus('crud-status', 'error', `❌ removeItem test failed: ${error.message}`);
+                updateDetails('crud-details', error.stack);
+                console.error('removeItem error:', error);
+            }
+        }
+        
+        function testStartEdit() {
+            updateStatus('crud-status', 'warning', 'Testing startEdit...');
+            
+            try {
+                if (!testGrid) {
+                    throw new Error('Grid not initialized');
+                }
+                
+                if (typeof testGrid.startEdit !== 'function') {
+                    throw new Error('startEdit method not available');
+                }
+                
+                if (testGrid.data.length === 0) {
+                    throw new Error('No data to edit');
+                }
+                
+                testGrid.startEdit(0);
+                
+                const verification = {
+                    methodExists: typeof testGrid.startEdit === 'function',
+                    editingIndex: testGrid.editingIndex,
+                    hasOriginalData: !!testGrid.originalRecordData
+                };
+                
+                updateStatus('crud-status', 'success', '✅ startEdit test passed');
+                updateDetails('crud-details', verification);
+                
+            } catch (error) {
+                updateStatus('crud-status', 'error', `❌ startEdit test failed: ${error.message}`);
+                updateDetails('crud-details', error.stack);
+                console.error('startEdit error:', error);
+            }
+        }
+        
+        function showCrudMethods() {
+            try {
+                if (!testGrid) {
+                    throw new Error('Grid not initialized');
+                }
+                
+                const allMethods = Object.getOwnPropertyNames(DataGrid.prototype);
+                const crudMethods = allMethods.filter(name => 
+                    typeof testGrid[name] === 'function' && 
+                    (name.includes('Edit') || name.includes('Item') || name.includes('Record') || name.includes('Form'))
+                );
+                
+                const methodInfo = crudMethods.map(method => ({
+                    name: method,
+                    available: typeof testGrid[method] === 'function'
+                }));
+                
+                updateDetails('crud-details', {
+                    totalMethods: allMethods.length,
+                    crudMethods: methodInfo
+                });
+                
+                updateStatus('crud-status', 'warning', `Found ${crudMethods.length} CRUD-related methods`);
+                
+            } catch (error) {
+                updateStatus('crud-status', 'error', `❌ Method check failed: ${error.message}`);
+                updateDetails('crud-details', error.stack);
+            }
+        }
+        
+        // Auto-initialize on load
+        window.onload = function() {
+            console.log('CRUD test loaded. Initializing...');
+            setTimeout(initializeGrid, 500);
+        };
+    </script>
+</body>
+</html>

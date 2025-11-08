@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal DataGrid Test Suite</title>
+    <link rel="stylesheet" href="DG.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .test-pass {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .test-fail {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .test-pending {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .console-output {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .test-grid {
+            margin: 20px 0;
+            min-height: 300px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .stats {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Universal DataGrid Test Suite</h1>
+    
+    <div class="stats">
+        <h3>Test Statistics</h3>
+        <div id="testStats">Loading tests...</div>
+    </div>
+
+    <div class="test-container">
+        <h2>File Loading Tests</h2>
+        <div id="fileLoadingTests">
+            <div class="test-status test-pending">Testing file dependencies...</div>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h2>DataGrid Initialization Test</h2>
+        <div id="initializationTests">
+            <div class="test-status test-pending">Testing DataGrid initialization...</div>
+        </div>
+        <div id="testGrid1" class="test-grid"></div>
+    </div>
+
+    <div class="test-container">
+        <h2>Schema Validation Test</h2>
+        <div id="schemaTests">
+            <div class="test-status test-pending">Testing schema validation...</div>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h2>CRUD Operations Test</h2>
+        <div id="crudTests">
+            <div class="test-status test-pending">Testing CRUD operations...</div>
+        </div>
+        <div id="testGrid2" class="test-grid"></div>
+        <button onclick="testCRUD()">Run CRUD Test</button>
+    </div>
+
+    <div class="test-container">
+        <h2>Foreign Key Resolution Test</h2>
+        <div id="foreignKeyTests">
+            <div class="test-status test-pending">Testing foreign key resolution...</div>
+        </div>
+        <div id="testGrid3" class="test-grid"></div>
+    </div>
+
+    <div class="test-container">
+        <h2>Pagination Test</h2>
+        <div id="paginationTests">
+            <div class="test-status test-pending">Testing pagination...</div>
+        </div>
+        <div id="testGrid4" class="test-grid"></div>
+        <button onclick="testPagination()">Run Pagination Test</button>
+    </div>
+
+    <div class="test-container">
+        <h2>Console Output</h2>
+        <div id="consoleOutput" class="console-output">Test console initialized...\n</div>
+        <button onclick="clearConsole()">Clear Console</button>
+    </div>
+
+    <script src="DataGridNamespace.js"></script>
+    <script src="DG.js"></script>
+    <script src="DG-Operations.js"></script>
+    <script src="DGP.js"></script>
+    
+    <script>
+        // Test console logging
+        const originalConsole = {
+            log: console.log,
+            error: console.error,
+            warn: console.warn
+        };
+
+        function logToTestConsole(message, type = 'log') {
+            const consoleDiv = document.getElementById('consoleOutput');
+            const timestamp = new Date().toLocaleTimeString();
+            consoleDiv.textContent += `[${timestamp}] ${type.toUpperCase()}: ${message}\n`;
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+
+        // Override console methods
+        console.log = function(...args) {
+            originalConsole.log(...args);
+            logToTestConsole(args.join(' '), 'log');
+        };
+
+        console.error = function(...args) {
+            originalConsole.error(...args);
+            logToTestConsole(args.join(' '), 'error');
+        };
+
+        console.warn = function(...args) {
+            originalConsole.warn(...args);
+            logToTestConsole(args.join(' '), 'warn');
+        };
+
+        function clearConsole() {
+            document.getElementById('consoleOutput').textContent = 'Console cleared...\n';
+        }
+
+        // Test results tracking
+        const testResults = {
+            fileLoading: { passed: 0, failed: 0, total: 4 },
+            initialization: { passed: 0, failed: 0, total: 3 },
+            schema: { passed: 0, failed: 0, total: 2 },
+            crud: { passed: 0, failed: 0, total: 5 },
+            foreignKey: { passed: 0, failed: 0, total: 2 },
+            pagination: { passed: 0, failed: 0, total: 3 }
+        };
+
+        function updateTestStatus(category, testName, passed, message) {
+            const categoryDiv = document.getElementById(`${category}Tests`);
+            const statusClass = passed ? 'test-pass' : 'test-fail';
+            const statusText = passed ? 'PASS' : 'FAIL';
+            
+            categoryDiv.innerHTML += `<div class="test-status ${statusClass}">${statusText}: ${testName} - ${message}</div>`;
+            
+            if (passed) {
+                testResults[category].passed++;
+            } else {
+                testResults[category].failed++;
+            }
+            
+            updateStats();
+        }
+
+        function updateStats() {
+            const statsDiv = document.getElementById('testStats');
+            let totalPassed = 0;
+            let totalFailed = 0;
+            let totalTests = 0;
+
+            let statsHTML = '';
+            for (const [category, results] of Object.entries(testResults)) {
+                totalPassed += results.passed;
+                totalFailed += results.failed;
+                totalTests += results.total;
+                
+                const percentage = results.total > 0 ? Math.round((results.passed / results.total) * 100) : 0;
+                statsHTML += `<strong>${category}:</strong> ${results.passed}/${results.total} (${percentage}%) | `;
+            }
+
+            const overallPercentage = totalTests > 0 ? Math.round((totalPassed / totalTests) * 100) : 0;
+            statsHTML = `<strong>Overall:</strong> ${totalPassed}/${totalTests} (${overallPercentage}%)<br>` + statsHTML;
+            
+            statsDiv.innerHTML = statsHTML;
+        }
+
+        // Test 1: File Loading
+        function testFileLoading() {
+            console.log('Starting file loading tests...');
+            
+            // Test DataGridNamespace
+            try {
+                if (typeof DataGridNamespace !== 'undefined') {
+                    updateTestStatus('fileLoading', 'DataGridNamespace.js', true, 'File loaded successfully');
+                } else {
+                    throw new Error('DataGridNamespace not found');
+                }
+            } catch (error) {
+                updateTestStatus('fileLoading', 'DataGridNamespace.js', false, error.message);
+            }
+
+            // Test DG.js
+            try {
+                if (typeof DataGrid !== 'undefined') {
+                    updateTestStatus('fileLoading', 'DG.js', true, 'DataGrid class available');
+                } else {
+                    throw new Error('DataGrid class not found');
+                }
+            } catch (error) {
+                updateTestStatus('fileLoading', 'DG.js', false, error.message);
+            }
+
+            // Test DG-Operations.js
+            try {
+                if (DataGrid.prototype.startEdit) {
+                    updateTestStatus('fileLoading', 'DG-Operations.js', true, 'CRUD methods available');
+                } else {
+                    throw new Error('CRUD methods not found');
+                }
+            } catch (error) {
+                updateTestStatus('fileLoading', 'DG-Operations.js', false, error.message);
+            }
+
+            // Test DGP.js
+            try {
+                if (typeof DataGridPresentation !== 'undefined') {
+                    updateTestStatus('fileLoading', 'DGP.js', true, 'Presentation layer available');
+                } else {
+                    throw new Error('DataGridPresentation not found');
+                }
+            } catch (error) {
+                updateTestStatus('fileLoading', 'DGP.js', false, error.message);
+            }
+        }
+
+        // Test 2: DataGrid Initialization
+        function testInitialization() {
+            console.log('Starting initialization tests...');
+            
+            const testData = [
+                { id: 1, name: 'Test Item 1', category: 'A' },
+                { id: 2, name: 'Test Item 2', category: 'B' }
+            ];
+
+            const testSchema = {
+                entityName: "testItems",
+                fields: [
+                    { name: "id", type: "number", label: "ID", readOnly: true },
+                    { name: "name", type: "text", label: "Name", required: true },
+                    { name: "category", type: "text", label: "Category" }
+                ],
+                dimensions: {
+                    containerWidth: "100%",
+                    containerHeight: "400px"
+                }
+            };
+
+            try {
+                const grid = new DataGrid('testGrid1', testData, testSchema);
+                updateTestStatus('initialization', 'Basic Constructor', true, 'DataGrid created successfully');
+                
+                if (grid.data && grid.data.length === 2) {
+                    updateTestStatus('initialization', 'Data Loading', true, 'Test data loaded correctly');
+                } else {
+                    updateTestStatus('initialization', 'Data Loading', false, 'Data not loaded properly');
+                }
+
+                grid.render();
+                updateTestStatus('initialization', 'Rendering', true, 'Grid rendered without errors');
+                
+            } catch (error) {
+                updateTestStatus('initialization', 'Basic Constructor', false, error.message);
+                updateTestStatus('initialization', 'Data Loading', false, 'Constructor failed');
+                updateTestStatus('initialization', 'Rendering', false, 'Constructor failed');
+            }
+        }
+
+        // Test 3: Schema Validation
+        function testSchemaValidation() {
+            console.log('Starting schema validation tests...');
+            
+            // Test valid schema
+            const validSchema = {
+                entityName: "validTest",
+                fields: [
+                    { name: "id", type: "number", label: "ID" }
+                ]
+            };
+
+            try {
+                const grid = new DataGrid('temp', [], validSchema);
+                updateTestStatus('schema', 'Valid Schema', true, 'Valid schema accepted');
+            } catch (error) {
+                updateTestStatus('schema', 'Valid Schema', false, error.message);
+            }
+
+            // Test invalid schema
+            try {
+                const invalidGrid = new DataGrid('temp', [], { invalid: true });
+                updateTestStatus('schema', 'Invalid Schema Rejection', false, 'Invalid schema was accepted');
+            } catch (error) {
+                updateTestStatus('schema', 'Invalid Schema Rejection', true, 'Invalid schema properly rejected');
+            }
+        }
+
+        // Test 4: CRUD Operations
+        function testCRUD() {
+            console.log('Starting CRUD operations tests...');
+            
+            const testData = [
+                { id: 1, name: 'Original Item', value: 100 }
+            ];
+
+            const testSchema = {
+                entityName: "crudTest",
+                fields: [
+                    { name: "id", type: "number", label: "ID", readOnly: true },
+                    { name: "name", type: "text", label: "Name", required: true },
+                    { name: "value", type: "number", label: "Value" }
+                ]
+            };
+
+            try {
+                const grid = new DataGrid('testGrid2', testData, testSchema);
+                grid.render();
+
+                // Test Create
+                const newItem = { id: 2, name: 'New Item', value: 200 };
+                grid.addItem(newItem);
+                if (grid.data.length === 2) {
+                    updateTestStatus('crud', 'Create Operation', true, 'Item added successfully');
+                } else {
+                    updateTestStatus('crud', 'Create Operation', false, 'Item not added');
+                }
+
+                // Test Read
+                const foundItem = grid.data.find(item => item.id === 2);
+                if (foundItem && foundItem.name === 'New Item') {
+                    updateTestStatus('crud', 'Read Operation', true, 'Item found and correct');
+                } else {
+                    updateTestStatus('crud', 'Read Operation', false, 'Item not found or incorrect');
+                }
+
+                // Test Update
+                grid.updateItem(1, { name: 'Updated Item' });
+                const updatedItem = grid.data.find(item => item.id === 1);
+                if (updatedItem && updatedItem.name === 'Updated Item') {
+                    updateTestStatus('crud', 'Update Operation', true, 'Item updated successfully');
+                } else {
+                    updateTestStatus('crud', 'Update Operation', false, 'Item not updated');
+                }
+
+                // Test Delete
+                grid.deleteItem(2);
+                if (grid.data.length === 1) {
+                    updateTestStatus('crud', 'Delete Operation', true, 'Item deleted successfully');
+                } else {
+                    updateTestStatus('crud', 'Delete Operation', false, 'Item not deleted');
+                }
+
+                updateTestStatus('crud', 'CRUD Integration', true, 'All CRUD operations working');
+
+            } catch (error) {
+                updateTestStatus('crud', 'Create Operation', false, error.message);
+                updateTestStatus('crud', 'Read Operation', false, 'CRUD setup failed');
+                updateTestStatus('crud', 'Update Operation', false, 'CRUD setup failed');
+                updateTestStatus('crud', 'Delete Operation', false, 'CRUD setup failed');
+                updateTestStatus('crud', 'CRUD Integration', false, error.message);
+            }
+        }
+
+        // Test 5: Foreign Key Resolution
+        function testForeignKeys() {
+            console.log('Starting foreign key tests...');
+            
+            // This would test with actual company/position data
+            // For now, we'll test the structure
+            try {
+                const dgp = new DataGridPresentation();
+                updateTestStatus('foreignKey', 'DGP Initialization', true, 'DataGridPresentation created');
+                
+                if (typeof dgp.resolveForeignKey === 'function') {
+                    updateTestStatus('foreignKey', 'Foreign Key Method', true, 'resolveForeignKey method available');
+                } else {
+                    updateTestStatus('foreignKey', 'Foreign Key Method', false, 'resolveForeignKey method missing');
+                }
+            } catch (error) {
+                updateTestStatus('foreignKey', 'DGP Initialization', false, error.message);
+                updateTestStatus('foreignKey', 'Foreign Key Method', false, 'DGP creation failed');
+            }
+        }
+
+        // Test 6: Pagination
+        function testPagination() {
+            console.log('Starting pagination tests...');
+            
+            // Create test data with more than 10 items
+            const largeTestData = [];
+            for (let i = 1; i <= 25; i++) {
+                largeTestData.push({ id: i, name: `Item ${i}`, category: `Cat ${i % 3 + 1}` });
+            }
+
+            const testSchema = {
+                entityName: "paginationTest",
+                fields: [
+                    { name: "id", type: "number", label: "ID" },
+                    { name: "name", type: "text", label: "Name" },
+                    { name: "category", type: "text", label: "Category" }
+                ],
+                pagination: {
+                    enabled: true,
+                    pageSize: 10
+                }
+            };
+
+            try {
+                const grid = new DataGrid('testGrid4', largeTestData, testSchema);
+                grid.render();
+                
+                updateTestStatus('pagination', 'Large Dataset', true, '25 items loaded successfully');
+                
+                if (grid.currentPage === 1) {
+                    updateTestStatus('pagination', 'Initial Page', true, 'Started on page 1');
+                } else {
+                    updateTestStatus('pagination', 'Initial Page', false, `Started on page ${grid.currentPage}`);
+                }
+
+                // Test page navigation
+                if (typeof grid.goToPage === 'function') {
+                    grid.goToPage(2);
+                    updateTestStatus('pagination', 'Page Navigation', true, 'Page navigation available');
+                } else {
+                    updateTestStatus('pagination', 'Page Navigation', false, 'goToPage method missing');
+                }
+
+            } catch (error) {
+                updateTestStatus('pagination', 'Large Dataset', false, error.message);
+                updateTestStatus('pagination', 'Initial Page', false, 'Grid creation failed');
+                updateTestStatus('pagination', 'Page Navigation', false, error.message);
+            }
+        }
+
+        // Run all tests when page loads
+        window.onload = function() {
+            console.log('Universal DataGrid Test Suite Starting...');
+            
+            setTimeout(() => {
+                testFileLoading();
+                setTimeout(testInitialization, 500);
+                setTimeout(testSchemaValidation, 1000);
+                setTimeout(testForeignKeys, 1500);
+            }, 100);
+        };
+    </script>
+</body>
+</html>

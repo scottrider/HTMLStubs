@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal DataGrid - Complete Test Runner</title>
+    <link rel="stylesheet" href="DG.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-runner-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .test-pass {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .test-fail {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .test-pending {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .test-running {
+            background-color: #cce5ff;
+            color: #004085;
+            border: 1px solid #99d6ff;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .test-grid {
+            margin: 20px 0;
+            min-height: 300px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button.run-all {
+            background: #28a745;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        button.run-all:hover {
+            background: #218838;
+        }
+        .console-output {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 10px 0;
+        }
+        .test-summary {
+            background: #e9ecef;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .metric {
+            display: inline-block;
+            margin: 10px 20px 10px 0;
+            padding: 10px 15px;
+            background: white;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+        }
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .metric-label {
+            font-size: 12px;
+            color: #6c757d;
+            text-transform: uppercase;
+        }
+        iframe {
+            width: 100%;
+            height: 400px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Universal DataGrid - Complete Test Runner</h1>
+    
+    <div class="test-runner-container">
+        <h2>Test Execution Control</h2>
+        <button class="run-all" onclick="runAllTests()">🚀 Run All Tests</button>
+        <button onclick="resetTests()">🔄 Reset Tests</button>
+        <button onclick="exportResults()">📊 Export Results</button>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div id="progressText">Ready to run tests...</div>
+    </div>
+
+    <div class="test-summary">
+        <h3>Test Results Summary</h3>
+        <div class="metric">
+            <div class="metric-value" id="testsPassedCount">0</div>
+            <div class="metric-label">Tests Passed</div>
+        </div>
+        <div class="metric">
+            <div class="metric-value" id="testsFailedCount">0</div>
+            <div class="metric-label">Tests Failed</div>
+        </div>
+        <div class="metric">
+            <div class="metric-value" id="testsTotalCount">0</div>
+            <div class="metric-label">Total Tests</div>
+        </div>
+        <div class="metric">
+            <div class="metric-value" id="successRate">0%</div>
+            <div class="metric-label">Success Rate</div>
+        </div>
+        <div class="metric">
+            <div class="metric-value" id="executionTime">0s</div>
+            <div class="metric-label">Execution Time</div>
+        </div>
+    </div>
+
+    <!-- Test Sections -->
+    <div class="test-section">
+        <h3>1. File Dependencies Test</h3>
+        <div id="dependencies-status" class="test-status test-pending">
+            <span>Testing file loading and dependencies...</span>
+            <span id="dependencies-result">PENDING</span>
+        </div>
+        <div id="dependencies-details"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>2. DataGrid Core Functionality Test</h3>
+        <div id="core-status" class="test-status test-pending">
+            <span>Testing DataGrid initialization and basic functionality...</span>
+            <span id="core-result">PENDING</span>
+        </div>
+        <div id="coreTestGrid" class="test-grid"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>3. Schema Validation Test</h3>
+        <div id="schema-status" class="test-status test-pending">
+            <span>Testing schema parsing and validation...</span>
+            <span id="schema-result">PENDING</span>
+        </div>
+        <div id="schema-details"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>4. CRUD Operations Test</h3>
+        <div id="crud-status" class="test-status test-pending">
+            <span>Testing Create, Read, Update, Delete operations...</span>
+            <span id="crud-result">PENDING</span>
+        </div>
+        <div id="crudTestGrid" class="test-grid"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>5. Pagination Test</h3>
+        <div id="pagination-status" class="test-status test-pending">
+            <span>Testing pagination functionality...</span>
+            <span id="pagination-result">PENDING</span>
+        </div>
+        <div id="paginationTestGrid" class="test-grid"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>6. Search and Filtering Test</h3>
+        <div id="search-status" class="test-status test-pending">
+            <span>Testing search and filter capabilities...</span>
+            <span id="search-result">PENDING</span>
+        </div>
+        <div id="searchTestGrid" class="test-grid"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>7. Foreign Key Resolution Test</h3>
+        <div id="foreignkey-status" class="test-status test-pending">
+            <span>Testing foreign key relationships and resolution...</span>
+            <span id="foreignkey-result">PENDING</span>
+        </div>
+        <div id="foreignKeyTestGrid" class="test-grid"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>8. Real Data Integration Test</h3>
+        <div id="realdata-status" class="test-status test-pending">
+            <span>Testing with actual JobSearch data...</span>
+            <span id="realdata-result">PENDING</span>
+        </div>
+        <div id="realDataTestGrid" class="test-grid"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>9. Performance and Memory Test</h3>
+        <div id="performance-status" class="test-status test-pending">
+            <span>Testing performance with large datasets...</span>
+            <span id="performance-result">PENDING</span>
+        </div>
+        <div id="performance-details"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>10. UI Responsiveness Test</h3>
+        <div id="responsive-status" class="test-status test-pending">
+            <span>Testing responsive design and UI adaptability...</span>
+            <span id="responsive-result">PENDING</span>
+        </div>
+        <div id="responsiveTestGrid" class="test-grid"></div>
+    </div>
+
+    <div class="test-runner-container">
+        <h3>Test Console Output</h3>
+        <div id="testConsole" class="console-output">Test runner initialized...\n</div>
+        <button onclick="clearConsole()">Clear Console</button>
+    </div>
+
+    <!-- Load Universal DataGrid System -->
+    <script src="DataGridNamespace.js"></script>
+    <script src="DG.js"></script>
+    <script src="DG-Operations.js"></script>
+    <script src="DGP.js"></script>
+    
+    <script>
+        // Test execution state
+        let testStartTime = 0;
+        let testsCompleted = 0;
+        let testsPassed = 0;
+        let testsFailed = 0;
+        let totalTests = 10;
+        let jobSearchData = null;
+
+        // Test console logging
+        function logToConsole(message, type = 'INFO') {
+            const console = document.getElementById('testConsole');
+            const timestamp = new Date().toLocaleTimeString();
+            console.innerHTML += `[${timestamp}] ${type}: ${message}\n`;
+            console.scrollTop = console.scrollHeight;
+        }
+
+        function clearConsole() {
+            document.getElementById('testConsole').innerHTML = 'Console cleared...\n';
+        }
+
+        function updateProgress() {
+            const progress = (testsCompleted / totalTests) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('progressText').textContent = 
+                `Progress: ${testsCompleted}/${totalTests} tests completed (${Math.round(progress)}%)`;
+            
+            // Update metrics
+            document.getElementById('testsPassedCount').textContent = testsPassed;
+            document.getElementById('testsFailedCount').textContent = testsFailed;
+            document.getElementById('testsTotalCount').textContent = totalTests;
+            
+            const successRate = totalTests > 0 ? Math.round((testsPassed / totalTests) * 100) : 0;
+            document.getElementById('successRate').textContent = successRate + '%';
+            
+            if (testStartTime > 0) {
+                const elapsed = Math.round((Date.now() - testStartTime) / 1000);
+                document.getElementById('executionTime').textContent = elapsed + 's';
+            }
+        }
+
+        function updateTestStatus(testId, status, message, details = '') {
+            const statusElement = document.getElementById(`${testId}-status`);
+            const resultElement = document.getElementById(`${testId}-result`);
+            const detailsElement = document.getElementById(`${testId}-details`);
+            
+            statusElement.className = `test-status test-${status}`;
+            resultElement.textContent = status.toUpperCase();
+            
+            if (detailsElement && details) {
+                detailsElement.innerHTML = details;
+            }
+            
+            logToConsole(`${testId.toUpperCase()}: ${message}`, status.toUpperCase());
+            
+            if (status === 'pass') {
+                testsPassed++;
+            } else if (status === 'fail') {
+                testsFailed++;
+            }
+            
+            testsCompleted++;
+            updateProgress();
+        }
+
+        // Test 1: File Dependencies
+        async function testDependencies() {
+            logToConsole('Starting file dependencies test...');
+            
+            try {
+                let details = '<ul>';
+                let allPassed = true;
+                
+                // Test DataGridNamespace
+                if (typeof DataGridNamespace !== 'undefined') {
+                    details += '<li>✅ DataGridNamespace.js loaded successfully</li>';
+                } else {
+                    details += '<li>❌ DataGridNamespace.js failed to load</li>';
+                    allPassed = false;
+                }
+                
+                // Test DataGrid class
+                if (typeof DataGrid !== 'undefined') {
+                    details += '<li>✅ DG.js (DataGrid class) loaded successfully</li>';
+                } else {
+                    details += '<li>❌ DG.js failed to load</li>';
+                    allPassed = false;
+                }
+                
+                // Test Operations
+                if (DataGrid.prototype.startEdit) {
+                    details += '<li>✅ DG-Operations.js loaded successfully</li>';
+                } else {
+                    details += '<li>❌ DG-Operations.js failed to load</li>';
+                    allPassed = false;
+                }
+                
+                // Test Presentation layer
+                if (typeof DataGridPresentation !== 'undefined') {
+                    details += '<li>✅ DGP.js loaded successfully</li>';
+                } else {
+                    details += '<li>❌ DGP.js failed to load</li>';
+                    allPassed = false;
+                }
+                
+                details += '</ul>';
+                
+                updateTestStatus('dependencies', allPassed ? 'pass' : 'fail', 
+                    allPassed ? 'All dependencies loaded successfully' : 'Some dependencies failed to load',
+                    details);
+                    
+            } catch (error) {
+                updateTestStatus('dependencies', 'fail', `Dependencies test failed: ${error.message}`);
+            }
+        }
+
+        // Test 2: Core Functionality
+        async function testCoreFunctionality() {
+            logToConsole('Starting core functionality test...');
+            
+            try {
+                const testData = [
+                    { id: 1, name: 'Test Item 1', category: 'A', value: 100 },
+                    { id: 2, name: 'Test Item 2', category: 'B', value: 200 },
+                    { id: 3, name: 'Test Item 3', category: 'A', value: 300 }
+                ];
+
+                const testSchema = {
+                    entityName: "coreTest",
+                    fields: [
+                        { name: "id", type: "number", label: "ID", readOnly: true },
+                        { name: "name", type: "text", label: "Name", required: true },
+                        { name: "category", type: "text", label: "Category" },
+                        { name: "value", type: "number", label: "Value" }
+                    ],
+                    dimensions: {
+                        containerWidth: "100%",
+                        containerHeight: "250px"
+                    }
+                };
+
+                const grid = new DataGrid('coreTestGrid', testData, testSchema);
+                grid.render();
+                
+                // Verify grid was created
+                const gridElement = document.getElementById('coreTestGrid');
+                if (gridElement && gridElement.children.length > 0) {
+                    updateTestStatus('core', 'pass', 'DataGrid core functionality working correctly');
+                } else {
+                    throw new Error('Grid failed to render');
+                }
+                
+            } catch (error) {
+                updateTestStatus('core', 'fail', `Core functionality test failed: ${error.message}`);
+            }
+        }
+
+        // Test 3: Schema Validation
+        async function testSchemaValidation() {
+            logToConsole('Starting schema validation test...');
+            
+            try {
+                let validationResults = [];
+                
+                // Test 1: Valid schema
+                try {
+                    const validSchema = {
+                        entityName: "validTest",
+                        fields: [
+                            { name: "id", type: "number", label: "ID" },
+                            { name: "name", type: "text", label: "Name", required: true }
+                        ]
+                    };
+                    new DataGrid('temp', [], validSchema);
+                    validationResults.push('✅ Valid schema accepted correctly');
+                } catch (error) {
+                    validationResults.push('❌ Valid schema rejected: ' + error.message);
+                }
+                
+                // Test 2: Invalid schema (missing required fields)
+                try {
+                    new DataGrid('temp', [], { invalid: true });
+                    validationResults.push('❌ Invalid schema was incorrectly accepted');
+                } catch (error) {
+                    validationResults.push('✅ Invalid schema correctly rejected');
+                }
+                
+                const details = '<ul><li>' + validationResults.join('</li><li>') + '</li></ul>';
+                const allPassed = validationResults.every(result => result.startsWith('✅'));
+                
+                updateTestStatus('schema', allPassed ? 'pass' : 'fail',
+                    allPassed ? 'Schema validation working correctly' : 'Schema validation has issues',
+                    details);
+                    
+            } catch (error) {
+                updateTestStatus('schema', 'fail', `Schema validation test failed: ${error.message}`);
+            }
+        }
+
+        // Test 4: CRUD Operations
+        async function testCRUDOperations() {
+            logToConsole('Starting CRUD operations test...');
+            
+            try {
+                const testData = [
+                    { id: 1, name: 'Original Item', value: 100 }
+                ];
+
+                const testSchema = {
+                    entityName: "crudTest",
+                    fields: [
+                        { name: "id", type: "number", label: "ID", readOnly: true },
+                        { name: "name", type: "text", label: "Name", required: true },
+                        { name: "value", type: "number", label: "Value" }
+                    ],
+                    dimensions: {
+                        containerWidth: "100%",
+                        containerHeight: "250px"
+                    }
+                };
+
+                const grid = new DataGrid('crudTestGrid', testData, testSchema);
+                grid.render();
+
+                let crudResults = [];
+
+                // Test Create
+                try {
+                    const newItem = { id: 2, name: 'New Item', value: 200 };
+                    grid.addItem(newItem);
+                    if (grid.data.length === 2) {
+                        crudResults.push('✅ CREATE: Item added successfully');
+                    } else {
+                        crudResults.push('❌ CREATE: Item not added');
+                    }
+                } catch (error) {
+                    crudResults.push('❌ CREATE: ' + error.message);
+                }
+
+                // Test Read
+                try {
+                    const foundItem = grid.data.find(item => item.id === 2);
+                    if (foundItem && foundItem.name === 'New Item') {
+                        crudResults.push('✅ READ: Item found correctly');
+                    } else {
+                        crudResults.push('❌ READ: Item not found or incorrect');
+                    }
+                } catch (error) {
+                    crudResults.push('❌ READ: ' + error.message);
+                }
+
+                // Test Update
+                try {
+                    grid.updateItem(1, { name: 'Updated Item' });
+                    const updatedItem = grid.data.find(item => item.id === 1);
+                    if (updatedItem && updatedItem.name === 'Updated Item') {
+                        crudResults.push('✅ UPDATE: Item updated successfully');
+                    } else {
+                        crudResults.push('❌ UPDATE: Item not updated');
+                    }
+                } catch (error) {
+                    crudResults.push('❌ UPDATE: ' + error.message);
+                }
+
+                // Test Delete
+                try {
+                    grid.deleteItem(2);
+                    if (grid.data.length === 1) {
+                        crudResults.push('✅ DELETE: Item deleted successfully');
+                    } else {
+                        crudResults.push('❌ DELETE: Item not deleted');
+                    }
+                } catch (error) {
+                    crudResults.push('❌ DELETE: ' + error.message);
+                }
+
+                const allPassed = crudResults.every(result => result.startsWith('✅'));
+                updateTestStatus('crud', allPassed ? 'pass' : 'fail',
+                    allPassed ? 'All CRUD operations working' : 'Some CRUD operations failed',
+                    '<ul><li>' + crudResults.join('</li><li>') + '</li></ul>');
+                    
+            } catch (error) {
+                updateTestStatus('crud', 'fail', `CRUD operations test failed: ${error.message}`);
+            }
+        }
+
+        // Test 5: Pagination
+        async function testPagination() {
+            logToConsole('Starting pagination test...');
+            
+            try {
+                // Create large dataset
+                const largeTestData = [];
+                for (let i = 1; i <= 25; i++) {
+                    largeTestData.push({ 
+                        id: i, 
+                        name: `Item ${i}`, 
+                        category: `Category ${(i % 3) + 1}`,
+                        value: i * 10 
+                    });
+                }
+
+                const testSchema = {
+                    entityName: "paginationTest",
+                    fields: [
+                        { name: "id", type: "number", label: "ID" },
+                        { name: "name", type: "text", label: "Name" },
+                        { name: "category", type: "text", label: "Category" },
+                        { name: "value", type: "number", label: "Value" }
+                    ],
+                    dimensions: {
+                        containerWidth: "100%",
+                        containerHeight: "300px"
+                    },
+                    pagination: {
+                        enabled: true,
+                        pageSize: 10
+                    }
+                };
+
+                const grid = new DataGrid('paginationTestGrid', largeTestData, testSchema);
+                grid.render();
+
+                let paginationResults = [];
+
+                // Test initial state
+                if (grid.currentPage === 1) {
+                    paginationResults.push('✅ Initial page set correctly to 1');
+                } else {
+                    paginationResults.push(`❌ Initial page incorrect: ${grid.currentPage}`);
+                }
+
+                // Test page navigation
+                if (typeof grid.goToPage === 'function') {
+                    grid.goToPage(2);
+                    paginationResults.push('✅ Page navigation method available and working');
+                } else {
+                    paginationResults.push('❌ Page navigation method missing');
+                }
+
+                // Test page count calculation
+                const expectedPages = Math.ceil(largeTestData.length / 10);
+                if (grid.totalPages === expectedPages) {
+                    paginationResults.push(`✅ Total pages calculated correctly: ${expectedPages}`);
+                } else {
+                    paginationResults.push(`❌ Total pages incorrect: expected ${expectedPages}, got ${grid.totalPages}`);
+                }
+
+                const allPassed = paginationResults.every(result => result.startsWith('✅'));
+                updateTestStatus('pagination', allPassed ? 'pass' : 'fail',
+                    allPassed ? 'Pagination working correctly' : 'Pagination has issues',
+                    '<ul><li>' + paginationResults.join('</li><li>') + '</li></ul>');
+                    
+            } catch (error) {
+                updateTestStatus('pagination', 'fail', `Pagination test failed: ${error.message}`);
+            }
+        }
+
+        // Test 6: Search and Filtering
+        async function testSearchAndFiltering() {
+            logToConsole('Starting search and filtering test...');
+            
+            try {
+                const testData = [
+                    { id: 1, name: 'Apple Product', category: 'Electronics', price: 999 },
+                    { id: 2, name: 'Banana Product', category: 'Food', price: 5 },
+                    { id: 3, name: 'Apple Service', category: 'Services', price: 199 },
+                    { id: 4, name: 'Cherry Product', category: 'Food', price: 15 }
+                ];
+
+                const testSchema = {
+                    entityName: "searchTest",
+                    fields: [
+                        { name: "id", type: "number", label: "ID" },
+                        { name: "name", type: "text", label: "Name" },
+                        { name: "category", type: "text", label: "Category" },
+                        { name: "price", type: "number", label: "Price" }
+                    ],
+                    dimensions: {
+                        containerWidth: "100%",
+                        containerHeight: "250px"
+                    }
+                };
+
+                const grid = new DataGrid('searchTestGrid', testData, testSchema);
+                grid.render();
+
+                let searchResults = [];
+
+                // Test search functionality
+                if (typeof grid.search === 'function') {
+                    grid.search('Apple');
+                    searchResults.push('✅ Search method available');
+                } else {
+                    searchResults.push('❌ Search method not available');
+                }
+
+                // Test filter functionality  
+                if (typeof grid.filter === 'function') {
+                    grid.filter('category', 'Food');
+                    searchResults.push('✅ Filter method available');
+                } else {
+                    searchResults.push('❌ Filter method not available');
+                }
+
+                const allPassed = searchResults.every(result => result.startsWith('✅'));
+                updateTestStatus('search', allPassed ? 'pass' : 'fail',
+                    allPassed ? 'Search and filtering working' : 'Search and filtering has issues',
+                    '<ul><li>' + searchResults.join('</li><li>') + '</li></ul>');
+                    
+            } catch (error) {
+                updateTestStatus('search', 'fail', `Search and filtering test failed: ${error.message}`);
+            }
+        }
+
+        // Test 7: Foreign Key Resolution
+        async function testForeignKeyResolution() {
+            logToConsole('Starting foreign key resolution test...');
+            
+            try {
+                const dgp = new DataGridPresentation();
+                
+                // Sample companies data
+                const companiesData = [
+                    { id: 1, name: 'Tech Corp', industry: 'Technology' },
+                    { id: 2, name: 'Food Inc', industry: 'Food Service' }
+                ];
+
+                // Sample positions data with foreign keys
+                const positionsData = [
+                    { id: 1, title: 'Software Engineer', company_id: 1, salary: 75000 },
+                    { id: 2, title: 'Chef', company_id: 2, salary: 45000 }
+                ];
+
+                const companiesSchema = {
+                    entityName: "companies",
+                    fields: [
+                        { name: "id", type: "number", label: "ID" },
+                        { name: "name", type: "text", label: "Company Name" },
+                        { name: "industry", type: "text", label: "Industry" }
+                    ]
+                };
+
+                const positionsSchema = {
+                    entityName: "positions",
+                    fields: [
+                        { name: "id", type: "number", label: "ID" },
+                        { name: "title", type: "text", label: "Job Title" },
+                        { name: "company_id", type: "number", label: "Company", 
+                          foreignKey: { table: "companies", key: "id", display: "name" } },
+                        { name: "salary", type: "number", label: "Salary" }
+                    ],
+                    dimensions: {
+                        containerWidth: "100%",
+                        containerHeight: "250px"
+                    }
+                };
+
+                dgp.registerDataSource('companies', companiesData, companiesSchema);
+                dgp.registerDataSource('positions', positionsData, positionsSchema);
+
+                const grid = dgp.createDataGrid('foreignKeyTestGrid', 'positions');
+
+                let foreignKeyResults = [];
+
+                if (dgp.dataSources.has('companies')) {
+                    foreignKeyResults.push('✅ Companies data source registered');
+                } else {
+                    foreignKeyResults.push('❌ Companies data source not registered');
+                }
+
+                if (dgp.dataSources.has('positions')) {
+                    foreignKeyResults.push('✅ Positions data source registered');
+                } else {
+                    foreignKeyResults.push('❌ Positions data source not registered');
+                }
+
+                if (typeof dgp.resolveForeignKey === 'function') {
+                    const resolvedValue = dgp.resolveForeignKey('companies', 'id', 1, 'name');
+                    if (resolvedValue === 'Tech Corp') {
+                        foreignKeyResults.push('✅ Foreign key resolution working correctly');
+                    } else {
+                        foreignKeyResults.push(`❌ Foreign key resolution failed: expected 'Tech Corp', got '${resolvedValue}'`);
+                    }
+                } else {
+                    foreignKeyResults.push('❌ Foreign key resolution method not available');
+                }
+
+                const allPassed = foreignKeyResults.every(result => result.startsWith('✅'));
+                updateTestStatus('foreignkey', allPassed ? 'pass' : 'fail',
+                    allPassed ? 'Foreign key resolution working' : 'Foreign key resolution has issues',
+                    '<ul><li>' + foreignKeyResults.join('</li><li>') + '</li></ul>');
+                    
+            } catch (error) {
+                updateTestStatus('foreignkey', 'fail', `Foreign key resolution test failed: ${error.message}`);
+            }
+        }
+
+        // Test 8: Real Data Integration
+        async function testRealDataIntegration() {
+            logToConsole('Starting real data integration test...');
+            
+            try {
+                // Load actual jobsearch.json data
+                if (!jobSearchData) {
+                    const response = await fetch('jobsearch.json');
+                    jobSearchData = await response.json();
+                }
+
+                const companiesData = jobSearchData.jobsearch.companies.data;
+                const positionsData = jobSearchData.jobsearch.positions.data;
+
+                // Convert jobsearch schema to universal schema
+                function convertSchema(jsSchema, entityName) {
+                    const fields = [];
+                    for (const [fieldName, fieldDef] of Object.entries(jsSchema)) {
+                        fields.push({
+                            name: fieldName,
+                            type: fieldDef.type === 'string' ? 'text' : fieldDef.type,
+                            label: fieldDef.displayName || fieldName,
+                            required: fieldDef.required || false,
+                            readOnly: fieldDef.primaryKey || false,
+                            foreignKey: fieldDef.foreignKey
+                        });
+                    }
+                    return {
+                        entityName: entityName,
+                        fields: fields,
+                        dimensions: { containerWidth: "100%", containerHeight: "250px" }
+                    };
+                }
+
+                const companiesSchema = convertSchema(jobSearchData.jobsearch.companies.schema, 'companies');
+                const grid = new DataGrid('realDataTestGrid', companiesData.slice(0, 5), companiesSchema);
+                grid.render();
+
+                let realDataResults = [];
+
+                if (companiesData.length > 0) {
+                    realDataResults.push(`✅ Companies data loaded: ${companiesData.length} records`);
+                } else {
+                    realDataResults.push('❌ Companies data not loaded');
+                }
+
+                if (positionsData.length > 0) {
+                    realDataResults.push(`✅ Positions data loaded: ${positionsData.length} records`);
+                } else {
+                    realDataResults.push('❌ Positions data not loaded');
+                }
+
+                if (grid.data.length > 0) {
+                    realDataResults.push('✅ Real data rendered in grid successfully');
+                } else {
+                    realDataResults.push('❌ Real data failed to render');
+                }
+
+                const allPassed = realDataResults.every(result => result.startsWith('✅'));
+                updateTestStatus('realdata', allPassed ? 'pass' : 'fail',
+                    allPassed ? 'Real data integration working' : 'Real data integration has issues',
+                    '<ul><li>' + realDataResults.join('</li><li>') + '</li></ul>');
+                    
+            } catch (error) {
+                updateTestStatus('realdata', 'fail', `Real data integration test failed: ${error.message}`);
+            }
+        }
+
+        // Test 9: Performance and Memory
+        async function testPerformanceAndMemory() {
+            logToConsole('Starting performance and memory test...');
+            
+            try {
+                const startTime = performance.now();
+                const initialMemory = performance.memory ? performance.memory.usedJSHeapSize : 0;
+                
+                // Create large dataset
+                const largeData = [];
+                for (let i = 1; i <= 1000; i++) {
+                    largeData.push({
+                        id: i,
+                        name: `Item ${i}`,
+                        description: `Description for item ${i}`.repeat(10),
+                        value: Math.random() * 1000,
+                        category: `Category ${i % 10}`,
+                        timestamp: new Date().toISOString()
+                    });
+                }
+
+                const schema = {
+                    entityName: "performanceTest",
+                    fields: [
+                        { name: "id", type: "number", label: "ID" },
+                        { name: "name", type: "text", label: "Name" },
+                        { name: "description", type: "text", label: "Description" },
+                        { name: "value", type: "number", label: "Value" },
+                        { name: "category", type: "text", label: "Category" }
+                    ],
+                    pagination: { enabled: true, pageSize: 20 }
+                };
+
+                const grid = new DataGrid('performanceTestGrid', largeData, schema);
+                grid.render();
+
+                const endTime = performance.now();
+                const finalMemory = performance.memory ? performance.memory.usedJSHeapSize : 0;
+                
+                const renderTime = Math.round(endTime - startTime);
+                const memoryUsed = finalMemory - initialMemory;
+
+                let performanceResults = [];
+                
+                if (renderTime < 5000) { // Less than 5 seconds
+                    performanceResults.push(`✅ Render time acceptable: ${renderTime}ms`);
+                } else {
+                    performanceResults.push(`❌ Render time too slow: ${renderTime}ms`);
+                }
+
+                if (grid.data.length === 1000) {
+                    performanceResults.push('✅ Large dataset handled correctly');
+                } else {
+                    performanceResults.push('❌ Large dataset not handled correctly');
+                }
+
+                if (performance.memory) {
+                    performanceResults.push(`ℹ️ Memory used: ${Math.round(memoryUsed / 1024)}KB`);
+                }
+
+                const allPassed = performanceResults.filter(r => r.startsWith('❌')).length === 0;
+                updateTestStatus('performance', allPassed ? 'pass' : 'fail',
+                    allPassed ? 'Performance test passed' : 'Performance issues detected',
+                    '<ul><li>' + performanceResults.join('</li><li>') + '</li></ul>');
+                    
+            } catch (error) {
+                updateTestStatus('performance', 'fail', `Performance test failed: ${error.message}`);
+            }
+        }
+
+        // Test 10: UI Responsiveness
+        async function testUIResponsiveness() {
+            logToConsole('Starting UI responsiveness test...');
+            
+            try {
+                const testData = [
+                    { id: 1, name: 'Test Item 1', description: 'This is a long description that should wrap properly in responsive design' },
+                    { id: 2, name: 'Test Item 2', description: 'Another long description for testing responsive behavior' }
+                ];
+
+                const schema = {
+                    entityName: "responsiveTest",
+                    fields: [
+                        { name: "id", type: "number", label: "ID" },
+                        { name: "name", type: "text", label: "Name" },
+                        { name: "description", type: "text", label: "Description" }
+                    ],
+                    dimensions: {
+                        containerWidth: "100%",
+                        containerHeight: "200px"
+                    }
+                };
+
+                const grid = new DataGrid('responsiveTestGrid', testData, schema);
+                grid.render();
+
+                let responsiveResults = [];
+
+                // Check if CSS classes are applied
+                const gridElement = document.getElementById('responsiveTestGrid');
+                if (gridElement && gridElement.querySelector('.DG-container')) {
+                    responsiveResults.push('✅ CSS classes applied correctly');
+                } else {
+                    responsiveResults.push('❌ CSS classes not applied');
+                }
+
+                // Check if grid adapts to container
+                if (gridElement && gridElement.offsetWidth > 0) {
+                    responsiveResults.push('✅ Grid responsive to container width');
+                } else {
+                    responsiveResults.push('❌ Grid not responsive');
+                }
+
+                const allPassed = responsiveResults.every(result => result.startsWith('✅'));
+                updateTestStatus('responsive', allPassed ? 'pass' : 'fail',
+                    allPassed ? 'UI responsiveness working' : 'UI responsiveness has issues',
+                    '<ul><li>' + responsiveResults.join('</li><li>') + '</li></ul>');
+                    
+            } catch (error) {
+                updateTestStatus('responsive', 'fail', `UI responsiveness test failed: ${error.message}`);
+            }
+        }
+
+        // Main test runner
+        async function runAllTests() {
+            logToConsole('🚀 Starting comprehensive test suite...');
+            testStartTime = Date.now();
+            testsCompleted = 0;
+            testsPassed = 0;
+            testsFailed = 0;
+            
+            const tests = [
+                testDependencies,
+                testCoreFunctionality,
+                testSchemaValidation,
+                testCRUDOperations,
+                testPagination,
+                testSearchAndFiltering,
+                testForeignKeyResolution,
+                testRealDataIntegration,
+                testPerformanceAndMemory,
+                testUIResponsiveness
+            ];
+
+            for (let i = 0; i < tests.length; i++) {
+                logToConsole(`Running test ${i + 1}/${tests.length}...`);
+                await tests[i]();
+                await new Promise(resolve => setTimeout(resolve, 100)); // Small delay between tests
+            }
+
+            logToConsole('🏁 All tests completed!');
+            logToConsole(`📊 Results: ${testsPassed} passed, ${testsFailed} failed out of ${totalTests} total tests`);
+        }
+
+        function resetTests() {
+            testsCompleted = 0;
+            testsPassed = 0;
+            testsFailed = 0;
+            
+            // Reset all test statuses
+            const testIds = ['dependencies', 'core', 'schema', 'crud', 'pagination', 'search', 'foreignkey', 'realdata', 'performance', 'responsive'];
+            
+            testIds.forEach(testId => {
+                const statusElement = document.getElementById(`${testId}-status`);
+                const resultElement = document.getElementById(`${testId}-result`);
+                
+                if (statusElement) {
+                    statusElement.className = 'test-status test-pending';
+                }
+                if (resultElement) {
+                    resultElement.textContent = 'PENDING';
+                }
+            });
+            
+            updateProgress();
+            clearConsole();
+            logToConsole('Tests reset. Ready to run again.');
+        }
+
+        function exportResults() {
+            const results = {
+                timestamp: new Date().toISOString(),
+                summary: {
+                    total: totalTests,
+                    passed: testsPassed,
+                    failed: testsFailed,
+                    successRate: Math.round((testsPassed / totalTests) * 100)
+                },
+                executionTime: testStartTime > 0 ? Math.round((Date.now() - testStartTime) / 1000) : 0,
+                browser: navigator.userAgent,
+                testDetails: document.getElementById('testConsole').textContent
+            };
+
+            const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `dataGrid-test-results-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            logToConsole('📁 Test results exported to file');
+        }
+
+        // Initialize
+        window.onload = function() {
+            logToConsole('Universal DataGrid Test Runner initialized');
+            logToConsole('Click "Run All Tests" to start comprehensive testing');
+            updateProgress();
+        };
+    </script>
+</body>
+</html>

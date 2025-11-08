@@ -1,13 +1,31 @@
 // Form Mock JavaScript - Grid Data Row Management with Pagination
 // Core FormMock methods protected for use as foundation for next phase
 
+/**
+ * Constants and Configuration
+ */
+const CONFIG = {
+    DEFAULT_PAGE_SIZE: 10,
+    DEBOUNCE_DELAY: 300,
+    MAX_PAGE_SIZE: 100,
+    MIN_PAGE_SIZE: 5
+};
+
+// Create logger instance
+const logger = window.DataGridNamespace?.logger || {
+    debug: () => {},
+    info: console.info.bind(console, '[FormMock]:'),
+    warn: console.warn.bind(console, '[FormMock]:'),
+    error: console.error.bind(console, '[FormMock]:')
+};
+
 // Job search data storage
 let jobSearchData = null;
 
 // Pagination state
 let currentPage = 1;
 let totalPages = 1;
-let pageSize = 10;
+let pageSize = CONFIG.DEFAULT_PAGE_SIZE;
 let storedRecords = []; // Array to store saved records for pagination
 
 // Selection state
@@ -21,12 +39,186 @@ let originalRecordData = null; // Store original data for cancel functionality
 // Toggle state
 let viewingEnabled = true; // Track whether viewing enabled (true) or disabled (false) records
 
+/**
+ * Apply schema-driven CSS dimensions to DataGrid and row-form elements
+ */
+function applySchemaCSSDimensions() {
+    try {
+        if (!jobSearchData?.jobsearch?.positions?.schema) {
+            logger.warn('No schema data available for CSS dimensions');
+            return;
+        }
+        
+        const schema = jobSearchData.jobsearch.positions.schema;
+        
+        // Apply to DataGrid
+        applyDataGridDimensions(schema);
+        
+        // Apply to row-form fields
+        applyRowFormDimensions(schema);
+        
+        logger.info('Schema-driven CSS dimensions applied to DataGrid and row-form');
+        
+    } catch (error) {
+        logger.error('Error applying schema CSS dimensions:', error);
+    }
+}
+
+/**
+ * Apply dimensions to DataGrid CSS custom properties
+ */
+function applyDataGridDimensions(schema) {
+    const dataGridElement = document.querySelector('.DataGrid');
+    
+    if (!dataGridElement) {
+        logger.warn('DataGrid element not found for CSS dimension application');
+        return;
+    }
+    
+    // Map schema field names to CSS custom property names
+    const fieldToCSSMap = {
+        'position': '--position',
+        'companyId': '--company', 
+        'email': '--email',
+        'cphone': '--cphone',
+        'ophone': '--ophone', 
+        'icontact': '--icontact',
+        'lcontact': '--lcontact'
+    };
+    
+    // Apply dimensions from schema to CSS custom properties
+    Object.entries(schema).forEach(([fieldName, fieldConfig]) => {
+        const cssPrefix = fieldToCSSMap[fieldName];
+        if (cssPrefix && fieldConfig.css) {
+            // Apply width if defined
+            if (fieldConfig.css.width) {
+                dataGridElement.style.setProperty(
+                    `${cssPrefix}-width`, 
+                    fieldConfig.css.width
+                );
+            }
+            
+            // Apply grid flex if defined
+            if (fieldConfig.css.gridFlex) {
+                dataGridElement.style.setProperty(
+                    `${cssPrefix}-grid-flex`, 
+                    fieldConfig.css.gridFlex
+                );
+            }
+            
+            // Apply height if defined (for future use)
+            if (fieldConfig.css.height) {
+                dataGridElement.style.setProperty(
+                    `${cssPrefix}-height`, 
+                    fieldConfig.css.height
+                );
+            }
+            
+            // Apply min/max dimensions if defined
+            if (fieldConfig.css.minWidth) {
+                dataGridElement.style.setProperty(
+                    `${cssPrefix}-min-width`, 
+                    fieldConfig.css.minWidth
+                );
+            }
+            
+            if (fieldConfig.css.maxWidth) {
+                dataGridElement.style.setProperty(
+                    `${cssPrefix}-max-width`, 
+                    fieldConfig.css.maxWidth
+                );
+            }
+        }
+    });
+    
+    logger.debug('DataGrid dimensions applied from schema');
+}
+
+/**
+ * Apply dimensions to row-form field elements
+ */
+function applyRowFormDimensions(schema) {
+    const rowFormElement = document.querySelector('.row-form');
+    
+    if (!rowFormElement) {
+        logger.debug('Row-form element not found for CSS dimension application');
+        return;
+    }
+    
+    // Apply dimensions to individual form fields based on schema
+    Object.entries(schema).forEach(([fieldName, fieldConfig]) => {
+        if (fieldConfig.css) {
+            // Find form elements with data-field attribute matching the field name
+            const fieldElements = rowFormElement.querySelectorAll(`[data-field="${fieldName}"]`);
+            
+            fieldElements.forEach(element => {
+                // Apply width if defined
+                if (fieldConfig.css.width) {
+                    element.style.width = fieldConfig.css.width;
+                }
+                
+                // Apply height if defined
+                if (fieldConfig.css.height) {
+                    element.style.height = fieldConfig.css.height;
+                }
+                
+                // Apply min/max dimensions if defined
+                if (fieldConfig.css.minWidth) {
+                    element.style.minWidth = fieldConfig.css.minWidth;
+                }
+                
+                if (fieldConfig.css.maxWidth) {
+                    element.style.maxWidth = fieldConfig.css.maxWidth;
+                }
+                
+                if (fieldConfig.css.minHeight) {
+                    element.style.minHeight = fieldConfig.css.minHeight;
+                }
+                
+                if (fieldConfig.css.maxHeight) {
+                    element.style.maxHeight = fieldConfig.css.maxHeight;
+                }
+            });
+        }
+    });
+    
+    logger.debug('Row-form field dimensions applied from schema');
+}
+
+/**
+ * Refresh all schema-driven CSS dimensions (can be called when schema changes)
+ */
+function refreshSchemaCSSDimensions() {
+    applySchemaCSSDimensions();
+    logger.info('Schema CSS dimensions refreshed');
+}
+
+/**
+ * Get schema field CSS properties for a specific field
+ */
+function getFieldCSSDimensions(fieldName, entityType = 'positions') {
+    try {
+        const schema = jobSearchData?.jobsearch?.[entityType]?.schema;
+        if (!schema || !schema[fieldName]) {
+            return null;
+        }
+        
+        return schema[fieldName].css || {};
+    } catch (error) {
+        logger.error(`Error getting CSS dimensions for field ${fieldName}:`, error);
+        return null;
+    }
+}
+
 // Load job search data from consolidated JSON file
 async function loadJobSearchData() {
   try {
     const response = await fetch('./jobsearch.json');
     jobSearchData = await response.json();
     populateCompanyDropdown();
+    
+    // Apply schema-driven CSS dimensions
+    applySchemaCSSDimensions();
     
     // Load position records into storedRecords
     if (jobSearchData?.jobsearch?.positions?.data) {
@@ -40,12 +232,12 @@ async function loadJobSearchData() {
           record.isDisabled = false; // Default to enabled
         }
       });
-      console.log('Position records loaded:', storedRecords.length);
+      logger.info('Position records loaded:', storedRecords.length);
       updatePagination();
       renderRecordsDisplay();
     }
   } catch (error) {
-    console.error('Error loading job search data:', error);
+    logger.error('Error loading job search data:', error);
     // Fallback to hardcoded options if file load fails
   }
 }
@@ -159,7 +351,7 @@ function saveFormData() {
     // Update existing record
     storedRecords[window.editingRecordIndex] = formData;
     window.editingRecordIndex = undefined; // Clear editing flag
-    console.log('Record updated:', formData);
+    logger.debug('Record updated:', formData);
   } else {
     // Store new record for pagination
     storeRecord(formData);
@@ -196,7 +388,7 @@ function storeRecord(formData) {
   }
   
   storedRecords.push(formData);
-  console.log('Record stored. Total records:', storedRecords.length);
+  logger.info('Record stored. Total records:', storedRecords.length);
 }
 
 // Update pagination display and controls
@@ -592,7 +784,7 @@ function saveInlineEdit(index) {
   renderRecordsDisplay();
   updateHeaderSummary();
   
-  console.log('Record saved:', storedRecords[index]);
+  logger.debug('Record saved:', storedRecords[index]);
 }
 
 // Cancel inline edit
@@ -649,7 +841,7 @@ function deleteRecord(index) {
     updatePaginationControls();
     updateHeaderSummary();
     
-    console.log('Record deleted, remaining records:', storedRecords.length);
+    logger.info('Record deleted, remaining records:', storedRecords.length);
   }
 }
 
@@ -674,12 +866,12 @@ function handleRecordCheckboxChange(index, checked) {
   updateMasterCheckboxState();
   updateHeaderForSelection();
   
-  console.log('Selected records:', Array.from(selectedRecords));
+  logger.debug('Selected records:', Array.from(selectedRecords));
 }
 
 // Handle master checkbox change
 function handleMasterCheckboxChange(checked) {
-  console.log('Master checkbox changed:', checked);
+  logger.debug('Master checkbox changed:', checked);
   masterCheckboxState = checked;
   
   // Get the currently displayed records (filtered by toggle state and search)
@@ -692,7 +884,7 @@ function handleMasterCheckboxChange(checked) {
   const endIndex = Math.min(startIndex + pageSize, displayRecords.length);
   const pageRecords = displayRecords.slice(startIndex, endIndex);
   
-  console.log('Page records for master checkbox:', pageRecords.length, pageRecords);
+  logger.debug('Page records for master checkbox:', pageRecords.length, pageRecords);
   
   if (checked) {
     // Select all visible records on current page
@@ -700,7 +892,7 @@ function handleMasterCheckboxChange(checked) {
       const globalIndex = storedRecords.findIndex(r => r.id === record.id);
       if (globalIndex >= 0) {
         selectedRecords.add(globalIndex);
-        console.log('Selected record:', globalIndex, record);
+        logger.debug('Selected record:', globalIndex, record);
       }
     });
   } else {
@@ -709,7 +901,7 @@ function handleMasterCheckboxChange(checked) {
       const globalIndex = storedRecords.findIndex(r => r.id === record.id);
       if (globalIndex >= 0) {
         selectedRecords.delete(globalIndex);
-        console.log('Deselected record:', globalIndex, record);
+        logger.debug('Deselected record:', globalIndex, record);
       }
     });
   }
@@ -717,7 +909,7 @@ function handleMasterCheckboxChange(checked) {
   renderRecordsDisplay(); // Re-render to update checkboxes
   updateHeaderForSelection();
   
-  console.log('Selected records after master change:', Array.from(selectedRecords));
+  logger.debug('Selected records after master change:', Array.from(selectedRecords));
 }
 
 // Update master checkbox state based on current page selections
@@ -761,7 +953,7 @@ function updateMasterCheckboxState() {
   
   masterCheckboxState = allPageRecordsSelected && anyPageRecordsSelected;
   
-  console.log('Master checkbox state updated:', { 
+  logger.debug('Master checkbox state updated:', { 
     allSelected: allPageRecordsSelected, 
     anySelected: anyPageRecordsSelected,
     checked: masterCheckboxState,
@@ -821,7 +1013,7 @@ function updateHeaderForSelection() {
       try {
         window.formMockSearch.destroy();
       } catch (error) {
-        console.warn('Error destroying DataGridSearch:', error);
+        logger.warn('Error destroying DataGridSearch:', error);
       }
       window.formMockSearch = null;
     }
@@ -876,12 +1068,12 @@ function updateHeaderForSelection() {
     // Re-initialize toggle and DataGridSearch
     initializeToggle();
     
-    // Re-initialize DataGridSearch if it exists
+    // Re-initialize DataGridSearch if it exists (disabled view)
     if (window.formMockSearch && typeof window.formMockSearch.destroy === 'function') {
       try {
         window.formMockSearch.destroy();
       } catch (error) {
-        console.warn('Error destroying DataGridSearch:', error);
+        logger.warn('Error destroying DataGridSearch:', error);
       }
       window.formMockSearch = null;
     }
@@ -961,7 +1153,7 @@ function handleRestoreSelected() {
       // Show success notification
       showTransferNotification(`${displayRecords.length} record(s) restored and moved to Enabled view`, 'success');
       
-      console.log('All disabled records on page restored and removed from disabled view');
+      logger.info('All disabled records on page restored and removed from disabled view');
     }
     return;
   }
@@ -1000,7 +1192,7 @@ function handleRestoreSelected() {
     const restoredCount = selectedRecords.size;
     showTransferNotification(`${restoredCount} record(s) restored and moved to Enabled view`, 'success');
     
-    console.log('Selected records restored and removed from disabled view');
+    logger.info('Selected records restored and removed from disabled view');
   }
 }
 
@@ -1043,7 +1235,7 @@ function handleDeleteSelected() {
     // Show success notification
     showTransferNotification(`${deletedCount} record(s) deleted and moved to Disabled view`, 'warning');
     
-    console.log(`Selected records soft deleted and removed from enabled view`);
+    logger.info(`Selected records soft deleted and removed from enabled view`);
   }
 }
 
@@ -1639,3 +1831,108 @@ window.clearSearch = function() {
   renderRecordsDisplay();
   updatePagination();
 };
+
+/**
+ * Get filtered records based on current toggle state
+ * Returns all available records filtered by enabled/disabled state
+ */
+function getFilteredRecords() {
+  try {
+    // Return stored records if available
+    if (storedRecords && storedRecords.length > 0) {
+      return viewingEnabled 
+        ? storedRecords.filter(record => !record.isDisabled)
+        : storedRecords.filter(record => record.isDisabled);
+    }
+    
+    // Fallback to jobSearchData if available
+    if (jobSearchData?.jobsearch?.positions?.data) {
+      const allRecords = jobSearchData.jobsearch.positions.data;
+      return viewingEnabled 
+        ? allRecords.filter(record => !record.isDisabled)
+        : allRecords.filter(record => record.isDisabled);
+    }
+    
+    // Return empty array if no data available
+    return [];
+  } catch (error) {
+    logger.error('Error getting filtered records:', error);
+    return [];
+  }
+}
+
+/**
+ * Get company name by ID (helper function for search)
+ */
+function getCompanyNameById(companyId) {
+  try {
+    if (jobSearchData?.jobsearch?.companies?.data) {
+      const company = jobSearchData.jobsearch.companies.data.find(c => c.id === companyId);
+      return company ? company.name : '';
+    }
+    return '';
+  } catch (error) {
+    logger.error('Error getting company name:', error);
+    return '';
+  }
+}
+
+/**
+ * Apply search functionality (alias for compatibility)
+ * Expected by test framework
+ */
+function applySearch(searchTerm) {
+  if (typeof window.applyGlobalSearch === 'function') {
+    window.applyGlobalSearch(searchTerm);
+  } else {
+    logger.warn('Global search function not available');
+  }
+}
+
+/**
+ * Filter records based on search criteria (alias for compatibility)
+ * Expected by test framework
+ */
+function filterRecords(searchTerm) {
+  try {
+    if (!searchTerm || searchTerm.trim() === '') {
+      return getFilteredRecords(); // Return all filtered records if no search term
+    }
+
+    const lowerSearchTerm = searchTerm.toLowerCase();
+    const baseRecords = getFilteredRecords();
+    
+    return baseRecords.filter(record => {
+      const matches = (
+        (record.position && record.position.toLowerCase().includes(lowerSearchTerm)) ||
+        (record.email && record.email.toLowerCase().includes(lowerSearchTerm)) ||
+        (record.cphone && record.cphone.toLowerCase().includes(lowerSearchTerm)) ||
+        (record.ophone && record.ophone.toLowerCase().includes(lowerSearchTerm)) ||
+        (record.icontact && record.icontact.toLowerCase().includes(lowerSearchTerm)) ||
+        (record.lcontact && record.lcontact.toLowerCase().includes(lowerSearchTerm)) ||
+        (getCompanyNameById(record.companyId) && getCompanyNameById(record.companyId).toLowerCase().includes(lowerSearchTerm))
+      );
+      return matches;
+    });
+  } catch (error) {
+    logger.error('Error filtering records:', error);
+    return [];
+  }
+}
+
+/**
+ * Clear search filters (alias for compatibility)
+ * Expected by test framework
+ */
+function clearSearchFilter() {
+  if (typeof window.clearSearch === 'function') {
+    window.clearSearch();
+  } else {
+    logger.warn('Clear search function not available');
+  }
+}
+
+// Make functions globally available for test framework
+window.applySearch = applySearch;
+window.filterRecords = filterRecords;
+window.clearSearchFilter = clearSearchFilter;

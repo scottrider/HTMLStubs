@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataGrid Loading Diagnostic</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .diagnostic-panel {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .test-grid {
+            margin: 20px 0;
+            min-height: 200px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            background: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <h1>DataGrid Loading Diagnostic Tool</h1>
+    
+    <div class="diagnostic-panel">
+        <h3>Step 1: File Dependencies Check</h3>
+        <div id="dependencies-status" class="status warning">Checking dependencies...</div>
+        <button onclick="checkDependencies()">Check Dependencies</button>
+        <pre id="dependencies-details"></pre>
+    </div>
+
+    <div class="diagnostic-panel">
+        <h3>Step 2: JobSearch JSON Loading</h3>
+        <div id="json-status" class="status warning">Ready to test</div>
+        <button onclick="testJSONLoading()">Test JSON Loading</button>
+        <pre id="json-details"></pre>
+    </div>
+
+    <div class="diagnostic-panel">
+        <h3>Step 3: Schema Conversion</h3>
+        <div id="schema-status" class="status warning">Waiting for JSON</div>
+        <button onclick="testSchemaConversion()">Test Schema Conversion</button>
+        <pre id="schema-details"></pre>
+    </div>
+
+    <div class="diagnostic-panel">
+        <h3>Step 4: DataGrid Creation</h3>
+        <div id="datagrid-status" class="status warning">Waiting for schema</div>
+        <button onclick="testDataGridCreation()">Test DataGrid Creation</button>
+        <div id="diagnostic-grid" class="test-grid"></div>
+        <pre id="datagrid-details"></pre>
+    </div>
+
+    <div class="diagnostic-panel">
+        <h3>Step 5: Error Analysis</h3>
+        <div id="error-status" class="status warning">No errors detected yet</div>
+        <pre id="error-details"></pre>
+    </div>
+
+    <!-- Load Universal DataGrid System with error handling -->
+    <script>
+        let loadedData = null;
+        let convertedSchema = null;
+        let testGrid = null;
+        
+        // Error tracking
+        const errors = [];
+        
+        // Override console.error to catch errors
+        const originalError = console.error;
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            errors.push(args.join(' '));
+            updateErrorStatus();
+        };
+        
+        // Override window.onerror
+        window.onerror = function(message, source, lineno, colno, error) {
+            errors.push(`${message} at ${source}:${lineno}:${colno}`);
+            updateErrorStatus();
+            return false;
+        };
+        
+        function updateStatus(elementId, type, message) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.className = `status ${type}`;
+                element.textContent = message;
+            }
+        }
+        
+        function updateDetails(elementId, content) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = typeof content === 'object' ? JSON.stringify(content, null, 2) : content;
+            }
+        }
+        
+        function updateErrorStatus() {
+            if (errors.length > 0) {
+                updateStatus('error-status', 'error', `${errors.length} errors detected`);
+                updateDetails('error-details', errors.join('\n\n'));
+            }
+        }
+        
+        async function checkDependencies() {
+            updateStatus('dependencies-status', 'warning', 'Checking dependencies...');
+            
+            const dependencies = {
+                DataGridNamespace: { status: 'unknown', error: null },
+                DataGrid: { status: 'unknown', error: null },
+                DataGridOperations: { status: 'unknown', error: null },
+                DataGridPresentation: { status: 'unknown', error: null }
+            };
+            
+            try {
+                // Check DataGridNamespace
+                if (typeof DataGridNamespace !== 'undefined') {
+                    dependencies.DataGridNamespace.status = 'loaded';
+                } else {
+                    dependencies.DataGridNamespace.status = 'missing';
+                }
+                
+                // Check DataGrid
+                if (typeof DataGrid !== 'undefined') {
+                    dependencies.DataGrid.status = 'loaded';
+                } else {
+                    dependencies.DataGrid.status = 'missing';
+                }
+                
+                // Check DG-Operations
+                if (typeof DataGrid !== 'undefined' && DataGrid.prototype.startEdit) {
+                    dependencies.DataGridOperations.status = 'loaded';
+                } else {
+                    dependencies.DataGridOperations.status = 'missing or not extended';
+                }
+                
+                // Check DGP
+                if (typeof DataGridPresentation !== 'undefined') {
+                    dependencies.DataGridPresentation.status = 'loaded';
+                } else {
+                    dependencies.DataGridPresentation.status = 'missing';
+                }
+                
+                const allLoaded = Object.values(dependencies).every(dep => dep.status === 'loaded');
+                
+                updateStatus('dependencies-status', allLoaded ? 'success' : 'error', 
+                    allLoaded ? 'All dependencies loaded' : 'Some dependencies missing');
+                updateDetails('dependencies-details', dependencies);
+                
+                return allLoaded;
+                
+            } catch (error) {
+                updateStatus('dependencies-status', 'error', `Dependency check failed: ${error.message}`);
+                updateDetails('dependencies-details', error.stack);
+                return false;
+            }
+        }
+        
+        async function testJSONLoading() {
+            updateStatus('json-status', 'warning', 'Loading jobsearch.json...');
+            
+            try {
+                const response = await fetch('jobsearch.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                loadedData = await response.json();
+                
+                // Validate structure
+                const validation = {
+                    hasJobsearch: !!loadedData.jobsearch,
+                    hasCompanies: !!(loadedData.jobsearch && loadedData.jobsearch.companies),
+                    hasPositions: !!(loadedData.jobsearch && loadedData.jobsearch.positions),
+                    companiesSchema: !!(loadedData.jobsearch?.companies?.schema),
+                    companiesData: !!(loadedData.jobsearch?.companies?.data),
+                    positionsSchema: !!(loadedData.jobsearch?.positions?.schema),
+                    positionsData: !!(loadedData.jobsearch?.positions?.data)
+                };
+                
+                const allValid = Object.values(validation).every(Boolean);
+                
+                updateStatus('json-status', allValid ? 'success' : 'error', 
+                    allValid ? 'JSON loaded and validated' : 'JSON structure invalid');
+                
+                const details = {
+                    validation: validation,
+                    companiesCount: loadedData.jobsearch?.companies?.data?.length || 0,
+                    positionsCount: loadedData.jobsearch?.positions?.data?.length || 0,
+                    sample: {
+                        firstCompany: loadedData.jobsearch?.companies?.data?.[0],
+                        firstPosition: loadedData.jobsearch?.positions?.data?.[0]
+                    }
+                };
+                
+                updateDetails('json-details', details);
+                return allValid;
+                
+            } catch (error) {
+                updateStatus('json-status', 'error', `JSON loading failed: ${error.message}`);
+                updateDetails('json-details', error.stack);
+                return false;
+            }
+        }
+        
+        async function testSchemaConversion() {
+            updateStatus('schema-status', 'warning', 'Testing schema conversion...');
+            
+            try {
+                if (!loadedData) {
+                    throw new Error('No data loaded. Run JSON loading test first.');
+                }
+                
+                // Test conversion function
+                function convertJobSearchSchema(jsSchema, entityName) {
+                    if (!jsSchema || typeof jsSchema !== 'object') {
+                        throw new Error('Invalid schema: schema is null, undefined, or not an object');
+                    }
+                    
+                    const fields = [];
+                    
+                    for (const [fieldName, fieldDef] of Object.entries(jsSchema)) {
+                        if (!fieldDef || typeof fieldDef !== 'object') {
+                            console.warn(`Invalid field definition for ${fieldName}:`, fieldDef);
+                            continue;
+                        }
+                        
+                        const field = {
+                            name: fieldName,
+                            type: fieldDef.type === 'string' ? 'text' : (fieldDef.type || 'text'),
+                            label: fieldDef.displayName || fieldName,
+                            required: fieldDef.required || false,
+                            readOnly: fieldDef.primaryKey || false
+                        };
+                        
+                        // Add foreign key information if present
+                        if (fieldDef.foreignKey) {
+                            field.foreignKey = {
+                                table: fieldDef.foreignKey.table,
+                                key: fieldDef.foreignKey.key,
+                                display: fieldDef.foreignKey.display
+                            };
+                        }
+                        
+                        fields.push(field);
+                    }
+                    
+                    return {
+                        entityName: entityName,
+                        fields: fields,
+                        dimensions: {
+                            containerWidth: "100%",
+                            containerHeight: "300px"
+                        },
+                        pagination: {
+                            enabled: true,
+                            pageSize: 10
+                        }
+                    };
+                }
+                
+                // Test companies schema conversion
+                const companiesSchema = loadedData.jobsearch.companies.schema;
+                const positionsSchema = loadedData.jobsearch.positions.schema;
+                
+                console.log('Converting companies schema:', companiesSchema);
+                const convertedCompaniesSchema = convertJobSearchSchema(companiesSchema, 'companies');
+                
+                console.log('Converting positions schema:', positionsSchema);
+                const convertedPositionsSchema = convertJobSearchSchema(positionsSchema, 'positions');
+                
+                convertedSchema = {
+                    companies: convertedCompaniesSchema,
+                    positions: convertedPositionsSchema
+                };
+                
+                updateStatus('schema-status', 'success', 'Schema conversion successful');
+                updateDetails('schema-details', {
+                    original: {
+                        companiesFields: Object.keys(companiesSchema).length,
+                        positionsFields: Object.keys(positionsSchema).length
+                    },
+                    converted: {
+                        companiesFields: convertedCompaniesSchema.fields.length,
+                        positionsFields: convertedPositionsSchema.fields.length
+                    },
+                    samples: {
+                        companiesSchema: convertedCompaniesSchema,
+                        positionsSchema: convertedPositionsSchema
+                    }
+                });
+                
+                return true;
+                
+            } catch (error) {
+                updateStatus('schema-status', 'error', `Schema conversion failed: ${error.message}`);
+                updateDetails('schema-details', error.stack);
+                return false;
+            }
+        }
+        
+        async function testDataGridCreation() {
+            updateStatus('datagrid-status', 'warning', 'Testing DataGrid creation...');
+            
+            try {
+                if (!loadedData) {
+                    throw new Error('No data loaded. Run previous tests first.');
+                }
+                
+                if (!convertedSchema) {
+                    throw new Error('No converted schema. Run schema conversion test first.');
+                }
+                
+                // Test with companies data (smaller dataset)
+                const companiesData = loadedData.jobsearch.companies.data.slice(0, 5); // Just 5 records for testing
+                const companiesSchema = convertedSchema.companies;
+                
+                console.log('Creating DataGrid with:', {
+                    containerId: 'diagnostic-grid',
+                    dataCount: companiesData.length,
+                    schema: companiesSchema
+                });
+                
+                // Check if DataGrid class is available
+                if (typeof DataGrid === 'undefined') {
+                    throw new Error('DataGrid class not available. Check script loading.');
+                }
+                
+                // Create the DataGrid using the new backward-compatible constructor
+                testGrid = new DataGrid('diagnostic-grid', companiesData, companiesSchema);
+                
+                console.log('DataGrid created successfully:', testGrid);
+                
+                // Test rendering
+                testGrid.render();
+                
+                console.log('DataGrid rendered successfully');
+                
+                updateStatus('datagrid-status', 'success', 'DataGrid creation and rendering successful');
+                updateDetails('datagrid-details', {
+                    gridCreated: !!testGrid,
+                    dataLoaded: testGrid.data ? testGrid.data.length : 0,
+                    schemaApplied: testGrid.schema ? testGrid.schema.fields.length : 0,
+                    containerPopulated: document.getElementById('diagnostic-grid').children.length > 0
+                });
+                
+                return true;
+                
+            } catch (error) {
+                updateStatus('datagrid-status', 'error', `DataGrid creation failed: ${error.message}`);
+                updateDetails('datagrid-details', error.stack);
+                return false;
+            }
+        }
+        
+        // Auto-run dependency check
+        window.onload = function() {
+            console.log('Diagnostic tool loaded');
+            
+            // Load scripts dynamically with error handling
+            const scripts = ['DataGridNamespace.js', 'DG.js', 'DG-Operations.js', 'DGP.js'];
+            let loadedScripts = 0;
+            
+            scripts.forEach(src => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = function() {
+                    loadedScripts++;
+                    console.log(`Loaded: ${src}`);
+                    if (loadedScripts === scripts.length) {
+                        checkDependencies();
+                    }
+                };
+                script.onerror = function() {
+                    console.error(`Failed to load: ${src}`);
+                    errors.push(`Failed to load script: ${src}`);
+                    updateErrorStatus();
+                };
+                document.head.appendChild(script);
+            });
+        };
+    </script>
+</body>
+</html>

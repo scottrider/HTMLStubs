@@ -29,16 +29,20 @@ class DataGridSearch {
             throw new Error('DataGridSearch: Element not found');
         }
         
-        // Configuration options
+        // Configuration options with validation
         this.options = {
-            debounceDelay: 300,
-            minSearchLength: 0,
-            placeholder: 'Search records...',
-            onSearch: null, // Callback for search events
-            onClear: null,  // Callback for clear events
-            dataGrid: null, // DataGrid instance to search
-            searchMethod: 'handleSearch', // Method name on DataGrid
-            ...options
+            debounceDelay: Math.max(100, Math.min(1000, options.debounceDelay || 300)),
+            minSearchLength: Math.max(0, options.minSearchLength || 0),
+            placeholder: options.placeholder || 'Search records...',
+            onSearch: typeof options.onSearch === 'function' ? options.onSearch : null,
+            onClear: typeof options.onClear === 'function' ? options.onClear : null,
+            dataGrid: options.dataGrid || null,
+            searchMethod: options.searchMethod || 'handleSearch'
+        };
+        
+        // Get logger reference
+        this.logger = window.DataGridNamespace?.logger || {
+            debug: () => {}, info: console.info, warn: console.warn, error: console.error
         };
         
         // Internal state
@@ -46,13 +50,20 @@ class DataGridSearch {
         this.isSearching = false;
         this.lastSearchTerm = '';
         
+        // Bind event handlers once to prevent memory leaks
+        this.boundHandleInput = this.handleInput.bind(this);
+        this.boundHandleKeydown = this.handleKeydown.bind(this);
+        this.boundHandleFocus = this.handleFocus.bind(this);
+        this.boundHandleBlur = this.handleBlur.bind(this);
+        this.boundHandleClear = this.handleClear.bind(this);
+        
         // Find elements
         this.input = this.element.querySelector('.DataGridSearch__input');
         this.clearButton = this.element.querySelector('.DataGridSearch__clear');
         this.container = this.element.querySelector('.DataGridSearch__container');
         
         if (!this.input) {
-            console.warn('DataGridSearch: Input element not found, creating default structure');
+            this.logger.warn('Input element not found, creating default structure');
             this.createDefaultStructure();
             // Re-query after creating structure
             this.input = this.element.querySelector('.DataGridSearch__input');
@@ -105,21 +116,23 @@ class DataGridSearch {
     }
     
     bindEvents() {
-        // Input events
-        this.input.addEventListener('input', this.handleInput.bind(this));
-        this.input.addEventListener('keydown', this.handleKeydown.bind(this));
-        this.input.addEventListener('focus', this.handleFocus.bind(this));
-        this.input.addEventListener('blur', this.handleBlur.bind(this));
+        // Input events using bound references
+        this.input.addEventListener('input', this.boundHandleInput);
+        this.input.addEventListener('keydown', this.boundHandleKeydown);
+        this.input.addEventListener('focus', this.boundHandleFocus);
+        this.input.addEventListener('blur', this.boundHandleBlur);
         
         // Clear button events
         if (this.clearButton) {
-            this.clearButton.addEventListener('click', this.handleClear.bind(this));
+            this.clearButton.addEventListener('click', this.boundHandleClear);
         }
         
         // Form submission prevention
         const form = this.input.closest('form');
         if (form) {
-            form.addEventListener('submit', this.handleFormSubmit.bind(this));
+            this.boundHandleFormSubmit = this.handleFormSubmit.bind(this);
+            form.addEventListener('submit', this.boundHandleFormSubmit);
+            this.form = form; // Store reference for cleanup
         }
     }
     
@@ -332,16 +345,20 @@ class DataGridSearch {
             clearTimeout(this.searchTimeout);
         }
         
-        // Remove event listeners safely
+        // Remove event listeners safely using stored references
         if (this.input) {
-            this.input.removeEventListener('input', this.handleInput.bind(this));
-            this.input.removeEventListener('keydown', this.handleKeydown.bind(this));
-            this.input.removeEventListener('focus', this.handleFocus.bind(this));
-            this.input.removeEventListener('blur', this.handleBlur.bind(this));
+            this.input.removeEventListener('input', this.boundHandleInput);
+            this.input.removeEventListener('keydown', this.boundHandleKeydown);
+            this.input.removeEventListener('focus', this.boundHandleFocus);
+            this.input.removeEventListener('blur', this.boundHandleBlur);
         }
         
         if (this.clearButton) {
-            this.clearButton.removeEventListener('click', this.handleClear.bind(this));
+            this.clearButton.removeEventListener('click', this.boundHandleClear);
+        }
+        
+        if (this.form && this.boundHandleFormSubmit) {
+            this.form.removeEventListener('submit', this.boundHandleFormSubmit);
         }
         
         // Clean up references
@@ -351,7 +368,7 @@ class DataGridSearch {
         this.container = null;
         this.options = null;
         
-        console.log('DataGridSearch: Destroyed');
+        window.DataGridNamespace?.logger.debug('DataGridSearch destroyed');
     }
     
     // Static methods

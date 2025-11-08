@@ -15,7 +15,12 @@
                     "displayName": "Company Name",
                     "htmlElement": "input",
                     "htmlType": "text",
-                    "css": { "placeholder": "Enter company name", "maxlength": "100" },
+                    "css": { 
+                        "placeholder": "Enter company name", 
+                        "maxlength": "100",
+                        "width": "200px",
+                        "minWidth": "150px"
+                    },
                     "required": true
                 },
                 "industry": {
@@ -23,7 +28,12 @@
                     "displayName": "Industry",
                     "htmlElement": "input",
                     "htmlType": "text",
-                    "css": { "placeholder": "e.g., Technology, Healthcare", "maxlength": "50" },
+                    "css": { 
+                        "placeholder": "e.g., Technology, Healthcare", 
+                        "maxlength": "50",
+                        "width": "180px",
+                        "minWidth": "120px"
+                    },
                     "required": false
                 },
                 "size": {
@@ -32,14 +42,23 @@
                     "htmlElement": "select",
                     "htmlType": "select",
                     "options": ["", "Startup (1-10)", "Small (11-50)", "Medium (51-200)", "Large (201-1000)", "Enterprise (1000+)"],
-                    "required": false
+                    "required": false,
+                    "css": {
+                        "width": "160px",
+                        "minWidth": "140px"
+                    }
                 },
                 "location": {
                     "type": "string",
                     "displayName": "Location",
                     "htmlElement": "input",
                     "htmlType": "text",
-                    "css": { "placeholder": "City, State or Remote", "maxlength": "100" },
+                    "css": { 
+                        "placeholder": "City, State or Remote", 
+                        "maxlength": "100",
+                        "width": "180px",
+                        "minWidth": "120px"
+                    },
                     "required": false
                 },
                 "website": {
@@ -47,7 +66,11 @@
                     "displayName": "Website",
                     "htmlElement": "input",
                     "htmlType": "url",
-                    "css": { "placeholder": "https://company.com" },
+                    "css": { 
+                        "placeholder": "https://company.com",
+                        "width": "220px",
+                        "minWidth": "160px"
+                    },
                     "required": false
                 },
                 "notes": {
@@ -55,7 +78,14 @@
                     "displayName": "Notes",
                     "htmlElement": "textarea",
                     "htmlType": "textarea",
-                    "css": { "placeholder": "Company notes, culture info, etc.", "rows": "3" },
+                    "css": { 
+                        "placeholder": "Company notes, culture info, etc.", 
+                        "rows": "3",
+                        "width": "300px",
+                        "height": "80px",
+                        "minWidth": "200px",
+                        "minHeight": "60px"
+                    },
                     "required": false
                 }
             },
@@ -159,7 +189,13 @@
                     "displayName": "Position", 
                     "htmlElement": "input",
                     "htmlType": "text",
-                    "css": { "placeholder": "Enter position title", "maxlength": "100" },
+                    "css": { 
+                        "placeholder": "Enter position title", 
+                        "maxlength": "100",
+                        "width": "200px",
+                        "minWidth": "200px",
+                        "gridFlex": "2fr"
+                    },
                     "required": true 
                 },
                 "companyId": {
@@ -169,14 +205,24 @@
                     "htmlType": "select",
                     "required": true,
                     "foreignKey": "companies.id",
-                    "foreignKeyDisplay": "companies.name"
+                    "foreignKeyDisplay": "companies.name",
+                    "css": {
+                        "width": "150px",
+                        "minWidth": "150px",
+                        "gridFlex": "1.5fr"
+                    }
                 },
                 "email": { 
                     "type": "email", 
                     "displayName": "Email", 
                     "htmlElement": "input",
                     "htmlType": "email",
-                    "css": { "placeholder": "email@example.com" },
+                    "css": { 
+                        "placeholder": "email@example.com",
+                        "width": "200px",
+                        "minWidth": "200px",
+                        "gridFlex": "2fr"
+                    },
                     "required": true 
                 },
                 "cphone": { 
@@ -184,7 +230,12 @@
                     "displayName": "Cell", 
                     "htmlElement": "input",
                     "htmlType": "tel",
-                    "css": { "placeholder": "(555) 123-4567" },
+                    "css": { 
+                        "placeholder": "(555) 123-4567",
+                        "width": "120px",
+                        "minWidth": "120px",
+                        "gridFlex": "1fr"
+                    },
                     "required": false 
                 },
                 "ophone": { 
@@ -192,7 +243,12 @@
                     "displayName": "Office", 
                     "htmlElement": "input",
                     "htmlType": "tel",
-                    "css": { "placeholder": "(555) 123-4567" },
+                    "css": { 
+                        "placeholder": "(555) 123-4567",
+                        "width": "120px",
+                        "minWidth": "120px",
+                        "gridFlex": "1fr"
+                    },
                     "required": false 
                 },
                 "icontact": { 
@@ -200,7 +256,13 @@
                     "displayName": "Initial Contact", 
                     "htmlElement": "label",
                     "htmlType": "label",
-                    "css": { "min": "2020-01-01", "max": "2030-12-31" },
+                    "css": { 
+                        "min": "2020-01-01", 
+                        "max": "2030-12-31",
+                        "width": "140px",
+                        "minWidth": "140px",
+                        "gridFlex": "1.2fr"
+                    },
                     "required": true 
                 },
                 "lcontact": { 
@@ -208,7 +270,13 @@
                     "displayName": "Last Contact", 
                     "htmlElement": "input",
                     "htmlType": "date",
-                    "css": { "min": "2020-01-01", "max": "2030-12-31" },
+                    "css": { 
+                        "min": "2020-01-01", 
+                        "max": "2030-12-31",
+                        "width": "140px",
+                        "minWidth": "140px",
+                        "gridFlex": "1.2fr"
+                    },
                     "required": false 
                 }
             },

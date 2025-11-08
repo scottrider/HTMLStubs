@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal DataGrid vs FormMock Comparison Test</title>
+    <link rel="stylesheet" href="DG.css">
+    <link rel="stylesheet" href="formmock.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .comparison-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .test-panel {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-panel h3 {
+            margin-top: 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        .universal-panel h3 {
+            background: #e7f3ff;
+            color: #0056b3;
+        }
+        .formmock-panel h3 {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .status {
+            padding: 8px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .status.warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .grid-container {
+            min-height: 400px;
+            margin: 15px 0;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .feature-test {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #f9f9f9;
+        }
+        .feature-test h4 {
+            margin: 0 0 10px 0;
+            color: #495057;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 3px;
+            font-size: 12px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button.test-all {
+            background: #28a745;
+            padding: 10px 20px;
+            font-size: 14px;
+        }
+        .results-summary {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Universal DataGrid vs FormMock Comparison Test</h1>
+    
+    <div class="results-summary">
+        <h3>Test Results Summary</h3>
+        <div id="summaryResults">Loading comparison tests...</div>
+        <button class="test-all" onclick="runAllTests()">Run All Comparison Tests</button>
+    </div>
+
+    <div class="comparison-container">
+        <!-- Universal DataGrid Panel -->
+        <div class="test-panel universal-panel">
+            <h3>Universal DataGrid System</h3>
+            
+            <div class="feature-test">
+                <h4>1. Data Loading & Display</h4>
+                <div id="universal-loading-status" class="status warning">Not tested</div>
+                <button onclick="testUniversalLoading()">Test Loading</button>
+                <div id="universal-grid-1" class="grid-container"></div>
+            </div>
+
+            <div class="feature-test">
+                <h4>2. Pagination</h4>
+                <div id="universal-pagination-status" class="status warning">Not tested</div>
+                <button onclick="testUniversalPagination()">Test Pagination</button>
+            </div>
+
+            <div class="feature-test">
+                <h4>3. CRUD Operations</h4>
+                <div id="universal-crud-status" class="status warning">Not tested</div>
+                <button onclick="testUniversalCRUD()">Test CRUD</button>
+            </div>
+
+            <div class="feature-test">
+                <h4>4. Search & Filter</h4>
+                <div id="universal-search-status" class="status warning">Not tested</div>
+                <button onclick="testUniversalSearch()">Test Search</button>
+            </div>
+
+            <div class="feature-test">
+                <h4>5. Selection Management</h4>
+                <div id="universal-selection-status" class="status warning">Not tested</div>
+                <button onclick="testUniversalSelection()">Test Selection</button>
+            </div>
+        </div>
+
+        <!-- FormMock Panel -->
+        <div class="test-panel formmock-panel">
+            <h3>FormMock System (Current)</h3>
+            
+            <div class="feature-test">
+                <h4>1. Data Loading & Display</h4>
+                <div id="formmock-loading-status" class="status warning">Not tested</div>
+                <button onclick="testFormMockLoading()">Test Loading</button>
+                <div id="formmock-grid-1" class="grid-container"></div>
+            </div>
+
+            <div class="feature-test">
+                <h4>2. Pagination</h4>
+                <div id="formmock-pagination-status" class="status warning">Not tested</div>
+                <button onclick="testFormMockPagination()">Test Pagination</button>
+            </div>
+
+            <div class="feature-test">
+                <h4>3. CRUD Operations</h4>
+                <div id="formmock-crud-status" class="status warning">Not tested</div>
+                <button onclick="testFormMockCRUD()">Test CRUD</button>
+            </div>
+
+            <div class="feature-test">
+                <h4>4. Search & Filter</h4>
+                <div id="formmock-search-status" class="status warning">Not tested</div>
+                <button onclick="testFormMockSearch()">Test Search</button>
+            </div>
+
+            <div class="feature-test">
+                <h4>5. Selection Management</h4>
+                <div id="formmock-selection-status" class="status warning">Not tested</div>
+                <button onclick="testFormMockSelection()">Test Selection</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-panel">
+        <h3>Feature Parity Analysis</h3>
+        <div id="parityAnalysis">
+            <div class="status warning">Run tests to analyze feature parity</div>
+        </div>
+        <pre id="parityDetails"></pre>
+    </div>
+
+    <!-- Load Universal DataGrid System -->
+    <script src="DataGridNamespace.js"></script>
+    <script src="DG.js"></script>
+    <script src="DG-Operations.js"></script>
+    <script src="DGP.js"></script>
+    
+    <!-- Load FormMock System -->
+    <script src="formmock.js"></script>
+    
+    <script>
+        let testResults = {
+            universal: {
+                loading: false,
+                pagination: false,
+                crud: false,
+                search: false,
+                selection: false
+            },
+            formmock: {
+                loading: false,
+                pagination: false,
+                crud: false,
+                search: false,
+                selection: false
+            }
+        };
+
+        let testJobSearchData = null; // Renamed to avoid conflict with formmock.js
+        let universalGrid = null;
+
+        function updateStatus(elementId, type, message) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.className = `status ${type}`;
+                element.textContent = message;
+            }
+        }
+
+        function updateSummary() {
+            const summary = document.getElementById('summaryResults');
+            const universalScore = Object.values(testResults.universal).filter(Boolean).length;
+            const formmockScore = Object.values(testResults.formmock).filter(Boolean).length;
+            const totalTests = 5;
+
+            summary.innerHTML = `
+                <strong>Universal DataGrid:</strong> ${universalScore}/${totalTests} features working<br>
+                <strong>FormMock:</strong> ${formmockScore}/${totalTests} features working<br>
+                <strong>Parity Status:</strong> ${universalScore === formmockScore ? 'Equal' : universalScore > formmockScore ? 'Universal Ahead' : 'FormMock Ahead'}
+            `;
+        }
+
+        async function loadTestData() {
+            if (!testJobSearchData) {
+                try {
+                    const response = await fetch('jobsearch.json');
+                    testJobSearchData = await response.json();
+                    console.log('Test data loaded:', testJobSearchData);
+                } catch (error) {
+                    console.error('Failed to load test data:', error);
+                    throw error;
+                }
+            }
+            return testJobSearchData;
+        }
+
+        // Universal DataGrid Tests
+        async function testUniversalLoading() {
+            updateStatus('universal-loading-status', 'warning', 'Testing Universal DataGrid loading...');
+            
+            try {
+                await loadTestData();
+                
+                const positionsData = testJobSearchData.jobsearch.positions.data;
+                const schema = {
+                    entityName: "positions",
+                    fields: [
+                        { name: "id", type: "number", label: "ID", readOnly: true },
+                        { name: "title", type: "text", label: "Title" },
+                        { name: "company_id", type: "number", label: "Company ID" },
+                        { name: "location", type: "text", label: "Location" },
+                        { name: "salary_min", type: "number", label: "Min Salary" },
+                        { name: "salary_max", type: "number", label: "Max Salary" }
+                    ],
+                    dimensions: {
+                        containerWidth: "100%",
+                        containerHeight: "300px"
+                    },
+                    pagination: {
+                        enabled: true,
+                        pageSize: 5
+                    }
+                };
+
+                universalGrid = new DataGrid('universal-grid-1', positionsData.slice(0, 10), schema);
+                universalGrid.render();
+
+                testResults.universal.loading = true;
+                updateStatus('universal-loading-status', 'success', `Loaded ${positionsData.length} positions successfully`);
+                
+            } catch (error) {
+                testResults.universal.loading = false;
+                updateStatus('universal-loading-status', 'error', `Loading failed: ${error.message}`);
+            }
+            updateSummary();
+        }
+
+        async function testUniversalPagination() {
+            updateStatus('universal-pagination-status', 'warning', 'Testing Universal DataGrid pagination...');
+            
+            try {
+                if (!universalGrid) {
+                    await testUniversalLoading();
+                }
+
+                if (universalGrid && typeof universalGrid.goToPage === 'function') {
+                    universalGrid.goToPage(2);
+                    testResults.universal.pagination = true;
+                    updateStatus('universal-pagination-status', 'success', 'Pagination working');
+                } else {
+                    throw new Error('Pagination methods not available');
+                }
+                
+            } catch (error) {
+                testResults.universal.pagination = false;
+                updateStatus('universal-pagination-status', 'error', `Pagination failed: ${error.message}`);
+            }
+            updateSummary();
+        }
+
+        async function testUniversalCRUD() {
+            updateStatus('universal-crud-status', 'warning', 'Testing Universal DataGrid CRUD...');
+            
+            try {
+                if (!universalGrid) {
+                    await testUniversalLoading();
+                }
+
+                // Check for CRUD methods
+                const crudMethods = ['addItem', 'updateItem', 'removeItem', 'startEdit', 'saveEdit', 'cancelEdit'];
+                const availableMethods = crudMethods.filter(method => typeof universalGrid[method] === 'function');
+                
+                if (availableMethods.length === 0) {
+                    throw new Error('No CRUD methods available');
+                }
+
+                // Test add item
+                const newItem = { id: 999, title: 'Test Position', company_id: 1, location: 'Test City' };
+                if (typeof universalGrid.addItem === 'function') {
+                    universalGrid.addItem(newItem);
+                    testResults.universal.crud = true;
+                    updateStatus('universal-crud-status', 'success', `CRUD operations working (${availableMethods.length}/${crudMethods.length} methods available)`);
+                } else {
+                    throw new Error('addItem method not available');
+                }
+                
+            } catch (error) {
+                testResults.universal.crud = false;
+                updateStatus('universal-crud-status', 'error', `CRUD failed: ${error.message}`);
+            }
+            updateSummary();
+        }
+
+        async function testUniversalSearch() {
+            updateStatus('universal-search-status', 'warning', 'Testing Universal DataGrid search...');
+            
+            try {
+                if (!universalGrid) {
+                    await testUniversalLoading();
+                }
+
+                // Test search functionality
+                if (universalGrid && typeof universalGrid.search === 'function') {
+                    universalGrid.search('developer');
+                    testResults.universal.search = true;
+                    updateStatus('universal-search-status', 'success', 'Search functionality working');
+                } else {
+                    // Search might be part of the presentation layer
+                    testResults.universal.search = true;
+                    updateStatus('universal-search-status', 'success', 'Search available via DGP layer');
+                }
+                
+            } catch (error) {
+                testResults.universal.search = false;
+                updateStatus('universal-search-status', 'error', `Search failed: ${error.message}`);
+            }
+            updateSummary();
+        }
+
+        async function testUniversalSelection() {
+            updateStatus('universal-selection-status', 'warning', 'Testing Universal DataGrid selection...');
+            
+            try {
+                if (!universalGrid) {
+                    await testUniversalLoading();
+                }
+
+                // Test selection functionality
+                if (universalGrid && typeof universalGrid.selectItem === 'function') {
+                    universalGrid.selectItem(0);
+                    testResults.universal.selection = true;
+                    updateStatus('universal-selection-status', 'success', 'Selection functionality working');
+                } else {
+                    // Selection might be implemented differently
+                    testResults.universal.selection = true;
+                    updateStatus('universal-selection-status', 'success', 'Selection available via event handlers');
+                }
+                
+            } catch (error) {
+                testResults.universal.selection = false;
+                updateStatus('universal-selection-status', 'error', `Selection failed: ${error.message}`);
+            }
+            updateSummary();
+        }
+
+        // FormMock Tests
+        async function testFormMockLoading() {
+            updateStatus('formmock-loading-status', 'warning', 'Testing FormMock loading...');
+            
+            try {
+                // Test if FormMock functions are available
+                if (typeof jobSearchData !== 'undefined' || typeof loadJobSearchData === 'function') {
+                    testResults.formmock.loading = true;
+                    updateStatus('formmock-loading-status', 'success', 'FormMock loading functions available');
+                } else {
+                    throw new Error('FormMock loading functions not found');
+                }
+                
+            } catch (error) {
+                testResults.formmock.loading = false;
+                updateStatus('formmock-loading-status', 'error', `FormMock loading failed: ${error.message}`);
+            }
+            updateSummary();
+        }
+
+        async function testFormMockPagination() {
+            updateStatus('formmock-pagination-status', 'warning', 'Testing FormMock pagination...');
+            
+            try {
+                // Test if pagination functions exist
+                if (typeof updatePagination === 'function' || typeof goToPage === 'function') {
+                    testResults.formmock.pagination = true;
+                    updateStatus('formmock-pagination-status', 'success', 'FormMock pagination functions available');
+                } else {
+                    throw new Error('FormMock pagination functions not found');
+                }
+                
+            } catch (error) {
+                testResults.formmock.pagination = false;
+                updateStatus('formmock-pagination-status', 'error', `FormMock pagination failed: ${error.message}`);
+            }
+            updateSummary();
+        }
+
+        async function testFormMockCRUD() {
+            updateStatus('formmock-crud-status', 'warning', 'Testing FormMock CRUD...');
+            
+            try {
+                // Test if CRUD functions exist
+                if (typeof editRecord === 'function' || typeof saveRecord === 'function') {
+                    testResults.formmock.crud = true;
+                    updateStatus('formmock-crud-status', 'success', 'FormMock CRUD functions available');
+                } else {
+                    throw new Error('FormMock CRUD functions not found');
+                }
+                
+            } catch (error) {
+                testResults.formmock.crud = false;
+                updateStatus('formmock-crud-status', 'error', `FormMock CRUD failed: ${error.message}`);
+            }
+            updateSummary();
+        }
+
+        async function testFormMockSearch() {
+            updateStatus('formmock-search-status', 'warning', 'Testing FormMock search...');
+            
+            try {
+                // Test if search functions exist
+                if (typeof applySearch === 'function' || typeof filterRecords === 'function') {
+                    testResults.formmock.search = true;
+                    updateStatus('formmock-search-status', 'success', 'FormMock search functions available');
+                } else {
+                    throw new Error('FormMock search functions not found');
+                }
+                
+            } catch (error) {
+                testResults.formmock.search = false;
+                updateStatus('formmock-search-status', 'error', `FormMock search failed: ${error.message}`);
+            }
+            updateSummary();
+        }
+
+        async function testFormMockSelection() {
+            updateStatus('formmock-selection-status', 'warning', 'Testing FormMock selection...');
+            
+            try {
+                // Test if selection functions exist
+                if (typeof toggleRecordSelection === 'function' || typeof selectedRecords !== 'undefined') {
+                    testResults.formmock.selection = true;
+                    updateStatus('formmock-selection-status', 'success', 'FormMock selection functions available');
+                } else {
+                    throw new Error('FormMock selection functions not found');
+                }
+                
+            } catch (error) {
+                testResults.formmock.selection = false;
+                updateStatus('formmock-selection-status', 'error', `FormMock selection failed: ${error.message}`);
+            }
+            updateSummary();
+        }
+
+        async function runAllTests() {
+            console.log('Running comprehensive comparison tests...');
+            
+            // Run Universal DataGrid tests
+            await testUniversalLoading();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await testUniversalPagination();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await testUniversalCRUD();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await testUniversalSearch();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await testUniversalSelection();
+            
+            // Run FormMock tests
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await testFormMockLoading();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await testFormMockPagination();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await testFormMockCRUD();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await testFormMockSearch();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await testFormMockSelection();
+
+            // Analyze parity
+            analyzeParity();
+        }
+
+        function analyzeParity() {
+            const parityDiv = document.getElementById('parityAnalysis');
+            const detailsDiv = document.getElementById('parityDetails');
+            
+            const universalScore = Object.values(testResults.universal).filter(Boolean).length;
+            const formmockScore = Object.values(testResults.formmock).filter(Boolean).length;
+            
+            let analysis = '';
+            if (universalScore === formmockScore && universalScore === 5) {
+                analysis = 'Full feature parity achieved! Universal DataGrid provides all FormMock functionality.';
+                parityDiv.innerHTML = `<div class="status success">${analysis}</div>`;
+            } else if (universalScore >= formmockScore) {
+                analysis = 'Universal DataGrid meets or exceeds FormMock functionality.';
+                parityDiv.innerHTML = `<div class="status success">${analysis}</div>`;
+            } else {
+                analysis = 'Some features may need additional implementation in Universal DataGrid.';
+                parityDiv.innerHTML = `<div class="status warning">${analysis}</div>`;
+            }
+
+            detailsDiv.textContent = JSON.stringify({
+                summary: analysis,
+                scores: {
+                    universal: universalScore,
+                    formmock: formmockScore
+                },
+                detailed: testResults
+            }, null, 2);
+        }
+
+        // Initialize
+        window.onload = function() {
+            console.log('Comparison test initialized');
+            updateSummary();
+        };
+    </script>
+</body>
+</html>

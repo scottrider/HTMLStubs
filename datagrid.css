@@ -18,18 +18,34 @@ html, body {
     width: 100vw;
     background: #ffffff;
     overflow: hidden;
+    
+    /* CSS Custom Properties for Schema-driven Dimensions */
+    --position-width: 200px;
+    --position-grid-flex: 2fr;
+    --company-width: 150px;
+    --company-grid-flex: 1.5fr;
+    --email-width: 200px;
+    --email-grid-flex: 2fr;
+    --cphone-width: 120px;
+    --cphone-grid-flex: 1fr;
+    --ophone-width: 120px;
+    --ophone-grid-flex: 1fr;
+    --icontact-width: 140px;
+    --icontact-grid-flex: 1.2fr;
+    --lcontact-width: 140px;
+    --lcontact-grid-flex: 1.2fr;
 }
 
 .DataGridRow {
     display: grid;
     grid-template-columns: 
-        minmax(200px, 2fr)  /* Position - wider for job titles */
-        minmax(150px, 1.5fr) /* Company */
-        minmax(200px, 2fr)  /* Email - wider for email addresses */
-        minmax(120px, 1fr)  /* Cell - narrower for phone numbers */
-        minmax(120px, 1fr)  /* Office - narrower for phone numbers */
-        minmax(140px, 1.2fr) /* Initial Contact - medium width for dates */
-        minmax(140px, 1.2fr); /* Last Contact - medium width for dates */
+        minmax(var(--position-width), var(--position-grid-flex))  /* Position - dynamic from schema */
+        minmax(var(--company-width), var(--company-grid-flex))    /* Company - dynamic from schema */
+        minmax(var(--email-width), var(--email-grid-flex))       /* Email - dynamic from schema */
+        minmax(var(--cphone-width), var(--cphone-grid-flex))     /* Cell - dynamic from schema */
+        minmax(var(--ophone-width), var(--ophone-grid-flex))     /* Office - dynamic from schema */
+        minmax(var(--icontact-width), var(--icontact-grid-flex)) /* Initial Contact - dynamic from schema */
+        minmax(var(--lcontact-width), var(--lcontact-grid-flex)); /* Last Contact - dynamic from schema */
     width: 100%;
     white-space: nowrap; /* Prevent text wrapping */
     border-bottom: 1px solid #e1e8ed;

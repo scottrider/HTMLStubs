@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataGrid Cache-Bust Test</title>
+    <link rel="stylesheet" href="DG.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .test-grid {
+            margin: 20px 0;
+            min-height: 200px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>DataGrid Cache-Bust Test (Version: <span id="timestamp"></span>)</h1>
+    
+    <div class="test-container">
+        <h3>Step 1: Force Script Reload</h3>
+        <div id="script-status" class="status warning">Checking script loading...</div>
+        <button onclick="forceReloadScripts()">Force Reload Scripts</button>
+        <pre id="script-details"></pre>
+    </div>
+
+    <div class="test-container">
+        <h3>Step 2: Test Constructor</h3>
+        <div id="constructor-status" class="status warning">Waiting for scripts...</div>
+        <button onclick="testConstructor()">Test Constructor</button>
+        <pre id="constructor-details"></pre>
+    </div>
+
+    <div class="test-container">
+        <h3>Step 3: Test with Sample Data</h3>
+        <div id="sample-status" class="status warning">Waiting for constructor test...</div>
+        <button onclick="testSampleData()">Test Sample Data</button>
+        <div id="sample-grid" class="test-grid"></div>
+        <pre id="sample-details"></pre>
+    </div>
+
+    <div class="test-container">
+        <h3>Step 4: Test JobSearch Integration</h3>
+        <div id="jobsearch-status" class="status warning">Waiting for sample test...</div>
+        <button onclick="testJobSearchData()">Test JobSearch Data</button>
+        <div id="jobsearch-grid" class="test-grid"></div>
+        <pre id="jobsearch-details"></pre>
+    </div>
+
+    <script>
+        // Set timestamp for cache busting
+        document.getElementById('timestamp').textContent = Date.now();
+        
+        let scriptsLoaded = false;
+        let constructorWorking = false;
+        
+        function updateStatus(elementId, type, message) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.className = `status ${type}`;
+                element.textContent = message;
+            }
+        }
+        
+        function updateDetails(elementId, content) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = typeof content === 'object' ? JSON.stringify(content, null, 2) : content;
+            }
+        }
+        
+        async function forceReloadScripts() {
+            updateStatus('script-status', 'warning', 'Force reloading scripts...');
+            
+            try {
+                // Remove any existing DataGrid-related global variables
+                if (window.DataGrid) delete window.DataGrid;
+                if (window.DataGridNamespace) delete window.DataGridNamespace;
+                if (window.DataGridPresentation) delete window.DataGridPresentation;
+                
+                // Remove existing script tags
+                const existingScripts = document.querySelectorAll('script[src*="DG"]');
+                existingScripts.forEach(script => script.remove());
+                
+                // Create cache-busting timestamp
+                const timestamp = Date.now();
+                
+                // Load scripts with cache busting
+                const scripts = [
+                    `DataGridNamespace.js?v=${timestamp}`,
+                    `DG.js?v=${timestamp}`,
+                    `DG-Operations.js?v=${timestamp}`,
+                    `DGP.js?v=${timestamp}`
+                ];
+                
+                let loadedCount = 0;
+                const loadPromises = scripts.map(src => {
+                    return new Promise((resolve, reject) => {
+                        const script = document.createElement('script');
+                        script.src = src;
+                        script.onload = () => {
+                            loadedCount++;
+                            console.log(`Loaded: ${src}`);
+                            resolve(src);
+                        };
+                        script.onerror = () => {
+                            console.error(`Failed: ${src}`);
+                            reject(new Error(`Failed to load: ${src}`));
+                        };
+                        document.head.appendChild(script);
+                    });
+                });
+                
+                await Promise.all(loadPromises);
+                scriptsLoaded = true;
+                
+                // Verify what was loaded
+                const verification = {
+                    DataGridNamespace: typeof DataGridNamespace !== 'undefined',
+                    DataGrid: typeof DataGrid !== 'undefined',
+                    DataGridOperations: typeof DataGrid !== 'undefined' && DataGrid.prototype.startEdit !== undefined,
+                    DataGridPresentation: typeof DataGridPresentation !== 'undefined'
+                };
+                
+                const allLoaded = Object.values(verification).every(Boolean);
+                
+                updateStatus('script-status', allLoaded ? 'success' : 'error',
+                    allLoaded ? `✅ All scripts reloaded successfully` : `❌ Some scripts failed to load`);
+                updateDetails('script-details', verification);
+                
+            } catch (error) {
+                scriptsLoaded = false;
+                updateStatus('script-status', 'error', `❌ Script loading failed: ${error.message}`);
+                updateDetails('script-details', error.stack);
+            }
+        }
+        
+        async function testConstructor() {
+            updateStatus('constructor-status', 'warning', 'Testing constructor...');
+            
+            try {
+                if (!scriptsLoaded) {
+                    throw new Error('Scripts not loaded. Run force reload first.');
+                }
+                
+                if (typeof DataGrid === 'undefined') {
+                    throw new Error('DataGrid class not available');
+                }
+                
+                const tests = [];
+                
+                // Test 1: Old format constructor
+                try {
+                    const testSchema = {
+                        entityName: "test",
+                        fields: [
+                            { name: "id", type: "number", label: "ID", readOnly: true },
+                            { name: "name", type: "text", label: "Name" }
+                        ]
+                    };
+                    
+                    const testData = [{ id: 1, name: 'Test Item' }];
+                    
+                    // Create temporary container
+                    const tempContainer = document.createElement('div');
+                    tempContainer.id = 'temp-test-container';
+                    tempContainer.style.display = 'none';
+                    document.body.appendChild(tempContainer);
+                    
+                    const grid1 = new DataGrid('temp-test-container', testData, testSchema);
+                    tests.push('✅ Old format constructor: PASS');
+                    
+                    // Cleanup
+                    document.body.removeChild(tempContainer);
+                    
+                } catch (error) {
+                    tests.push(`❌ Old format constructor: ${error.message}`);
+                }
+                
+                // Test 2: New format constructor
+                try {
+                    const config = {
+                        containerId: 'temp-test-container-2',
+                        data: [{ id: 1, name: 'Test Item' }],
+                        schema: {
+                            entityName: "test",
+                            fields: [
+                                { name: "id", type: "number", label: "ID", readOnly: true },
+                                { name: "name", type: "text", label: "Name" }
+                            ]
+                        }
+                    };
+                    
+                    const tempContainer2 = document.createElement('div');
+                    tempContainer2.id = 'temp-test-container-2';
+                    tempContainer2.style.display = 'none';
+                    document.body.appendChild(tempContainer2);
+                    
+                    const grid2 = new DataGrid(config);
+                    tests.push('✅ New format constructor: PASS');
+                    
+                    document.body.removeChild(tempContainer2);
+                    
+                } catch (error) {
+                    tests.push(`❌ New format constructor: ${error.message}`);
+                }
+                
+                const allPassed = tests.every(test => test.includes('✅'));
+                constructorWorking = allPassed;
+                
+                updateStatus('constructor-status', allPassed ? 'success' : 'error',
+                    allPassed ? '✅ Constructor tests passed' : '❌ Some constructor tests failed');
+                updateDetails('constructor-details', tests.join('\n'));
+                
+            } catch (error) {
+                constructorWorking = false;
+                updateStatus('constructor-status', 'error', `❌ Constructor test failed: ${error.message}`);
+                updateDetails('constructor-details', error.stack);
+            }
+        }
+        
+        async function testSampleData() {
+            updateStatus('sample-status', 'warning', 'Testing with sample data...');
+            
+            try {
+                if (!constructorWorking) {
+                    throw new Error('Constructor not working. Run constructor test first.');
+                }
+                
+                const sampleData = [
+                    { id: 1, name: 'Sample Item 1', category: 'A', value: 100 },
+                    { id: 2, name: 'Sample Item 2', category: 'B', value: 200 },
+                    { id: 3, name: 'Sample Item 3', category: 'A', value: 300 }
+                ];
+                
+                const sampleSchema = {
+                    entityName: "samples",
+                    fields: [
+                        { name: "id", type: "number", label: "ID", readOnly: true },
+                        { name: "name", type: "text", label: "Name", required: true },
+                        { name: "category", type: "text", label: "Category" },
+                        { name: "value", type: "number", label: "Value" }
+                    ],
+                    dimensions: {
+                        containerWidth: "100%",
+                        containerHeight: "180px"
+                    }
+                };
+                
+                const grid = new DataGrid('sample-grid', sampleData, sampleSchema);
+                console.log('Sample grid created:', grid);
+                
+                grid.render();
+                console.log('Sample grid rendered');
+                
+                // Verify rendering
+                const container = document.getElementById('sample-grid');
+                const hasContent = container && container.children.length > 0;
+                
+                const results = {
+                    gridCreated: !!grid,
+                    dataLoaded: grid.data ? grid.data.length : 0,
+                    containerPopulated: hasContent
+                };
+                
+                updateStatus('sample-status', hasContent ? 'success' : 'error',
+                    hasContent ? '✅ Sample data test passed' : '❌ Sample data test failed');
+                updateDetails('sample-details', results);
+                
+            } catch (error) {
+                updateStatus('sample-status', 'error', `❌ Sample data test failed: ${error.message}`);
+                updateDetails('sample-details', error.stack);
+                console.error('Sample data test error:', error);
+            }
+        }
+        
+        async function testJobSearchData() {
+            updateStatus('jobsearch-status', 'warning', 'Testing with JobSearch data...');
+            
+            try {
+                const response = await fetch('jobsearch.json');
+                const jobSearchData = await response.json();
+                
+                const companiesData = jobSearchData.jobsearch.companies.data.slice(0, 3);
+                
+                const companiesSchema = {
+                    entityName: "companies",
+                    fields: [
+                        { name: "id", type: "number", label: "ID", readOnly: true },
+                        { name: "name", type: "text", label: "Company Name", required: true },
+                        { name: "industry", type: "text", label: "Industry" },
+                        { name: "size", type: "text", label: "Size" }
+                    ],
+                    dimensions: {
+                        containerWidth: "100%",
+                        containerHeight: "180px"
+                    }
+                };
+                
+                const grid = new DataGrid('jobsearch-grid', companiesData, companiesSchema);
+                console.log('JobSearch grid created:', grid);
+                
+                grid.render();
+                console.log('JobSearch grid rendered');
+                
+                const container = document.getElementById('jobsearch-grid');
+                const hasContent = container && container.children.length > 0;
+                
+                const results = {
+                    dataFetched: !!jobSearchData,
+                    companiesCount: companiesData.length,
+                    gridCreated: !!grid,
+                    containerPopulated: hasContent
+                };
+                
+                updateStatus('jobsearch-status', hasContent ? 'success' : 'error',
+                    hasContent ? '✅ JobSearch data test passed' : '❌ JobSearch data test failed');
+                updateDetails('jobsearch-details', results);
+                
+            } catch (error) {
+                updateStatus('jobsearch-status', 'error', `❌ JobSearch test failed: ${error.message}`);
+                updateDetails('jobsearch-details', error.stack);
+                console.error('JobSearch test error:', error);
+            }
+        }
+        
+        // Auto-run sequence
+        window.onload = function() {
+            console.log('Cache-bust test loaded. Starting test sequence...');
+            setTimeout(async () => {
+                await forceReloadScripts();
+                setTimeout(async () => {
+                    await testConstructor();
+                    setTimeout(async () => {
+                        await testSampleData();
+                        setTimeout(testJobSearchData, 1000);
+                    }, 1000);
+                }, 1000);
+            }, 500);
+        };
+    </script>
+</body>
+</html>
