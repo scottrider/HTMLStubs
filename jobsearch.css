@@ -1,0 +1,1164 @@
+      .grid-data-row {
+        padding: 0;
+        margin: 0;
+        border: 0;
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        line-height: 1.4;
+        background: #f8f9fa;
+      }
+
+      /* Header Styles */
+      .formmock-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 20px 0;
+        padding: 15px 20px;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+
+      .header-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .header-title {
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+        margin: 0;
+      }
+
+      .header-summary {
+        font-size: 14px;
+        color: #666;
+        margin: 0;
+      }
+
+      /* Header Controls Container */
+      .header-controls {
+        display: flex !important;
+        align-items: center;
+        gap: 15px;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+
+      /* Toggle Switch Styles - Master ToggleSwitch Style 1 */
+      .toggle-container {
+        display: flex !important;
+        align-items: center;
+        gap: 8px;
+        position: relative;
+        padding: 0;
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        z-index: 10;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+
+      .toggle-switch {
+        position: relative;
+        display: inline-block !important;
+        width: 50px;
+        height: 24px;
+        cursor: pointer;
+        margin: 0;
+        padding: 0;
+        z-index: 11;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+
+      .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+        position: absolute;
+        pointer-events: none;
+      }
+
+      .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        border: 1px solid #999;
+        border-radius: 12px;
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+
+      .toggle-slider::before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 16px;
+        left: 2px;
+        bottom: 2px;
+        background-color: #ffffff;
+        border: 1px solid #ddd;
+        border-radius: 50%;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      /* Checked State - Track */
+      input:checked + .toggle-slider {
+        background-color: #007bff !important;
+        border-color: #0056b3;
+      }
+
+      /* Checked State - Handle */
+      input:checked + .toggle-slider::before {
+        transform: translateX(27px);
+        box-shadow: 0 2px 6px rgba(0, 123, 255, 0.3);
+      }
+
+      /* Focus State for Accessibility */
+      .toggle-switch input:focus + .toggle-slider {
+        outline: 2px solid #007bff;
+        outline-offset: 2px;
+      }
+
+      .toggle-switch input:focus:not(:focus-visible) + .toggle-slider {
+        outline: none;
+      }
+
+      /* Hover States */
+      .toggle-slider:hover {
+        box-shadow: 
+          inset 0 1px 3px rgba(0, 0, 0, 0.3),
+          0 0 0 3px rgba(0, 123, 255, 0.15);
+      }
+
+      input:checked + .toggle-slider:hover {
+        background-color: #0056b3;
+      }
+
+      /* Disabled State */
+      .toggle-switch input:disabled + .toggle-slider {
+        background-color: #e9ecef;
+        border-color: #ced4da;
+        cursor: not-allowed;
+        box-shadow: none;
+      }
+
+      .toggle-switch input:disabled + .toggle-slider::before {
+        background-color: #f8f9fa;
+        border-color: #ced4da;
+        box-shadow: none;
+      }
+
+      .toggle-switch input:disabled:checked + .toggle-slider {
+        background-color: #6c757d;
+        border-color: #6c757d;
+      }
+
+      .toggle-label {
+        font-size: 14px;
+        font-weight: 500;
+        color: #333;
+        cursor: pointer;
+        user-select: none;
+        display: inline-block !important;
+        margin: 0;
+        padding: 0;
+        transition: color 0.2s ease;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+
+      .toggle-label:hover {
+        color: #007bff;
+      }
+
+      .toggle-label.disabled {
+        color: #6c757d;
+        cursor: not-allowed;
+      }
+
+      .add-record-container {
+        margin: 20px 0;
+        text-align: center;
+      }
+
+      .btn-add {
+        width: 32px;
+        height: 32px;
+        border: 1px solid #28a745;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 18px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #28a745;
+        color: white;
+        line-height: 1.4;
+        transition: all 0.2s;
+      }
+
+      .btn-add:hover {
+        background: #007bff;
+        border-color: #007bff;
+        color: #ffffff;
+        transform: scale(1.05);
+      }
+
+      .btn-restore {
+        width: 32px;
+        height: 32px;
+        border: 1px solid #17a2b8;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 18px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #17a2b8;
+        color: white;
+        line-height: 1.4;
+        transition: all 0.2s;
+      }
+
+      .btn-restore:hover {
+        background: #007bff;
+        border-color: #007bff;
+        transform: scale(1.05);
+      }
+
+      .btn-delete-selected {
+        width: 32px;
+        height: 32px;
+        border: 1px solid #dc3545;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 18px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #dc3545;
+        color: white;
+        line-height: 1.4;
+        transition: all 0.2s;
+      }
+
+      .btn-delete-selected:hover {
+        background: #c82333;
+        border-color: #bd2130;
+        transform: scale(1.05);
+      }
+
+      .btn-restore-selected {
+        width: 32px;
+        height: 32px;
+        border: 1px solid #28a745;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 18px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #28a745;
+        color: white;
+        line-height: 1.4;
+        transition: all 0.2s;
+      }
+
+      .btn-restore-selected:hover {
+        background: #007bff;
+        border-color: #007bff;
+        transform: scale(1.05);
+      }
+
+      .grid-data-row * {
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        line-height: 1.4;
+      }
+
+      .row-form {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 4px;
+        align-items: center;
+        white-space: nowrap;
+        padding: 8px 0;
+      }
+
+      .row-title {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 4px;
+        align-items: center;
+        white-space: nowrap;
+        background: #f8f9fa;
+        border-top: 2px solid #007bff;
+        border-bottom: 2px solid #007bff;
+        padding: 8px 0;
+        margin-top: 8px;
+        font-weight: bold;
+        color: #495057;
+      }
+
+      .title-buttons {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+        width: 72px; /* Match action-buttons width */
+        flex-shrink: 0;
+        justify-content: flex-start; /* Align items to the left */
+        padding: 4px 4px; /* Match record-actions padding */
+      }
+
+      .master-checkbox {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+        margin-left: 0; /* Ensure left alignment, padding handles spacing */
+      }
+
+      .title-group {
+        display: flex;
+        flex-direction: row;
+        min-width: 120px;
+        flex-shrink: 0;
+        justify-content: flex-start; /* Left-justified to match data */
+        align-items: center;
+        padding: 4px 8px; /* Match field padding */
+      }
+
+      /* Title group sizing to match field groups */
+      .title-group.field-position,
+      .title-group.field-company,
+      .title-group.field-email {
+        flex: 1;
+        min-width: 150px;
+      }
+
+      .title-group.field-icontact,
+      .title-group.field-lcontact,
+      .title-group.field-cphone,
+      .title-group.field-ophone {
+        min-width: 120px;
+        max-width: 120px;
+        flex-shrink: 0;
+      }
+
+      .title-label {
+        font-size: 12px;
+        font-weight: bold;
+        color: #495057;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        text-align: left; /* Left-aligned to match data */
+        white-space: nowrap;
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+        width: 72px;
+        flex-shrink: 0;
+        justify-content: flex-start; /* Align items to the left */
+        padding: 4px 4px; /* Match record-actions padding */
+      }
+
+      .record-checkbox {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+      }
+
+      .btn-emoji {
+        width: 24px;
+        height: 24px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: white;
+        line-height: 1.4;
+      }
+
+      .btn-save {
+        background: #28a745;
+        border-color: #28a745;
+        color: white;
+      }
+
+      .btn-cancel {
+        background: #6c757d;
+        border-color: #6c757d;
+        color: white;
+      }
+
+      .field-group {
+        display: flex;
+        flex-direction: column;
+        min-width: 120px;
+      }
+
+      /* Phone and calendar fields - fixed smaller width */
+      .field-group:has(input[type="tel"]),
+      .field-group:has(input[type="date"]),
+      .field-group:has(.field-label-display) {
+        min-width: 120px;
+        max-width: 120px;
+        flex-shrink: 0;
+      }
+
+      /* Position, company, email fields - dynamic equal width */
+      .field-group:has(input[data-field="position"]),
+      .field-group:has(select[data-field="company"]),
+      .field-group:has(input[data-field="email"]) {
+        flex: 1;
+        min-width: 150px;
+      }
+
+      .field-input {
+        padding: 4px 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 14px;
+        font-family: Arial, sans-serif;
+        line-height: 1.4;
+        height: 32px;
+        box-sizing: border-box;
+      }
+
+      .field-input.required {
+        border-left: 3px solid #e74c3c;
+      }
+
+      .field-select {
+        padding: 4px 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 14px;
+        font-family: Arial, sans-serif;
+        line-height: 1.4;
+        height: 32px;
+        background: white;
+        box-sizing: border-box;
+      }
+
+      .field-label-display {
+        padding: 4px 8px;
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 4px;
+        font-size: 14px;
+        font-family: Arial, sans-serif;
+        line-height: 1.4;
+        height: 32px;
+        color: #666;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+      }
+
+      /* Records Display Area */
+      .records-display {
+        display: block;
+        margin: 0;
+        padding: 0;
+      }
+
+      .record-row {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 4px;
+        align-items: center;
+        white-space: nowrap;
+        padding: 3px 0;
+        border-bottom: 1px solid #e9ecef;
+        background: white;
+        transition: background-color 0.2s ease;
+      }
+
+      .record-row.editing {
+        background-color: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 4px;
+        padding: 3px 0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+
+      .record-row:hover {
+        background-color: #f8f9fa;
+      }
+
+      .record-row.selected {
+        background-color: #e3f2fd;
+        border-left: 3px solid #2196f3;
+      }
+
+      .record-field {
+        display: flex;
+        flex-direction: column;
+        min-width: 120px;
+        padding: 4px 8px;
+        font-size: 14px;
+        font-family: Arial, sans-serif;
+        line-height: 1.4;
+        color: #333;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        align-items: flex-start; /* Ensure left alignment */
+      }
+
+      /* Record field sizing to match field groups exactly */
+      .record-field.field-position,
+      .record-field.field-company,
+      .record-field.field-email {
+        flex: 1;
+        min-width: 150px;
+      }
+
+      .record-field.field-icontact,
+      .record-field.field-lcontact,
+      .record-field.field-cphone,
+      .record-field.field-ophone {
+        min-width: 120px;
+        max-width: 120px;
+        flex-shrink: 0;
+      }
+
+      .record-actions {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+        opacity: 1; /* Always visible */
+        width: 72px;
+        flex-shrink: 0;
+        justify-content: flex-start; /* Align items to the left */
+        padding: 4px 4px; /* Reduced padding to minimize space */
+      }
+
+      /* Expand actions area when editing to accommodate save/cancel buttons */
+      .record-row.editing .record-actions {
+        width: 80px;
+      }
+
+      .record-checkbox {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+        margin-right: 4px;
+        opacity: 1; /* Always visible */
+        margin-left: 0; /* Ensure left alignment, padding handles spacing */
+      }
+
+      .record-row:hover .record-actions {
+        opacity: 1; /* Always visible now */
+      }
+
+      .no-records-message {
+        text-align: center;
+        padding: 40px 20px;
+        color: #666;
+        font-style: italic;
+        font-size: 14px;
+        font-family: Arial, sans-serif;
+      }
+
+      /* Pagination Styles */
+      .pagination-controls {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        margin: 20px 0;
+        padding: 15px 20px;
+        border: 1px solid #e9ecef;
+        background: #f8f9fa;
+        border-radius: 8px;
+        overflow-x: auto;
+        white-space: nowrap;
+        min-width: fit-content;
+        min-height: 50px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+
+      .pagination-btn {
+        padding: 8px 12px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        cursor: pointer;
+        background: white;
+        font-size: 14px;
+        font-family: Arial, sans-serif;
+        transition: all 0.2s;
+        min-width: 40px;
+        text-align: center;
+      }
+
+      .pagination-btn:hover {
+        background: #f8f9fa;
+        border-color: #007bff;
+      }
+
+      .pagination-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background: #e9ecef;
+      }
+
+      .pagination-btn.active {
+        background: #007bff;
+        color: white;
+        border-color: #007bff;
+      }
+
+      .page-size-container {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-right: 20px;
+      }
+
+      .page-size-container label {
+        font-size: 14px;
+        color: #666;
+        white-space: nowrap;
+        font-family: Arial, sans-serif;
+      }
+
+      .page-size-select {
+        padding: 4px 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 14px;
+        font-family: Arial, sans-serif;
+        background: white;
+        cursor: pointer;
+      }
+
+      .page-info {
+        font-size: 14px;
+        color: #666;
+        margin: 0 15px;
+        font-family: Arial, sans-serif;
+        white-space: nowrap;
+      }
+
+      /* Inline editing field styles */
+      .record-field .field-input,
+      .record-field .field-select {
+        width: 100%;
+        padding: 4px 6px;
+        border: 1px solid #ced4da;
+        border-radius: 3px;
+        font-size: 13px;
+        font-family: Arial, sans-serif;
+        background: white;
+        transition: border-color 0.2s ease;
+      }
+
+      .record-field .field-input:focus,
+      .record-field .field-select:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+      }
+
+      /* Smaller inputs for date and phone fields */
+      .record-field.field-icontact .field-input,
+      .record-field.field-lcontact .field-input,
+      .record-field.field-cphone .field-input,
+      .record-field.field-ophone .field-input {
+        font-size: 12px;
+        padding: 3px 5px;
+      }
+
+      /* Button styling for save/cancel/delete */
+      .btn-save {
+        background: #28a745;
+        color: white;
+        border: 1px solid #28a745;
+      }
+
+      .btn-save:hover {
+        background: #218838;
+        border-color: #1e7e34;
+        transform: scale(1.05);
+      }
+
+      .btn-cancel {
+        background: #6c757d;
+        color: white;
+        border: 1px solid #6c757d;
+      }
+
+      .btn-cancel:hover {
+        background: #5a6268;
+        border-color: #545b62;
+        transform: scale(1.05);
+      }
+
+/**
+ * DataGridSearch - Master Level Web Standard Component
+ * 
+ * A search component specifically designed to integrate with DataGrid components.
+ * Provides real-time search functionality with clear button and proper event handling.
+ * 
+ * Features:
+ * - Real-time search with debouncing
+ * - Clear button with smart visibility
+ * - DataGrid integration via callbacks
+ * - Accessibility support (ARIA labels, keyboard navigation)
+ * - Responsive design
+ * - Enterprise-grade styling
+ * 
+ * Usage:
+ * <div class="DataGridSearch">
+ *   <label for="datagrid-search" class="DataGridSearch__label">Search:</label>
+ *   <div class="DataGridSearch__container">
+ *     <input type="text" id="datagrid-search" class="DataGridSearch__input" 
+ *            placeholder="Search records..." autocomplete="off">
+ *     <button type="button" class="DataGridSearch__clear" title="Clear search" 
+ *             aria-label="Clear search">✕</button>
+ *   </div>
+ * </div>
+ * 
+ * @version 1.0.0
+ * @author FormMock Development Team
+ * @license MIT
+ */
+
+/* Main Container */
+.DataGridSearch {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Label */
+.DataGridSearch__label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  margin: 0;
+  padding: 0;
+  white-space: nowrap;
+  user-select: none;
+}
+
+/* Input Container */
+.DataGridSearch__container {
+  position: relative;
+  display: inline-block;
+  min-width: 250px;
+}
+
+/* Search Input */
+.DataGridSearch__input {
+  width: 100%;
+  padding: 8px 12px;
+  padding-right: 36px; /* Space for clear button */
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
+  background: white;
+  color: #333;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  box-sizing: border-box;
+}
+
+.DataGridSearch__input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
+}
+
+.DataGridSearch__input:hover {
+  border-color: #adb5bd;
+}
+
+.DataGridSearch__input::placeholder {
+  color: #6c757d;
+  opacity: 1;
+}
+
+/* Clear Button */
+.DataGridSearch__clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6c757d;
+  font-size: 16px;
+  padding: 4px;
+  border-radius: 3px;
+  display: none; /* Hidden by default */
+  transition: color 0.2s ease, background-color 0.2s ease;
+  line-height: 1;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.DataGridSearch__clear:hover {
+  color: #495057;
+  background-color: #f8f9fa;
+}
+
+.DataGridSearch__clear:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 1px;
+}
+
+.DataGridSearch__clear:active {
+  background-color: #e9ecef;
+}
+
+/* Show clear button when input has content */
+.DataGridSearch__input:not([value=""]) + .DataGridSearch__clear,
+.DataGridSearch__container.has-content .DataGridSearch__clear {
+  display: flex;
+}
+
+/* Size Variants */
+.DataGridSearch--small {
+  gap: 8px;
+}
+
+.DataGridSearch--small .DataGridSearch__label {
+  font-size: 12px;
+}
+
+.DataGridSearch--small .DataGridSearch__container {
+  min-width: 200px;
+}
+
+.DataGridSearch--small .DataGridSearch__input {
+  padding: 6px 10px;
+  padding-right: 32px;
+  font-size: 12px;
+}
+
+.DataGridSearch--small .DataGridSearch__clear {
+  right: 6px;
+  font-size: 14px;
+  width: 20px;
+  height: 20px;
+}
+
+.DataGridSearch--large {
+  gap: 16px;
+}
+
+.DataGridSearch--large .DataGridSearch__label {
+  font-size: 16px;
+}
+
+.DataGridSearch--large .DataGridSearch__container {
+  min-width: 300px;
+}
+
+.DataGridSearch--large .DataGridSearch__input {
+  padding: 12px 16px;
+  padding-right: 44px;
+  font-size: 16px;
+}
+
+.DataGridSearch--large .DataGridSearch__clear {
+  right: 12px;
+  font-size: 18px;
+  width: 28px;
+  height: 28px;
+}
+
+/* Status States */
+.DataGridSearch--searching .DataGridSearch__input {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23007bff'%3E%3Cpath d='M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L23 5L22 4L20 6H18V4C18 2.9 17.1 2 16 2H8C6.9 2 6 2.9 6 4V6H4L2 4L1 5L3 7V9C1.9 9 1 9.9 1 11V20C1 21.1 1.9 22 3 22H21C22.1 22 23 21.1 23 20V11C23 9.9 22.1 9 21 9Z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 40px center;
+  background-size: 16px 16px;
+}
+
+.DataGridSearch--no-results .DataGridSearch__input {
+  border-color: #ffc107;
+  background-color: #fff3cd;
+}
+
+.DataGridSearch--error .DataGridSearch__input {
+  border-color: #dc3545;
+  background-color: #f8d7da;
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .DataGridSearch__label {
+    color: #000000;
+  }
+  
+  .DataGridSearch__input {
+    background: #007bff;
+    border-color: #4a5568;
+    color: #ffffff;
+  }
+  
+  .DataGridSearch__input:focus {
+    border-color: #63b3ed;
+    box-shadow: 0 0 0 3px rgba(99, 179, 237, 0.15);
+  }
+  
+  .DataGridSearch__input::placeholder {
+    color: #a0aec0;
+  }
+  
+  .DataGridSearch__clear {
+    color: #a0aec0;
+  }
+  
+  .DataGridSearch__clear:hover {
+    color: #e9ecef;
+    background-color: #4a5568;
+  }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .DataGridSearch__input {
+    border-width: 2px;
+  }
+  
+  .DataGridSearch__clear {
+    border: 1px solid;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .DataGridSearch__input,
+  .DataGridSearch__clear {
+    transition: none;
+  }
+}
+
+/* ===== JobSearch Management Tab Styles ===== */
+
+/* Tab navigation styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    min-height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f8f9fa;
+}
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    width: 100vw;
+}
+
+.tab-navigation {
+    background: white;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    z-index: 100;
+}
+
+.tab-button {
+    flex: 1;
+    padding: 20px 30px;
+    background: #f8f9fa;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    color: #495057;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s ease;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.tab-button:hover {
+    background: #e9ecef;
+    color: #495057;
+}
+
+.tab-button.active {
+    background: white;
+    color: #667eea;
+    border-bottom: 3px solid #667eea;
+}
+
+.tab-button::before {
+    font-size: 1.2em;
+}
+
+.tab-button[data-tab="positions"]::before {
+    content: "📋";
+}
+
+.tab-button[data-tab="companies"]::before {
+    content: "🏢";
+}
+
+.tab-button[data-tab="reports"]::before {
+    content: "📊";
+}
+
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.tab-panel {
+    display: none;
+    flex: 1;
+    flex-direction: column;
+    background: white;
+}
+
+.tab-panel.active {
+    display: flex;
+}
+
+.stats-bar {
+    display: flex;
+    gap: 20px;
+    margin: 20px 30px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.stat-item {
+    background: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    text-align: center;
+    min-width: 120px;
+    border: 1px solid #dee2e6;
+}
+
+.stat-number {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #667eea;
+    display: block;
+    line-height: 1;
+}
+
+.stat-label {
+    color: #666;
+    font-size: 0.85rem;
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.placeholder-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    height: 400px;
+    color: #6c757d;
+    text-align: center;
+    padding: 40px;
+}
+
+.placeholder-icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+
+.placeholder-title {
+    font-size: 1.3rem;
+    margin-bottom: 10px;
+    color: #495057;
+}
+
+.placeholder-text {
+    font-size: 1rem;
+    line-height: 1.5;
+    max-width: 400px;
+}
+
+/* Override formmock styles for tab integration */
+.formmock-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 0 30px 30px 30px;
+}
+
+.formmock-header {
+    margin-bottom: 20px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .tab-button {
+        padding: 15px 20px;
+        font-size: 14px;
+    }
+
+    .stats-bar {
+        margin: 15px 20px;
+        justify-content: center;
+    }
+
+    .formmock-container {
+        padding: 0 20px 20px 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .tab-button span {
+        display: none;
+    }
+
+    .tab-button::before {
+        font-size: 1.5em;
+    }
+
+    .stats-bar {
+        flex-direction: column;
+        align-items: center;
+    }
+}

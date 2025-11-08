@@ -1,205 +1,43 @@
-<div class="record-item">
-                    <div class="record-content" id="record-7">
-                        <!-- GridDataRow will be inserted here -->
-                    <div class="grid-data-row">
-            <style>
-                .grid-data-row {
-                    background: white;
-                    font-family: Arial, sans-serif;
-                    position: relative;
-                    transition: background-color 0.2s ease;
-                    padding-bottom: 1px;
-                    margin-bottom: 1px;
-                }
-                .grid-data-row:hover,
-                .grid-data-row:focus-within {
-                    background-color: #f8f9fa;
-                    outline: 2px solid #007bff;
-                    outline-offset: 1px;
-                }
-                .row-form {
-                    display: flex;
-                    flex-wrap: nowrap;
-                    gap: 15px;
-                    align-items: center;
-                    overflow: visible;
-                    white-space: nowrap;
-                }
-                .checkbox-group {
-                    display: flex;
-                    flex-direction: column;
-                    width: 30px;
-                    flex-shrink: 0;
-                    align-items: center;
-                    justify-content: center;
-                }
-                .record-checkbox {
-                    width: 16px;
-                    height: 16px;
-                    cursor: pointer;
-                }
-                .field-group {
-                    display: flex;
-                    flex-direction: column;
-                    width: 120px;
-                    flex-shrink: 0;
-                }
-                .field-label {
-                    font-weight: bold;
-                    margin: 0;
-                    font-size: 12px;
-                    color: #666;
-                    white-space: nowrap;
-                }
-                .field-input {
-                    padding: 0 0 1px 0;
-                    border: 1px solid #ccc;
-                    border-radius: 4px;
-                    font-size: 14px;
-                    width: 100%;
-                    box-sizing: border-box;
-                }
-                .field-input:focus {
-                    border-color: #007cba;
-                    outline: none;
-                    box-shadow: 0 0 3px rgba(0, 124, 186, 0.3);
-                }
-                .field-input.required {
-                    border-left: 3px solid #e74c3c;
-                }
-                .field-select {
-                    padding: 0 0 1px 0;
-                    border: 1px solid #ccc;
-                    border-radius: 4px;
-                    font-size: 14px;
-                    background: white;
-                    min-width: 150px;
-                }
-                .field-label-display {
-                    padding: 0 0 1px 0;
-                    background: #f8f9fa;
-                    border: 1px solid #e9ecef;
-                    border-radius: 4px;
-                    font-size: 14px;
-                    color: #666;
-                    min-width: 100px;
-                }
-                .field-readonly {
-                    padding: 0 0 1px 0;
-                    background: #f8f9fa;
-                    border: 1px solid #e9ecef;
-                    border-radius: 4px;
-                    font-size: 14px;
-                    color: #666;
-                    min-width: 100px;
-                }
-                .action-buttons {
-                    position: absolute;
-                    top: -30px;
-                    right: 10px;
-                    display: none;
-                    gap: 8px;
-                    align-items: center;
-                    width: auto;
-                    flex-shrink: 0;
-                    background: white;
-                    padding: 0 0 1px 0;
-                    margin: 0;
-                    border-radius: 4px;
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-                    z-index: 100;
-                }
-                .grid-data-row:hover .action-buttons,
-                .grid-data-row:focus-within .action-buttons {
-                    display: flex;
-                }
-                .btn-emoji {
-                    width: 32px;
-                    height: 32px;
-                    border: 1px solid #ccc;
-                    border-radius: 50%;
-                    cursor: pointer;
-                    font-size: 16px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    background: white;
-                    transition: transform 0.1s;
-                }
-                .btn-emoji:hover {
-                    transform: scale(1.1);
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-                }
-                .btn-save {
-                    background: #28a745;
-                    border-color: #28a745;
-                }
-                .btn-save:hover {
-                    background: #218838;
-                }
-                .btn-cancel {
-                    background: #6c757d;
-                    border-color: #6c757d;
-                }
-                .btn-cancel:hover {
-                    background: #5a6268;
-                }
-                .btn-edit {
-                    background: #007bff;
-                    border-color: #007bff;
-                }
-                .btn-edit:hover {
-                    background: #0056b3;
-                }
-                .btn-delete {
-                    background: #dc3545;
-                    border-color: #dc3545;
-                }
-                .btn-delete:hover {
-                    background: #c82333;
-                }
-            </style>
-            <div class="row-form">
-                
-            <div class="checkbox-group">
-                <input type="checkbox" class="record-checkbox" id="recordCheckbox">
-            </div>
-        
-                
-            <div class="field-group">
-                <div class="field-readonly"></div>
-            </div>
-        
-            <div class="field-group">
-                <div class="field-readonly"></div>
-            </div>
-        
-            <div class="field-group">
-                <div class="field-readonly"></div>
-            </div>
-        
-            <div class="field-group">
-                <div class="field-readonly"></div>
-            </div>
-        
-            <div class="field-group">
-                <div class="field-readonly"></div>
-            </div>
-        
-            <div class="field-group">
-                <div class="field-readonly">2025-11-05</div>
-            </div>
-        
-            <div class="field-group">
-                <div class="field-readonly">2025-11-05</div>
-            </div>
-        
-                <div class="action-buttons">
-                    
-                <button class="btn-emoji btn-edit" id="editBtn" title="Edit">✏️</button>
-                <button class="btn-emoji btn-delete" id="deleteBtn" title="Delete">🗑️</button>
-            
-                </div>
-            </div>
-        </div></div>
-                </div>
+DataGridSearch.js:55 Uncaught Error: DataGridSearch: Input element not found
+    at new DataGridSearch (DataGridSearch.js:55:19)
+    at updateHeaderForSelection (formmock.js?v=1.0.7:825:31)
+    at handleRecordCheckboxChange (formmock.js?v=1.0.7:675:3)
+    at HTMLInputElement.<anonymous> (formmock.js?v=1.0.7:497:7)
+DataGridSearch @ DataGridSearch.js:55
+updateHeaderForSelection @ formmock.js?v=1.0.7:825
+handleRecordCheckboxChange @ formmock.js?v=1.0.7:675
+(anonymous) @ formmock.js?v=1.0.7:497Understand this error
+formmock.js?v=1.0.7:764 Master checkbox state updated: {allSelected: false, anySelected: false, checked: false, pageRecordsCount: 10}
+formmock.js?v=1.0.7:1391 Toggle initialized: checked=true, viewingEnabled=true
+DataGridSearch.js:309 Uncaught TypeError: Cannot read properties of null (reading 'removeEventListener')
+    at DataGridSearch.destroy (DataGridSearch.js:309:20)
+    at updateHeaderForSelection (formmock.js?v=1.0.7:870:29)
+    at HTMLButtonElement.handleDeleteSelected (formmock.js?v=1.0.7:1007:5)
+destroy @ DataGridSearch.js:309
+updateHeaderForSelection @ formmock.js?v=1.0.7:870
+handleDeleteSelected @ formmock.js?v=1.0.7:1007Understand this error
+formmock.js?v=1.0.7:986 [Violation] 'click' handler took 1428ms
+formmock.js?v=1.0.7:1354 Toggle changed: checked=false, viewingEnabled=true
+formmock.js?v=1.0.7:764 Master checkbox state updated: {allSelected: false, anySelected: false, checked: false, pageRecordsCount: 9}
+formmock.js?v=1.0.7:1172 Switched to viewing disabled records - recordsDisplay only
+formmock.js?v=1.0.7:764 Master checkbox state updated: {allSelected: false, anySelected: true, checked: false, pageRecordsCount: 9}
+formmock.js?v=1.0.7:1391 Toggle initialized: checked=false, viewingEnabled=false
+DataGridSearch.js:309 Uncaught TypeError: Cannot read properties of null (reading 'removeEventListener')
+    at DataGridSearch.destroy (DataGridSearch.js:309:20)
+    at updateHeaderForSelection (formmock.js?v=1.0.7:821:29)
+    at handleRecordCheckboxChange (formmock.js?v=1.0.7:675:3)
+    at HTMLInputElement.<anonymous> (formmock.js?v=1.0.7:497:7)
+destroy @ DataGridSearch.js:309
+updateHeaderForSelection @ formmock.js?v=1.0.7:821
+handleRecordCheckboxChange @ formmock.js?v=1.0.7:675
+(anonymous) @ formmock.js?v=1.0.7:497Understand this error
+formmock.js?v=1.0.7:764 Master checkbox state updated: {allSelected: false, anySelected: false, checked: false, pageRecordsCount: 8}
+formmock.js?v=1.0.7:1391 Toggle initialized: checked=false, viewingEnabled=false
+DataGridSearch.js:309 Uncaught TypeError: Cannot read properties of null (reading 'removeEventListener')
+    at DataGridSearch.destroy (DataGridSearch.js:309:20)
+    at updateHeaderForSelection (formmock.js?v=1.0.7:870:29)
+    at HTMLButtonElement.handleRestoreSelected (formmock.js?v=1.0.7:963:5)
+destroy @ DataGridSearch.js:309
+updateHeaderForSelection @ formmock.js?v=1.0.7:870
+handleRestoreSelected @ formmock.js?v=1.0.7:963Understand this error
+formmock.js?v=1.0.7:901 [Violation] 'click' handler took 1961ms
