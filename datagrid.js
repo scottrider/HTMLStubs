@@ -3,6 +3,46 @@
  * Consolidated DataGrid components for the JobSearch Management System
  */
 
+const datagridLogger = window.DataGridNamespace?.logger || {
+    debug: () => {},
+    info: console.info,
+    warn: console.warn,
+    error: console.error
+};
+
+function isVisibleSchemaField(fieldConfig) {
+    if (!fieldConfig || typeof fieldConfig !== 'object') {
+        return false;
+    }
+
+    return (fieldConfig.htmlType || fieldConfig.htmlElement || '').toLowerCase() !== 'hidden';
+}
+
+function normalizeCssPropertyName(fieldName, fieldConfig = {}) {
+    const customProperty = fieldConfig?.css?.customProperty;
+    if (typeof customProperty === 'string' && customProperty.trim()) {
+        const normalized = customProperty.trim().replace(/^--/, '');
+        return `--${normalized}`;
+    }
+
+    return `--${toKebabCase(fieldName)}`;
+}
+
+function toKebabCase(value = '') {
+    return value
+        .toString()
+        .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+        .replace(/[\s_]+/g, '-')
+        .toLowerCase();
+}
+
+function applySchemaDimensionValue(target, property, value) {
+    if (!value && value !== 0) {
+        return;
+    }
+    target.style.setProperty(property, value);
+}
+
 /**
  * Apply dimensions to DataGrid CSS custom properties
  * @param {Object} schema - The data schema with field definitions
@@ -10,54 +50,44 @@
  */
 function applyDataGridDimensions(schema, dataType = 'positions') {
     const dataGridElement = document.querySelector('.datagrid-container');
-    
+
     if (!dataGridElement) {
-        console.warn('DataGrid element not found for CSS dimension application');
+        datagridLogger.warn('DataGrid element not found for CSS dimension application');
         return;
     }
-    
+
+    if (!schema || typeof schema !== 'object') {
+        datagridLogger.warn('applyDataGridDimensions: invalid schema provided');
+        return;
+    }
+
     // Dynamically generate field to CSS map from schema
     const fieldToCSSMap = generateFieldToCSSMap(schema, dataType);
-    
+
     // Apply dimensions from schema to CSS custom properties
     Object.entries(schema).forEach(([fieldName, fieldConfig]) => {
-        const cssPrefix = fieldToCSSMap[fieldName];
-        if (cssPrefix && fieldConfig.css) {
-            // Apply width if defined
-            if (fieldConfig.css.width) {
-                dataGridElement.style.setProperty(
-                    `${cssPrefix}-width`, 
-                    fieldConfig.css.width
-                );
-            }
-            
-            // Apply min-width if defined
-            if (fieldConfig.css.minWidth) {
-                dataGridElement.style.setProperty(
-                    `${cssPrefix}-min-width`, 
-                    fieldConfig.css.minWidth
-                );
-            }
-            
-            // Apply max-width if defined
-            if (fieldConfig.css.maxWidth) {
-                dataGridElement.style.setProperty(
-                    `${cssPrefix}-max-width`, 
-                    fieldConfig.css.maxWidth
-                );
-            }
-            
-            // Apply flex if defined
-            if (fieldConfig.css.flex) {
-                dataGridElement.style.setProperty(
-                    `${cssPrefix}-flex`, 
-                    fieldConfig.css.flex
-                );
-            }
+        if (!isVisibleSchemaField(fieldConfig)) {
+            return;
         }
+
+        const cssPrefix = fieldToCSSMap[fieldName];
+        const cssConfig = fieldConfig?.css || {};
+
+        if (!cssPrefix || Object.keys(cssConfig).length === 0) {
+            return;
+        }
+
+        applySchemaDimensionValue(dataGridElement, `${cssPrefix}-width`, cssConfig.width);
+        applySchemaDimensionValue(dataGridElement, `${cssPrefix}-min-width`, cssConfig.minWidth);
+        applySchemaDimensionValue(dataGridElement, `${cssPrefix}-max-width`, cssConfig.maxWidth);
+
+        const flexValue = cssConfig.gridFlex || cssConfig.flex;
+        applySchemaDimensionValue(dataGridElement, `${cssPrefix}-flex`, flexValue);
     });
-    
-    console.log(`DataGrid CSS dimensions applied from ${dataType} schema with ${Object.keys(fieldToCSSMap).length} fields`);
+
+    datagridLogger.debug(
+        `DataGrid CSS dimensions applied from ${dataType} schema with ${Object.keys(fieldToCSSMap).length} fields`
+    );
 }
 
 /**
@@ -67,48 +97,21 @@ function applyDataGridDimensions(schema, dataType = 'positions') {
  * @returns {Object} Mapping of field names to CSS custom property prefixes
  */
 function generateFieldToCSSMap(schema, dataType) {
-    const fieldToCSSMap = {};
-    
-    // Generate CSS custom property names based on field names
-    Object.keys(schema).forEach(fieldName => {
-        // Convert field names to CSS-friendly custom property names
-        let cssPropertyName;
-        
-        // Handle special mappings for common field patterns
-        switch (fieldName) {
-            case 'companyId':
-                cssPropertyName = '--company';
-                break;
-            case 'contactId':
-                cssPropertyName = '--contact';
-                break;
-            case 'positionId':
-                cssPropertyName = '--position';
-                break;
-            case 'icontact':
-                cssPropertyName = '--icontact';
-                break;
-            case 'lcontact':
-                cssPropertyName = '--lcontact';
-                break;
-            case 'cphone':
-                cssPropertyName = '--cphone';
-                break;
-            case 'ophone':
-                cssPropertyName = '--ophone';
-                break;
-            default:
-                // Convert camelCase or PascalCase to kebab-case with double dash prefix
-                cssPropertyName = '--' + fieldName
-                    .replace(/([A-Z])/g, '-$1')
-                    .toLowerCase()
-                    .replace(/^-/, ''); // Remove leading dash if present
+    if (!schema || typeof schema !== 'object') {
+        datagridLogger.warn('generateFieldToCSSMap: invalid schema provided');
+        return {};
+    }
+
+    const fieldToCSSMap = Object.entries(schema).reduce((map, [fieldName, fieldConfig]) => {
+        if (!isVisibleSchemaField(fieldConfig)) {
+            return map;
         }
-        
-        fieldToCSSMap[fieldName] = cssPropertyName;
-    });
-    
-    console.log(`Generated CSS mapping for ${dataType}:`, fieldToCSSMap);
+
+        map[fieldName] = normalizeCssPropertyName(fieldName, fieldConfig);
+        return map;
+    }, {});
+
+    datagridLogger.debug(`Generated CSS mapping for ${dataType}:`, fieldToCSSMap);
     return fieldToCSSMap;
 }
 

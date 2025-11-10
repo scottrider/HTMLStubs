@@ -3,55 +3,63 @@
  * Component for handling row-form interactions, editing state, and field management
  */
 
+const rowLogger = window.DataGridNamespace?.logger || {
+    debug: () => {},
+    info: console.info,
+    warn: console.warn,
+    error: console.error
+};
+
 /**
  * Apply dimensions to row-form field elements
  */
 function applyRowFormDimensions(schema) {
     const rowFormElement = document.querySelector('.row-form');
-    
+
     if (!rowFormElement) {
-        console.debug('Row-form element not found for CSS dimension application');
+        rowLogger.debug('Row-form element not found for CSS dimension application');
         return;
     }
-    
+
+    if (!schema || typeof schema !== 'object') {
+        rowLogger.warn('applyRowFormDimensions: invalid schema provided');
+        return;
+    }
+
     // Apply dimensions to individual form fields based on schema
     Object.entries(schema).forEach(([fieldName, fieldConfig]) => {
-        if (fieldConfig.css) {
-            // Find form elements with data-field attribute matching the field name
-            const fieldElements = rowFormElement.querySelectorAll(`[data-field="${fieldName}"]`);
-            
-            fieldElements.forEach(element => {
-                // Apply width if defined
-                if (fieldConfig.css.width) {
-                    element.style.width = fieldConfig.css.width;
-                }
-                
-                // Apply height if defined
-                if (fieldConfig.css.height) {
-                    element.style.height = fieldConfig.css.height;
-                }
-                
-                // Apply min/max dimensions if defined
-                if (fieldConfig.css.minWidth) {
-                    element.style.minWidth = fieldConfig.css.minWidth;
-                }
-                
-                if (fieldConfig.css.maxWidth) {
-                    element.style.maxWidth = fieldConfig.css.maxWidth;
-                }
-                
-                if (fieldConfig.css.minHeight) {
-                    element.style.minHeight = fieldConfig.css.minHeight;
-                }
-                
-                if (fieldConfig.css.maxHeight) {
-                    element.style.maxHeight = fieldConfig.css.maxHeight;
-                }
-            });
+        if (!fieldConfig?.css) {
+            return;
         }
+
+        // Find form elements with data-field attribute matching the field name
+        const fieldElements = rowFormElement.querySelectorAll(`[data-field="${fieldName}"]`);
+
+        fieldElements.forEach(element => {
+            const { width, height, minWidth, maxWidth, minHeight, maxHeight } = fieldConfig.css;
+
+            if (width) {
+                element.style.width = width;
+            }
+            if (height) {
+                element.style.height = height;
+            }
+            if (minWidth) {
+                element.style.minWidth = minWidth;
+            }
+            if (maxWidth) {
+                element.style.maxWidth = maxWidth;
+            }
+            if (minHeight) {
+                element.style.minHeight = minHeight;
+            }
+            if (maxHeight) {
+                element.style.maxHeight = maxHeight;
+            }
+        });
     });
-    
-    console.debug('Row-form field dimensions applied from schema');
+
+    rowLogger.debug('Row-form field dimensions applied from schema');
 }
 
 /**
@@ -63,10 +71,11 @@ function clearRowForm() {
         const rowForm = checkbox.closest('.row-form');
         if (rowForm) {
             // Clear all input fields
-            rowForm.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"], input[type="date"]').forEach(input => {
-                input.value = '';
-            });
-            
+            rowForm.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"], input[type="date"], input[type="number"], textarea')
+                .forEach(input => {
+                    input.value = '';
+                });
+
             // Reset select fields to first option
             rowForm.querySelectorAll('select').forEach(select => {
                 select.selectedIndex = 0;
@@ -85,7 +94,7 @@ function clearRowForm() {
                 editingIndex = -1;
             }
             
-            console.log('Row form cleared');
+            rowLogger.debug('Row form cleared');
         }
     }
 }

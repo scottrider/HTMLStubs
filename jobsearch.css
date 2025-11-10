@@ -339,23 +339,7 @@
         justify-content: flex-start; /* Left-justified to match data */
         align-items: center;
         padding: 4px 8px; /* Match field padding */
-      }
-
-      /* Title group sizing to match field groups */
-      .title-group.field-position,
-      .title-group.field-company,
-      .title-group.field-email {
-        flex: 1;
-        min-width: 150px;
-      }
-
-      .title-group.field-icontact,
-      .title-group.field-lcontact,
-      .title-group.field-cphone,
-      .title-group.field-ophone {
-        min-width: 120px;
-        max-width: 120px;
-        flex-shrink: 0;
+        flex: 1 1 150px;
       }
 
       .title-label {
@@ -414,6 +398,7 @@
         display: flex;
         flex-direction: column;
         min-width: 120px;
+        flex: 1 1 150px;
       }
 
       /* Phone and calendar fields - fixed smaller width */
@@ -423,14 +408,6 @@
         min-width: 120px;
         max-width: 120px;
         flex-shrink: 0;
-      }
-
-      /* Position, company, email fields - dynamic equal width */
-      .field-group:has(input[data-field="position"]),
-      .field-group:has(select[data-field="company"]),
-      .field-group:has(input[data-field="email"]) {
-        flex: 1;
-        min-width: 150px;
       }
 
       .field-input {
@@ -523,23 +500,7 @@
         overflow: hidden;
         text-overflow: ellipsis;
         align-items: flex-start; /* Ensure left alignment */
-      }
-
-      /* Record field sizing to match field groups exactly */
-      .record-field.field-position,
-      .record-field.field-company,
-      .record-field.field-email {
-        flex: 1;
-        min-width: 150px;
-      }
-
-      .record-field.field-icontact,
-      .record-field.field-lcontact,
-      .record-field.field-cphone,
-      .record-field.field-ophone {
-        min-width: 120px;
-        max-width: 120px;
-        flex-shrink: 0;
+        flex: 1 1 150px;
       }
 
       .record-actions {
@@ -678,15 +639,6 @@
         outline: none;
         border-color: #007bff;
         box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
-      }
-
-      /* Smaller inputs for date and phone fields */
-      .record-field.field-icontact .field-input,
-      .record-field.field-lcontact .field-input,
-      .record-field.field-cphone .field-input,
-      .record-field.field-ophone .field-input {
-        font-size: 12px;
-        padding: 3px 5px;
       }
 
       /* Button styling for save/cancel/delete */

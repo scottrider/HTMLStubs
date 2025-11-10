@@ -22,6 +22,25 @@ const logger = window.DataGridNamespace?.logger || {
 // Job search data storage
 let jobSearchData = null;
 
+// Schema/entity state
+const ENTITY_DISPLAY_NAMES = {
+    positions: { singular: 'Position', plural: 'Positions' },
+    companies: { singular: 'Company', plural: 'Companies' },
+    contacts: { singular: 'Contact', plural: 'Contacts' }
+};
+
+const TAB_ENTITY_MAP = {
+    positions: 'positions',
+    companies: 'companies',
+    reports: 'contacts'
+};
+
+let currentEntityType = 'positions';
+let currentSchema = {};
+let currentFieldOrder = [];
+let currentIdField = 'id';
+let currentVisibleFieldOrder = [];
+
 // Pagination state
 let currentPage = 1;
 let totalPages = 1;
@@ -42,148 +61,251 @@ let viewingEnabled = true; // Track whether viewing enabled (true) or disabled (
 /**
  * Apply schema-driven CSS dimensions to DataGrid and row-form elements
  */
-function applySchemaCSSDimensions() {
+function applySchemaCSSDimensions(entityType = currentEntityType) {
     try {
-        if (!jobSearchData?.jobsearch?.positions?.schema) {
-            logger.warn('No schema data available for CSS dimensions');
+        const schema = jobSearchData?.jobsearch?.[entityType]?.schema;
+        if (!schema) {
+            logger.warn(`No schema data available for CSS dimensions for ${entityType}`);
             return;
         }
-        
-        const schema = jobSearchData.jobsearch.positions.schema;
-        
+
         // Apply to DataGrid
-        applyDataGridDimensions(schema, 'positions');
-        
+        applyDataGridDimensionsFromSchema(schema, entityType);
+
         // Apply to row-form fields
         applyRowFormDimensions(schema);
-        
-        logger.info('Schema-driven CSS dimensions applied to DataGrid and row-form');
-        
+
+        logger.info(`Schema-driven CSS dimensions applied to DataGrid and row-form for ${entityType}`);
+
     } catch (error) {
         logger.error('Error applying schema CSS dimensions:', error);
     }
 }
 
-/**
- * Apply dimensions to DataGrid CSS custom properties
- * @param {Object} schema - The data schema with field definitions
- * @param {string} dataType - The type of data (positions, companies, contacts, etc.)
- */
-function applyDataGridDimensions(schema, dataType = 'positions') {
+function applyDataGridDimensionsFromSchema(schema, entityType) {
+    if (typeof window.applyDataGridDimensions === 'function') {
+        window.applyDataGridDimensions(schema, entityType);
+        return;
+    }
+
+    // Minimal fallback for environments without DataGrid dimension helper
     const dataGridElement = document.querySelector('.datagrid-container');
-    
     if (!dataGridElement) {
         logger.warn('DataGrid element not found for CSS dimension application');
         return;
     }
-    
-    // Use the global function to generate field mapping, or fallback to local generation
-    let fieldToCSSMap;
-    if (typeof window.generateFieldToCSSMap === 'function') {
-        fieldToCSSMap = window.generateFieldToCSSMap(schema, dataType);
-    } else {
-        // Fallback: generate locally
-        fieldToCSSMap = generateFieldToCSSMapLocal(schema, dataType);
-    }
-    
-    // Apply dimensions from schema to CSS custom properties
+
     Object.entries(schema).forEach(([fieldName, fieldConfig]) => {
-        const cssPrefix = fieldToCSSMap[fieldName];
-        if (cssPrefix && fieldConfig.css) {
-            // Apply width if defined
-            if (fieldConfig.css.width) {
-                dataGridElement.style.setProperty(
-                    `${cssPrefix}-width`, 
-                    fieldConfig.css.width
-                );
-            }
-            
-            // Apply grid flex if defined
-            if (fieldConfig.css.gridFlex) {
-                dataGridElement.style.setProperty(
-                    `${cssPrefix}-grid-flex`, 
-                    fieldConfig.css.gridFlex
-                );
-            }
-            
-            // Apply height if defined (for future use)
-            if (fieldConfig.css.height) {
-                dataGridElement.style.setProperty(
-                    `${cssPrefix}-height`, 
-                    fieldConfig.css.height
-                );
-            }
-            
-            // Apply min/max dimensions if defined
-            if (fieldConfig.css.minWidth) {
-                dataGridElement.style.setProperty(
-                    `${cssPrefix}-min-width`, 
-                    fieldConfig.css.minWidth
-                );
-            }
-            
-            if (fieldConfig.css.maxWidth) {
-                dataGridElement.style.setProperty(
-                    `${cssPrefix}-max-width`, 
-                    fieldConfig.css.maxWidth
-                );
-            }
+        if (!fieldConfig?.css) {
+            return;
+        }
+
+        const kebabName = toKebabCase(fieldName);
+        const styleTarget = dataGridElement.style;
+
+        if (fieldConfig.css.width) {
+            styleTarget.setProperty(`--${kebabName}-width`, fieldConfig.css.width);
+        }
+        if (fieldConfig.css.minWidth) {
+            styleTarget.setProperty(`--${kebabName}-min-width`, fieldConfig.css.minWidth);
+        }
+        if (fieldConfig.css.maxWidth) {
+            styleTarget.setProperty(`--${kebabName}-max-width`, fieldConfig.css.maxWidth);
+        }
+        if (fieldConfig.css.gridFlex) {
+            styleTarget.setProperty(`--${kebabName}-flex`, fieldConfig.css.gridFlex);
         }
     });
-    
-    logger.debug(`DataGrid dimensions applied from ${dataType} schema with ${Object.keys(fieldToCSSMap).length} fields`);
 }
 
-/**
- * Local fallback function to generate CSS custom property mapping from schema
- * @param {Object} schema - The data schema with field definitions
- * @param {string} dataType - The type of data (positions, companies, contacts, etc.)
- * @returns {Object} Mapping of field names to CSS custom property prefixes
- */
-function generateFieldToCSSMapLocal(schema, dataType) {
-    const fieldToCSSMap = {};
-    
-    // Generate CSS custom property names based on field names
-    Object.keys(schema).forEach(fieldName => {
-        // Convert field names to CSS-friendly custom property names
-        let cssPropertyName;
-        
-        // Handle special mappings for common field patterns
-        switch (fieldName) {
-            case 'companyId':
-                cssPropertyName = '--company';
-                break;
-            case 'contactId':
-                cssPropertyName = '--contact';
-                break;
-            case 'positionId':
-                cssPropertyName = '--position';
-                break;
-            case 'icontact':
-                cssPropertyName = '--icontact';
-                break;
-            case 'lcontact':
-                cssPropertyName = '--lcontact';
-                break;
-            case 'cphone':
-                cssPropertyName = '--cphone';
-                break;
-            case 'ophone':
-                cssPropertyName = '--ophone';
-                break;
-            default:
-                // Convert camelCase or PascalCase to kebab-case with double dash prefix
-                cssPropertyName = '--' + fieldName
-                    .replace(/([A-Z])/g, '-$1')
-                    .toLowerCase()
-                    .replace(/^-/, ''); // Remove leading dash if present
+function toKebabCase(value) {
+    return value
+        .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+        .replace(/[\s_]+/g, '-')
+        .toLowerCase();
+}
+
+function getEntityDisplayName(entityType = currentEntityType, plural = true) {
+    const mapping = ENTITY_DISPLAY_NAMES[entityType];
+    if (mapping) {
+        return plural ? mapping.plural : mapping.singular;
+    }
+
+    const normalized = (entityType || '').toString();
+    if (!normalized) {
+        return plural ? 'Records' : 'Record';
+    }
+
+    const capitalized = normalized.charAt(0).toUpperCase() + normalized.slice(1);
+    if (!plural && capitalized.endsWith('s')) {
+        return capitalized.slice(0, -1);
+    }
+    return capitalized;
+}
+
+function setEntityContext(entityType) {
+    currentEntityType = entityType;
+    currentSchema = jobSearchData?.jobsearch?.[entityType]?.schema || {};
+    currentFieldOrder = Object.keys(currentSchema);
+    currentIdField = currentFieldOrder.find(name => name.toLowerCase() === 'id') || 'id';
+    currentVisibleFieldOrder = currentFieldOrder.filter(fieldName => isFieldVisible(currentSchema[fieldName]));
+}
+
+function getFieldDefinitions(entityType = currentEntityType) {
+    const schema = jobSearchData?.jobsearch?.[entityType]?.schema || {};
+    return Object.keys(schema).map(fieldName => ({
+        name: fieldName,
+        config: schema[fieldName]
+    }));
+}
+
+function getFieldConfig(fieldName, entityType = currentEntityType) {
+    return jobSearchData?.jobsearch?.[entityType]?.schema?.[fieldName] || null;
+}
+
+function isFieldVisible(fieldConfig) {
+    return fieldConfig?.htmlType !== 'hidden';
+}
+
+function getVisibleFieldOrder(entityType = currentEntityType) {
+    const schema = jobSearchData?.jobsearch?.[entityType]?.schema || {};
+    return Object.keys(schema).filter(fieldName => isFieldVisible(schema[fieldName]));
+}
+
+function buildDimensionStyle(fieldConfig = {}, { includeFlex = true } = {}) {
+    const css = fieldConfig.css || {};
+    const styleSegments = [];
+
+    if (css.width) {
+        styleSegments.push(`width:${css.width}`);
+    }
+    if (css.minWidth) {
+        styleSegments.push(`min-width:${css.minWidth}`);
+    }
+    if (css.maxWidth) {
+        styleSegments.push(`max-width:${css.maxWidth}`);
+    }
+    if (includeFlex && css.gridFlex) {
+        const flexGrowMatch = css.gridFlex.toString().match(/([0-9.]+)/);
+        if (flexGrowMatch) {
+            const flexGrow = parseFloat(flexGrowMatch[1]) || 1;
+            styleSegments.push(`flex:${flexGrow} 1 0`);
         }
-        
-        fieldToCSSMap[fieldName] = cssPropertyName;
+    }
+
+    return styleSegments.join(';');
+}
+
+function escapeHtml(value) {
+    if (value === null || value === undefined) {
+        return '';
+    }
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function resolveForeignKeyOptions(fieldConfig) {
+    if (!fieldConfig) {
+        return [];
+    }
+
+    if (Array.isArray(fieldConfig.options) && fieldConfig.options.length > 0) {
+        return fieldConfig.options.map(option => {
+            if (option && typeof option === 'object') {
+                const value = option.value ?? option.id ?? option.key ?? option.code ?? option.name ?? option.label ?? '';
+                const label = option.label ?? option.name ?? option.display ?? option.title ?? String(value ?? '');
+                return { value, label };
+            }
+
+            return { value: option, label: option };
+        });
+    }
+
+    if (!fieldConfig.foreignKey) {
+        return [];
+    }
+
+    const [collectionKey, idField] = fieldConfig.foreignKey.split('.');
+    const [displayCollectionKey, displayField] = (fieldConfig.foreignKeyDisplay || '').split('.');
+    const collectionName = displayCollectionKey || collectionKey;
+    const collection = jobSearchData?.jobsearch?.[collectionName]?.data;
+    if (!Array.isArray(collection)) {
+        return [];
+    }
+
+    return collection.map(item => ({
+        value: item?.[idField],
+        label: displayField && item?.[displayField] !== undefined ? item[displayField] : item?.[idField]
+    }));
+}
+
+function resolveForeignKeyLabel(fieldConfig, value) {
+    if (!fieldConfig || value === null || value === undefined || value === '') {
+        return value;
+    }
+
+    const options = resolveForeignKeyOptions(fieldConfig);
+    const match = options.find(option => String(option.value) === String(value));
+    return match ? match.label : value;
+}
+
+function getFieldDisplayValue(record, fieldName) {
+    const fieldConfig = getFieldConfig(fieldName);
+    if (!fieldConfig) {
+        return record[fieldName];
+    }
+
+    const value = record[fieldName];
+
+    if (fieldConfig.htmlElement === 'select' && fieldConfig.foreignKey) {
+        return resolveForeignKeyLabel(fieldConfig, value);
+    }
+
+    return value;
+}
+
+function normalizeFieldValue(fieldName, value) {
+    const fieldConfig = getFieldConfig(fieldName);
+    if (!fieldConfig) {
+        return value;
+    }
+
+    if (value === '' || value === null || value === undefined) {
+        return '';
+    }
+
+    if (fieldConfig.type === 'number') {
+        const parsed = Number(value);
+        return Number.isNaN(parsed) ? value : parsed;
+    }
+
+    return value;
+}
+
+function isValueProvided(value) {
+    return value !== undefined && value !== null && value !== '';
+}
+
+function getMissingRequiredFields(formData) {
+    return currentFieldOrder.filter(fieldName => {
+        const fieldConfig = currentSchema[fieldName];
+        if (!fieldConfig?.required) {
+            return false;
+        }
+
+        return !isValueProvided(formData[fieldName]);
     });
-    
-    logger.debug(`Generated local CSS mapping for ${dataType}:`, fieldToCSSMap);
-    return fieldToCSSMap;
+}
+
+function formatEntityCount(count, entityType = currentEntityType) {
+    const label = count === 1
+        ? getEntityDisplayName(entityType, false)
+        : getEntityDisplayName(entityType);
+    return label.toLowerCase();
 }
 
 // applyRowFormDimensions function has been moved to DataGridRow.js
@@ -199,7 +321,7 @@ function refreshSchemaCSSDimensions() {
 /**
  * Get schema field CSS properties for a specific field
  */
-function getFieldCSSDimensions(fieldName, entityType = 'positions') {
+function getFieldCSSDimensions(fieldName, entityType = currentEntityType) {
     try {
         const schema = jobSearchData?.jobsearch?.[entityType]?.schema;
         if (!schema || !schema[fieldName]) {
@@ -218,68 +340,266 @@ async function loadJobSearchData() {
   try {
     const response = await fetch('./jobsearch.json');
     jobSearchData = await response.json();
-    populateCompanyDropdown();
-    
-    // Apply schema-driven CSS dimensions
-    applySchemaCSSDimensions();
-    
-    // Load position records into storedRecords
-    if (jobSearchData?.jobsearch?.positions?.data) {
-      storedRecords = [...jobSearchData.jobsearch.positions.data];
-      // Add ID and isDisabled field to each record if not present
-      storedRecords.forEach((record, index) => {
-        if (!record.id) {
-          record.id = index + 1;
-        }
-        if (record.isDisabled === undefined) {
-          record.isDisabled = false; // Default to enabled
-        }
-      });
-      logger.info('Position records loaded:', storedRecords.length);
-      updatePagination();
-      renderRecordsDisplay();
-    }
+    initializeEntity(currentEntityType);
   } catch (error) {
     logger.error('Error loading job search data:', error);
     // Fallback to hardcoded options if file load fails
   }
 }
 
-// Populate company dropdown with data from jobsearch.json
-function populateCompanyDropdown() {
-  const companySelect = document.querySelector('select[data-field="companyId"]');
-  if (companySelect && jobSearchData?.jobsearch?.companies?.data) {
-    // Clear existing options except the first (placeholder)
-    while (companySelect.children.length > 1) {
-      companySelect.removeChild(companySelect.lastChild);
+function initializeEntity(entityType = currentEntityType) {
+  if (!jobSearchData?.jobsearch?.[entityType]) {
+    logger.warn(`Entity "${entityType}" not found in job search data`);
+    return;
+  }
+
+  setEntityContext(entityType);
+
+  const entity = jobSearchData.jobsearch[entityType];
+  const entityData = Array.isArray(entity.data) ? entity.data : [];
+
+  storedRecords = entityData.map((record, index) => {
+    const normalizedRecord = { ...record };
+    const existingId = normalizedRecord[currentIdField];
+    const fallbackId = record.id || index + 1;
+    const resolvedId = isValueProvided(existingId) ? existingId : fallbackId;
+
+    normalizedRecord[currentIdField] = normalizeFieldValue(currentIdField, resolvedId);
+    if (!isValueProvided(normalizedRecord.id)) {
+      normalizedRecord.id = normalizedRecord[currentIdField] ?? fallbackId;
     }
-    
-    // Add options from companies data
-    jobSearchData.jobsearch.companies.data.forEach(company => {
-      const option = document.createElement('option');
-      option.value = company.id;
-      option.textContent = company.name;
-      companySelect.appendChild(option);
-    });
+
+    if (normalizedRecord.isDisabled === undefined) {
+      normalizedRecord.isDisabled = false;
+    }
+
+    return normalizedRecord;
+  });
+
+  jobSearchData.jobsearch[entityType].data = storedRecords.map(record => ({ ...record }));
+
+  applySchemaCSSDimensions(entityType);
+  renderRowFormFromSchema();
+  renderTitleFromSchema();
+  resetSelectionState();
+  updateHeaderTitle();
+  updatePagination();
+  renderRecordsDisplay();
+  initializeSearchComponent();
+
+  logger.info(`${getEntityDisplayName(entityType)} loaded:`, storedRecords.length);
+}
+
+function resetSelectionState() {
+  selectedRecords = new Set();
+  masterCheckboxState = false;
+  editingIndex = -1;
+  originalRecordData = null;
+  currentPage = 1;
+  filteredSearchRecords = [];
+  currentSearchTerm = '';
+}
+
+function persistStoredRecords() {
+  if (jobSearchData?.jobsearch?.[currentEntityType]) {
+    jobSearchData.jobsearch[currentEntityType].data = storedRecords.map(record => ({ ...record }));
   }
 }
 
-// Get company name by ID for display purposes
-function getCompanyNameById(companyId) {
-  if (!jobSearchData?.jobsearch?.companies?.data) return 'Unknown Company';
-  const company = jobSearchData.jobsearch.companies.data.find(c => c.id === parseInt(companyId));
-  return company ? company.name : 'Unknown Company';
+function renderRowFormFromSchema() {
+  const fieldsContainer = document.getElementById('rowFormFields');
+  if (!fieldsContainer) {
+    return;
+  }
+
+  const fieldsHTML = currentFieldOrder
+    .map(fieldName => createFormFieldGroupHTML(fieldName, currentSchema[fieldName]))
+    .join('');
+
+  fieldsContainer.innerHTML = fieldsHTML;
 }
 
-// Get filtered records based on current view mode
-function getFilteredRecords() {
-  return storedRecords.filter(record => {
-    if (viewingEnabled) {
-      return !record.isDisabled; // Show only enabled records
-    } else {
-      return record.isDisabled; // Show only disabled records
+function renderTitleFromSchema() {
+  const titleContainer = document.getElementById('rowTitleFields');
+  if (!titleContainer) {
+    return;
+  }
+
+  const titleHTML = currentVisibleFieldOrder
+    .map(fieldName => {
+      const fieldConfig = currentSchema[fieldName];
+      if (!fieldConfig) {
+        return '';
+      }
+
+      const style = buildDimensionStyle(fieldConfig);
+      const styleAttr = style ? ` style="${style}"` : '';
+      return `
+        <div class="title-group field-${toKebabCase(fieldName)}"${styleAttr}>
+          <span class="title-label">${escapeHtml(fieldConfig.displayName || fieldName)}</span>
+        </div>
+      `;
+    })
+    .join('');
+
+  titleContainer.innerHTML = titleHTML;
+}
+
+function createFormFieldGroupHTML(fieldName, fieldConfig, value = '') {
+  if (!fieldConfig) {
+    return '';
+  }
+
+  if (!isFieldVisible(fieldConfig)) {
+    const hiddenValue = escapeHtml(value ?? '');
+    return `<input type="hidden" data-field="${fieldName}" value="${hiddenValue}" />`;
+  }
+
+  const style = buildDimensionStyle(fieldConfig);
+  const styleAttr = style ? ` style="${style}"` : '';
+  const fieldClass = `field-group field-${toKebabCase(fieldName)}`;
+  const inputHTML = createFieldInputHTML(fieldName, fieldConfig, value, { mode: 'form' });
+
+  return `<div class="${fieldClass}"${styleAttr}>${inputHTML}</div>`;
+}
+
+function createRecordFieldHTML(record, fieldName, fieldConfig, mode) {
+  if (!fieldConfig) {
+    return '';
+  }
+
+  if (!isFieldVisible(fieldConfig)) {
+    if (mode === 'edit') {
+      const hiddenValue = escapeHtml(record[fieldName] ?? '');
+      return `<input type="hidden" data-field="${fieldName}" value="${hiddenValue}" />`;
     }
+    return '';
+  }
+
+  const style = buildDimensionStyle(fieldConfig);
+  const styleAttr = style ? ` style="${style}"` : '';
+  const fieldClass = `record-field field-${toKebabCase(fieldName)}`;
+
+  let content = '';
+  if (mode === 'read') {
+    const displayValue = getFieldDisplayValue(record, fieldName);
+    content = escapeHtml(displayValue ?? '');
+  } else {
+    content = createFieldInputHTML(fieldName, fieldConfig, record[fieldName], { mode: 'edit' });
+  }
+
+  return `<div class="${fieldClass}"${styleAttr}>${content}</div>`;
+}
+
+function createFieldInputHTML(fieldName, fieldConfig, value, { mode }) {
+  const safeValue = value ?? '';
+
+  switch ((fieldConfig?.htmlElement || 'input').toLowerCase()) {
+    case 'label': {
+      const display = escapeHtml(safeValue);
+      const dataValueAttr = isValueProvided(safeValue) ? ` data-value="${display}"` : '';
+      return `<label class="field-label-display" data-field="${fieldName}"${dataValueAttr}>${display}</label>`;
+    }
+    case 'select': {
+      const optionsHTML = buildSelectOptions(fieldName, fieldConfig, safeValue);
+      const requiredAttr = fieldConfig.required ? ' required' : '';
+      const styleClass = 'field-select';
+      return `<select class="${styleClass}${requiredAttr ? ' required' : ''}" data-field="${fieldName}"${requiredAttr}>${optionsHTML}</select>`;
+    }
+    default: {
+      const type = fieldConfig.htmlType || fieldConfig.type || 'text';
+      const placeholder = getFieldPlaceholder(fieldName, fieldConfig);
+      const attributes = [`type="${type}"`, `class="field-input${fieldConfig.required ? ' required' : ''}"`, `data-field="${fieldName}"`];
+
+      if (placeholder) {
+        attributes.push(`placeholder="${escapeHtml(placeholder)}"`);
+      }
+
+      ['min', 'max', 'step', 'maxlength', 'pattern'].forEach(attr => {
+        if (fieldConfig.css && fieldConfig.css[attr] !== undefined) {
+          attributes.push(`${attr}="${escapeHtml(fieldConfig.css[attr])}"`);
+        }
+      });
+
+      if (mode !== 'read') {
+        attributes.push(`value="${escapeHtml(safeValue)}"`);
+      }
+
+      if (fieldConfig.required) {
+        attributes.push('required');
+      }
+
+      return `<input ${attributes.join(' ')} />`;
+    }
+  }
+}
+
+function buildSelectOptions(fieldName, fieldConfig, selectedValue) {
+  const options = resolveForeignKeyOptions(fieldConfig);
+  const placeholder = getFieldPlaceholder(fieldName, fieldConfig) || `Select ${fieldConfig.displayName || fieldName}...`;
+  const optionsHTML = [
+    `<option value="">${escapeHtml(placeholder)}</option>`
+  ];
+
+  options.forEach(option => {
+    const isSelected = String(option.value) === String(selectedValue);
+    optionsHTML.push(
+      `<option value="${escapeHtml(option.value)}"${isSelected ? ' selected' : ''}>${escapeHtml(option.label)}</option>`
+    );
   });
+
+  return optionsHTML.join('');
+}
+
+function getFieldPlaceholder(fieldName, fieldConfig) {
+  if (fieldConfig?.css?.placeholder) {
+    return fieldConfig.css.placeholder;
+  }
+  return fieldConfig?.displayName ? `Enter ${fieldConfig.displayName.toLowerCase()}` : '';
+}
+
+function updateHeaderTitle() {
+  const headerTitleElement = document.querySelector('.header-title');
+  if (headerTitleElement) {
+    headerTitleElement.textContent = `${getEntityDisplayName(currentEntityType, false)} Records`;
+  }
+}
+
+function initializeSearchComponent() {
+  const searchElement = document.querySelector('#datagrid-search');
+  if (!searchElement) {
+    return;
+  }
+
+  if (window.formMockSearch && typeof window.formMockSearch.destroy === 'function') {
+    try {
+      window.formMockSearch.destroy();
+    } catch (error) {
+      logger.warn('Error destroying previous DataGridSearch instance:', error);
+    }
+  }
+
+  const placeholder = `Search ${getEntityDisplayName(currentEntityType).toLowerCase()}...`;
+
+  try {
+    window.formMockSearch = new DataGridSearch('#datagrid-search', {
+      debounceDelay: CONFIG.DEBOUNCE_DELAY,
+      placeholder,
+      onSearch: (searchTerm) => {
+        if (typeof window.performGlobalSearch === 'function') {
+          window.performGlobalSearch(searchTerm);
+        }
+      },
+      onClear: () => {
+        if (typeof window.clearSearch === 'function') {
+          window.clearSearch();
+        }
+      }
+    });
+  } catch (error) {
+    logger.error('Error initializing DataGridSearch:', error);
+    window.formMockSearch = null;
+  }
 }
 
 // Get filtered record by index (accounting for filtering)
@@ -300,12 +620,12 @@ function saveFormData() {
   }
 
   const formData = {};
-  
+
   // Gather data from all fields with data-field attributes
   rowForm.querySelectorAll('[data-field]').forEach(element => {
     const fieldName = element.getAttribute('data-field');
     let value = '';
-    
+
     // Check for data-value attribute first (preferred for labels/displays)
     if (element.hasAttribute('data-value')) {
       value = element.getAttribute('data-value');
@@ -316,24 +636,33 @@ function saveFormData() {
     } else if (element.classList.contains('field-label-display')) {
       value = element.textContent;
     }
-    
-    // Trim whitespace from all values
-    formData[fieldName] = value.trim();
+
+    const trimmedValue = typeof value === 'string' ? value.trim() : value;
+    formData[fieldName] = normalizeFieldValue(fieldName, trimmedValue);
   });
-  
+
   // Add timestamp
   formData.timestamp = new Date().toISOString();
-  
+
+  const missingFields = getMissingRequiredFields(formData);
+  if (missingFields.length > 0) {
+    alert(`Please provide values for: ${missingFields.map(field => currentSchema[field]?.displayName || field).join(', ')}`);
+    return;
+  }
+
   // Check if we're editing an existing record
   if (typeof window.editingRecordIndex !== 'undefined' && window.editingRecordIndex >= 0) {
     // Update existing record
-    storedRecords[window.editingRecordIndex] = formData;
+    const existingRecord = storedRecords[window.editingRecordIndex] || {};
+    const updatedRecord = { ...existingRecord, ...formData };
+    storedRecords[window.editingRecordIndex] = updatedRecord;
+    persistStoredRecords();
     window.editingRecordIndex = undefined; // Clear editing flag
-    logger.debug('Record updated:', formData);
+    logger.debug('Record updated:', updatedRecord);
   } else {
     // Store new record for pagination
     storeRecord(formData);
-    
+
     // Navigate to the last page to show the new record
     const newTotalPages = Math.ceil(storedRecords.length / pageSize);
     currentPage = newTotalPages; // Go to last page where new record is
@@ -347,15 +676,19 @@ function saveFormData() {
   
   // Update pagination display
   updatePagination();
-  
+
   return formData;
 }
 
 // Store saved record for pagination
 function storeRecord(formData) {
   // Add unique ID and timestamp if not present
-  if (!formData.id) {
-    formData.id = Date.now();
+  const uniqueId = Date.now();
+  if (!isValueProvided(formData[currentIdField])) {
+    formData[currentIdField] = normalizeFieldValue(currentIdField, uniqueId);
+  }
+  if (!isValueProvided(formData.id)) {
+    formData.id = formData[currentIdField];
   }
   if (!formData.timestamp) {
     formData.timestamp = new Date().toISOString();
@@ -364,8 +697,9 @@ function storeRecord(formData) {
   if (formData.isDisabled === undefined) {
     formData.isDisabled = false;
   }
-  
+
   storedRecords.push(formData);
+  persistStoredRecords();
   logger.info('Record stored. Total records:', storedRecords.length);
 }
 
@@ -475,22 +809,24 @@ function updateHeaderSummary() {
   if (!headerSummary) return;
   
   // Use search results if searching, otherwise use filtered records for summary
-  const displayRecords = currentSearchTerm 
-    ? filteredSearchRecords 
+  const displayRecords = currentSearchTerm
+    ? filteredSearchRecords
     : getFilteredRecords();
-  const viewType = viewingEnabled ? 'enabled' : 'disabled';
+  const viewLabel = viewingEnabled ? 'Enabled' : 'Disabled';
+  const entityPlural = getEntityDisplayName(currentEntityType);
+  const viewPhrase = `${viewLabel} ${entityPlural}`;
   const searchInfo = currentSearchTerm ? ` matching "${currentSearchTerm}"` : '';
-  
+
   if (displayRecords.length === 0) {
     if (currentSearchTerm) {
-      headerSummary.textContent = `No ${viewType} records found matching "${currentSearchTerm}"`;
+      headerSummary.textContent = `No ${viewPhrase.toLowerCase()} found matching "${currentSearchTerm}"`;
     } else {
-      headerSummary.textContent = `No ${viewType} records - Click ➕ to add your first record`;
+      headerSummary.textContent = `No ${viewPhrase.toLowerCase()} - Click ➕ to add your first record`;
     }
   } else {
     const startRecord = (currentPage - 1) * pageSize + 1;
     const endRecord = Math.min(currentPage * pageSize, displayRecords.length);
-    headerSummary.textContent = `Showing ${startRecord}-${endRecord} of ${displayRecords.length} ${viewType} records${searchInfo}`;
+    headerSummary.textContent = `Showing ${startRecord}-${endRecord} of ${displayRecords.length} ${viewPhrase.toLowerCase()}${searchInfo}`;
   }
 }
 
@@ -505,19 +841,21 @@ function renderRecordsDisplay() {
   if (!recordsContainer) return;
   
   // Determine which records to display (search results or normal filtered records)
-  const displayRecords = currentSearchTerm 
-    ? filteredSearchRecords 
+  const displayRecords = currentSearchTerm
+    ? filteredSearchRecords
     : getFilteredRecords();
-  const viewType = viewingEnabled ? 'enabled' : 'disabled'; 
-  
+  const viewLabel = viewingEnabled ? 'Enabled' : 'Disabled';
+  const entityPlural = getEntityDisplayName(currentEntityType);
+  const viewPhrase = `${viewLabel.toLowerCase()} ${entityPlural.toLowerCase()}`;
+
   // Handle no records cases
   if (currentSearchTerm && filteredSearchRecords.length === 0) {
-    recordsContainer.innerHTML = `<div class="no-records-message">No ${viewType} records found matching "${currentSearchTerm}".</div>`;
+    recordsContainer.innerHTML = `<div class="no-records-message">No ${viewPhrase} found matching "${currentSearchTerm}".</div>`;
     return;
   }
-  
+
   if (displayRecords.length === 0) {
-    recordsContainer.innerHTML = `<div class="no-records-message">No ${viewType} records found.</div>`;
+    recordsContainer.innerHTML = `<div class="no-records-message">No ${viewPhrase} found.</div>`;
     return;
   }
   
@@ -542,116 +880,53 @@ function renderRecordsDisplay() {
 
 // Create HTML for a single record row
 function createRecordRowHTML(record, index) {
-  const companyName = getCompanyNameById(record.companyId) || record.companyId || 'Unknown Company';
   const isSelected = selectedRecords.has(index);
   const isEditing = editingIndex === index;
-  
+
   if (isEditing) {
-    // Render editable row
     return createEditableRecordRowHTML(record, index, isSelected);
-  } else {
-    // Render read-only row
-    return createReadOnlyRecordRowHTML(record, index, isSelected, companyName);
   }
+
+  return createReadOnlyRecordRowHTML(record, index, isSelected);
 }
 
-// Create HTML for read-only record row
-function createReadOnlyRecordRowHTML(record, index, isSelected, companyName) {
+function createReadOnlyRecordRowHTML(record, index, isSelected) {
+  const fieldsHTML = currentVisibleFieldOrder
+    .map(fieldName => createRecordFieldHTML(record, fieldName, currentSchema[fieldName], 'read'))
+    .join('');
+
   return `
     <div class="record-row ${isSelected ? 'selected' : ''}" data-record-index="${index}">
       <div class="record-actions">
-        <input type="checkbox" class="record-checkbox" 
-               data-index="${index}" 
-               ${isSelected ? 'checked' : ''} 
+        <input type="checkbox" class="record-checkbox"
+               data-index="${index}"
+               ${isSelected ? 'checked' : ''}
                title="Select record" />
         <button class="btn-emoji btn-edit" data-action="edit" data-index="${index}" title="Edit">✏️</button>
       </div>
-      
-      <div class="record-field field-position">
-        ${record.position || ''}
-      </div>
-      
-      <div class="record-field field-icontact">
-        ${record.icontact || ''}
-      </div>
-      
-      <div class="record-field field-lcontact">
-        ${record.lcontact || ''}
-      </div>
-      
-      <div class="record-field field-company">
-        ${companyName}
-      </div>
-      
-      <div class="record-field field-email">
-        ${record.email || ''}
-      </div>
-      
-      <div class="record-field field-cphone">
-        ${record.cphone || ''}
-      </div>
-      
-      <div class="record-field field-ophone">
-        ${record.ophone || ''}
-      </div>
+      ${fieldsHTML}
     </div>
   `;
 }
 
-// Create HTML for editable record row
 function createEditableRecordRowHTML(record, index, isSelected) {
+  const fieldsHTML = currentFieldOrder
+    .map(fieldName => createRecordFieldHTML(record, fieldName, currentSchema[fieldName], 'edit'))
+    .join('');
+
   return `
     <div class="record-row editing ${isSelected ? 'selected' : ''}" data-record-index="${index}">
       <div class="record-actions">
-        <input type="checkbox" class="record-checkbox" 
-               data-index="${index}" 
-               ${isSelected ? 'checked' : ''} 
+        <input type="checkbox" class="record-checkbox"
+               data-index="${index}"
+               ${isSelected ? 'checked' : ''}
                title="Select record" />
         <button class="btn-emoji btn-save" data-action="save" data-index="${index}" title="Save">💾</button>
         <button class="btn-emoji btn-cancel" data-action="cancel" data-index="${index}" title="Cancel">❌</button>
       </div>
-      
-      <div class="record-field field-position">
-        <input type="text" class="field-input" value="${record.position || ''}" data-field="position" placeholder="Position">
-      </div>
-      
-      <div class="record-field field-icontact">
-        <input type="date" class="field-input" value="${record.icontact || ''}" data-field="icontact">
-      </div>
-      
-      <div class="record-field field-lcontact">
-        <input type="date" class="field-input" value="${record.lcontact || ''}" data-field="lcontact">
-      </div>
-      
-      <div class="record-field field-company">
-        <select class="field-select" data-field="companyId">
-          <option value="">Select Company...</option>
-          ${createCompanyOptions(record.companyId)}
-        </select>
-      </div>
-      
-      <div class="record-field field-email">
-        <input type="email" class="field-input" value="${record.email || ''}" data-field="email" placeholder="Email">
-      </div>
-      
-      <div class="record-field field-cphone">
-        <input type="tel" class="field-input" value="${record.cphone || ''}" data-field="cphone" placeholder="(555) 123-4567">
-      </div>
-      
-      <div class="record-field field-ophone">
-        <input type="tel" class="field-input" value="${record.ophone || ''}" data-field="ophone" placeholder="(555) 123-4567">
-      </div>
+      ${fieldsHTML}
     </div>
   `;
-}
-
-// Create company options HTML for dropdown
-function createCompanyOptions(selectedCompanyId) {
-  if (!jobSearchData?.jobsearch?.companies?.data) return '';
-  
-  return jobSearchData.jobsearch.companies.data.map(company => 
-    `<option value="${company.id}" ${company.id == selectedCompanyId ? 'selected' : ''}>${company.name}</option>`
-  ).join('');
 }
 
 // Attach event listeners to record action buttons
@@ -733,27 +1008,33 @@ function saveInlineEdit(index) {
   recordRow.querySelectorAll('[data-field]').forEach(element => {
     const fieldName = element.getAttribute('data-field');
     let value = '';
-    
-    if (element.tagName === 'INPUT') {
+
+    if (element.hasAttribute('data-value')) {
+      value = element.getAttribute('data-value');
+    } else if (element.tagName === 'INPUT') {
       value = element.value;
     } else if (element.tagName === 'SELECT') {
       value = element.value;
+    } else if (element.classList.contains('field-label-display')) {
+      value = element.textContent;
     }
-    
-    formData[fieldName] = value;
+
+    const trimmedValue = typeof value === 'string' ? value.trim() : value;
+    formData[fieldName] = normalizeFieldValue(fieldName, trimmedValue);
   });
-  
-  // Validate required fields (position is required)
-  if (!formData.position || formData.position.trim() === '') {
-    alert('Position is required');
+
+  const missingFields = getMissingRequiredFields({ ...storedRecords[index], ...formData });
+  if (missingFields.length > 0) {
+    alert(`Please provide values for: ${missingFields.map(field => currentSchema[field]?.displayName || field).join(', ')}`);
     return;
   }
-  
+
   // Update the stored record (preserve isDisabled state)
   const currentIsDisabled = storedRecords[index].isDisabled;
   storedRecords[index] = { ...storedRecords[index], ...formData };
   storedRecords[index].isDisabled = currentIsDisabled; // Preserve the disabled state
-  
+  persistStoredRecords();
+
   // Clear editing state
   editingIndex = -1;
   originalRecordData = null;
@@ -944,16 +1225,21 @@ function updateHeaderForSelection() {
   const headerInfo = document.querySelector('.header-info');
   const headerControls = document.querySelector('.header-controls');
   if (!headerInfo || !headerControls) return;
-  
+
   if (selectedRecords.size > 0) {
     // Update header info for selection
+    const entitySingular = getEntityDisplayName(currentEntityType, false);
+    const entityPlural = getEntityDisplayName(currentEntityType);
+    const selectionLabel = selectedRecords.size === 1
+      ? entitySingular
+      : entityPlural;
     headerInfo.innerHTML = `
-      <div class="header-title">Position Records</div>
+      <div class="header-title">${entitySingular} Records</div>
       <div class="header-summary" id="headerSummary">
-        ${selectedRecords.size} record(s) selected
+        ${selectedRecords.size} ${selectionLabel.toLowerCase()} selected
       </div>
     `;
-    
+
     // Preserve all existing header control elements
     const hcLeft = headerControls.querySelector('#hc-left');
     const hcRight = headerControls.querySelector('#hc-right');
@@ -972,7 +1258,7 @@ function updateHeaderForSelection() {
       </div>
       ${hcRightHTML}
     `;
-    
+
     // Attach appropriate event listener based on toggle state
     const actionBtn = document.getElementById('actionBtn');
     if (actionBtn) {
@@ -985,50 +1271,17 @@ function updateHeaderForSelection() {
     
     // Re-initialize toggle after DOM update
     initializeToggle();
-    
-    // Re-initialize DataGridSearch if it exists
-    if (window.formMockSearch && typeof window.formMockSearch.destroy === 'function') {
-      try {
-        window.formMockSearch.destroy();
-      } catch (error) {
-        logger.warn('Error destroying DataGridSearch:', error);
-      }
-      window.formMockSearch = null;
-    }
-    
-    const searchElement = document.querySelector('#datagrid-search');
-    if (searchElement) {
-      try {
-        window.formMockSearch = new DataGridSearch('#datagrid-search', {
-          debounceDelay: 300,
-          placeholder: 'Search positions...',
-          onSearch: function(searchTerm, instance) {
-            if (typeof window.performGlobalSearch === 'function') {
-              window.performGlobalSearch(searchTerm);
-            }
-          },
-          onClear: function(instance) {
-            if (typeof window.clearSearch === 'function') {
-              window.clearSearch();
-            }
-          }
-        });
-      } catch (error) {
-        console.error('Error creating DataGridSearch:', error);
-        window.formMockSearch = null;
-      }
-    }
-    
+    initializeSearchComponent();
+
   } else {
     // Update header info for normal state
-    updateHeaderSummary();
+    const summaryText = document.getElementById('headerSummary')?.textContent || '';
     headerInfo.innerHTML = `
-      <div class="header-title">Position Records</div>
-      <div class="header-summary" id="headerSummary">
-        ${document.getElementById('headerSummary')?.textContent || ''}
-      </div>
+      <div class="header-title">${getEntityDisplayName(currentEntityType, false)} Records</div>
+      <div class="header-summary" id="headerSummary">${summaryText}</div>
     `;
-    
+    updateHeaderSummary();
+
     // Preserve all existing header control elements
     const hcLeft = headerControls.querySelector('#hc-left');
     const hcRight = headerControls.querySelector('#hc-right');
@@ -1042,49 +1295,17 @@ function updateHeaderForSelection() {
       </div>
       ${hcRightHTML}
     `;
-    
+
     // Re-initialize toggle and DataGridSearch
     initializeToggle();
-    
-    // Re-initialize DataGridSearch if it exists (disabled view)
-    if (window.formMockSearch && typeof window.formMockSearch.destroy === 'function') {
-      try {
-        window.formMockSearch.destroy();
-      } catch (error) {
-        logger.warn('Error destroying DataGridSearch:', error);
-      }
-      window.formMockSearch = null;
-    }
-    
-    const searchElement = document.querySelector('#datagrid-search');
-    if (searchElement) {
-      try {
-        window.formMockSearch = new DataGridSearch('#datagrid-search', {
-          debounceDelay: 300,
-          placeholder: 'Search positions...',
-          onSearch: function(searchTerm, instance) {
-            if (typeof window.performGlobalSearch === 'function') {
-              window.performGlobalSearch(searchTerm);
-            }
-          },
-          onClear: function(instance) {
-            if (typeof window.clearSearch === 'function') {
-              window.clearSearch();
-            }
-          }
-        });
-      } catch (error) {
-        console.error('Error creating DataGridSearch:', error);
-        window.formMockSearch = null;
-      }
-    }
-    
+    initializeSearchComponent();
+
     // Re-attach add/restore button event listener
     const addBtn = document.getElementById('addBtn');
     if (addBtn) {
       addBtn.addEventListener('click', handleAddRestoreButtonClick);
     }
-    
+
     updateHeaderSummary();
   }
 }
@@ -1093,22 +1314,26 @@ function updateHeaderForSelection() {
 function handleRestoreSelected() {
   if (selectedRecords.size === 0) {
     // If no records selected, restore all disabled records on current page
-    const displayRecords = currentSearchTerm 
-      ? filteredSearchRecords 
+    const entityPlural = getEntityDisplayName(currentEntityType);
+    const entityPluralLower = entityPlural.toLowerCase();
+    const displayRecords = currentSearchTerm
+      ? filteredSearchRecords
       : getFilteredRecords();
-    
+
     if (displayRecords.length === 0) {
-      alert('No disabled records to restore');
+      alert(`No disabled ${entityPluralLower} to restore`);
       return;
     }
-    
-    if (confirm(`Restore all ${displayRecords.length} disabled record(s) on this page?`)) {
+
+    const countLabel = formatEntityCount(displayRecords.length);
+    if (confirm(`Restore all ${displayRecords.length} disabled ${countLabel} on this page?`)) {
       displayRecords.forEach(record => {
         const actualIndex = storedRecords.findIndex(r => r.id === record.id);
         if (actualIndex >= 0) {
           storedRecords[actualIndex].isDisabled = false;
         }
       });
+      persistStoredRecords();
       
       // Immediately update display to remove restored records from disabled view
       // This provides instant visual feedback - records disappear from current view
@@ -1129,20 +1354,24 @@ function handleRestoreSelected() {
       }
       
       // Show success notification
-      showTransferNotification(`${displayRecords.length} record(s) restored and moved to Enabled view`, 'success');
-      
+      showTransferNotification(`${displayRecords.length} ${countLabel} restored and moved to Enabled view`, 'success');
+
       logger.info('All disabled records on page restored and removed from disabled view');
     }
     return;
   }
-  
-  if (confirm(`Restore ${selectedRecords.size} selected record(s)?`)) {
+
+  const entityPlural = getEntityDisplayName(currentEntityType);
+  const entityPluralLower = entityPlural.toLowerCase();
+
+  if (confirm(`Restore ${selectedRecords.size} selected ${formatEntityCount(selectedRecords.size)}?`)) {
     // Use the global indices directly from selectedRecords (same as handleDeleteSelected)
     selectedRecords.forEach(globalIndex => {
       if (globalIndex >= 0 && globalIndex < storedRecords.length) {
         storedRecords[globalIndex].isDisabled = false;
       }
     });
+    persistStoredRecords();
     
     // Clear selection
     selectedRecords.clear();
@@ -1168,8 +1397,8 @@ function handleRestoreSelected() {
     
     // Show success notification
     const restoredCount = selectedRecords.size;
-    showTransferNotification(`${restoredCount} record(s) restored and moved to Enabled view`, 'success');
-    
+    showTransferNotification(`${restoredCount} ${formatEntityCount(restoredCount)} restored and moved to Enabled view`, 'success');
+
     logger.info('Selected records restored and removed from disabled view');
   }
 }
@@ -1177,16 +1406,18 @@ function handleRestoreSelected() {
 // Handle delete selected records (soft delete by setting isDisabled=true)
 function handleDeleteSelected() {
   if (selectedRecords.size === 0) return;
-  
+
   const deletedCount = selectedRecords.size; // Capture count before clearing
-  
-  if (confirm(`Delete ${deletedCount} selected record(s)?`)) {
+  const countLabel = formatEntityCount(deletedCount);
+
+  if (confirm(`Delete ${deletedCount} selected ${countLabel}?`)) {
     // Use the global indices directly from selectedRecords
     selectedRecords.forEach(globalIndex => {
       if (globalIndex >= 0 && globalIndex < storedRecords.length) {
         storedRecords[globalIndex].isDisabled = true;
       }
     });
+    persistStoredRecords();
     
     // Clear selection
     selectedRecords.clear();
@@ -1209,10 +1440,10 @@ function handleDeleteSelected() {
       updatePagination();
       renderRecordsDisplay();
     }
-    
+
     // Show success notification
-    showTransferNotification(`${deletedCount} record(s) deleted and moved to Disabled view`, 'warning');
-    
+    showTransferNotification(`${deletedCount} ${countLabel} deleted and moved to Disabled view`, 'warning');
+
     logger.info(`Selected records soft deleted and removed from enabled view`);
   }
 }
@@ -1407,28 +1638,30 @@ function handleAddRestoreButtonClick(event) {
     showRecordForm();
   } else {
     // In disabled view: restore all visible records on current page
-    const displayRecords = currentSearchTerm 
-      ? filteredSearchRecords 
+    const entityPlural = getEntityDisplayName(currentEntityType).toLowerCase();
+    const displayRecords = currentSearchTerm
+      ? filteredSearchRecords
       : getFilteredRecords();
-    
+
     if (displayRecords.length === 0) {
-      alert('No disabled records to restore');
+      alert(`No disabled ${entityPlural} to restore`);
       return;
     }
-    
+
     // Calculate current page records
     const startIndex = (currentPage - 1) * pageSize;
     const endIndex = Math.min(startIndex + pageSize, displayRecords.length);
     const pageRecords = displayRecords.slice(startIndex, endIndex);
     
-    if (confirm(`Restore all ${pageRecords.length} disabled record(s) on this page?`)) {
+    if (confirm(`Restore all ${pageRecords.length} disabled ${entityPlural} on this page?`)) {
       pageRecords.forEach(record => {
         const actualIndex = storedRecords.findIndex(r => r.id === record.id);
         if (actualIndex >= 0) {
           storedRecords[actualIndex].isDisabled = false;
         }
       });
-      
+      persistStoredRecords();
+
       // Immediately update display to remove restored records from disabled view
       // This provides instant visual feedback - records disappear from current view
       updatePagination();
@@ -1445,10 +1678,10 @@ function handleAddRestoreButtonClick(event) {
         updatePagination();
         renderRecordsDisplay();
       }
-      
+
       // Show success notification
-      showTransferNotification(`${pageRecords.length} record(s) restored and moved to Enabled view`, 'success');
-      
+      showTransferNotification(`${pageRecords.length} ${entityPlural} restored and moved to Enabled view`, 'success');
+
       console.log(`All ${pageRecords.length} disabled records on page restored and removed from disabled view`);
     }
   }
@@ -1627,7 +1860,6 @@ document.addEventListener('DOMContentLoaded', function() {
   updatePagination();
   
   // Sample data disabled - now loading from jobsearch.json
-  // addSampleData(); // DISABLED - using real data from JSON file
   
   // Ensure form starts in clean state
   clearFormFields();
@@ -1681,50 +1913,6 @@ document.addEventListener('DOMContentLoaded', function() {
   }, 100);
 });
 
-// Add sample data for demonstration
-// TEMPORARILY ENABLED - Use only when testing pagination
-function addSampleData() {
-  const sampleRecords = [
-    {
-      id: 1,
-      position: "Senior Software Engineer",
-      companyId: "1",
-      email: "careers@techcorp.com",
-      cphone: "(555) 123-4567",
-      ophone: "(555) 123-4568",
-      icontact: "2024-01-15",
-      lcontact: "2024-03-01",
-      timestamp: "2024-01-15T10:00:00.000Z"
-    },
-    {
-      id: 2,
-      position: "Product Manager", 
-      companyId: "2",
-      email: "hr@innovatesoft.com",
-      cphone: "(555) 234-5678",
-      ophone: "(555) 234-5679",
-      icontact: "2024-02-01",
-      lcontact: "2024-02-28",
-      timestamp: "2024-02-01T10:00:00.000Z"
-    },
-    {
-      id: 3,
-      position: "UX Designer",
-      companyId: "6",
-      email: "jobs@designworks.com", 
-      cphone: "(555) 345-6789",
-      ophone: "(555) 345-6790",
-      icontact: "2024-01-20",
-      lcontact: "2024-03-05",
-      timestamp: "2024-01-20T10:00:00.000Z"
-    }
-  ];
-  
-  storedRecords.push(...sampleRecords);
-  console.log('Sample data added. Total records:', storedRecords.length);
-  updatePagination();
-}
-
 // Attach pagination event listeners
 function attachPaginationListeners() {
   // Page size selector
@@ -1761,48 +1949,53 @@ function attachPaginationListeners() {
 let currentSearchTerm = '';
 let filteredSearchRecords = [];
 
+function recordMatchesSearchTerm(record, lowerSearchTerm) {
+  return currentFieldOrder.some(fieldName => {
+    const fieldConfig = currentSchema[fieldName];
+    const rawValue = record[fieldName];
+    const displayValue = getFieldDisplayValue(record, fieldName);
+
+    const valuesToCheck = [];
+    if (isValueProvided(rawValue)) {
+      valuesToCheck.push(rawValue);
+    }
+    if (displayValue !== rawValue && isValueProvided(displayValue)) {
+      valuesToCheck.push(displayValue);
+    }
+
+    return valuesToCheck.some(value => {
+      const stringValue = String(value).toLowerCase();
+      return stringValue.includes(lowerSearchTerm);
+    });
+  });
+}
+
 // Global search function for DataGridSearch integration
 window.performGlobalSearch = function(searchTerm) {
   currentSearchTerm = searchTerm.toLowerCase().trim();
-  console.log('Search for:', searchTerm);
-  
+  logger.debug('Search for:', searchTerm);
+
   if (!currentSearchTerm) {
-    // Clear search - show all filtered records based on toggle state
     filteredSearchRecords = [];
     currentPage = 1;
     renderRecordsDisplay();
     updatePagination();
     return;
   }
-  
-  // Get the base filtered records (based on toggle state)
+
   const baseRecords = getFilteredRecords();
-  
-  // Further filter by search term
-  filteredSearchRecords = baseRecords.filter(record => {
-    const matches = (
-      (record.position && record.position.toLowerCase().includes(currentSearchTerm)) ||
-      (record.email && record.email.toLowerCase().includes(currentSearchTerm)) ||
-      (record.cphone && record.cphone.toLowerCase().includes(currentSearchTerm)) ||
-      (record.ophone && record.ophone.toLowerCase().includes(currentSearchTerm)) ||
-      (record.icontact && record.icontact.toLowerCase().includes(currentSearchTerm)) ||
-      (record.lcontact && record.lcontact.toLowerCase().includes(currentSearchTerm)) ||
-      (getCompanyNameById(record.companyId) && getCompanyNameById(record.companyId).toLowerCase().includes(currentSearchTerm))
-    );
-    return matches;
-  });
-  
-  console.log(`Found ${filteredSearchRecords.length} matches for "${searchTerm}"`);
-  
-  // Reset to first page and update display
+  filteredSearchRecords = baseRecords.filter(record => recordMatchesSearchTerm(record, currentSearchTerm));
+
+  logger.debug(`Found ${filteredSearchRecords.length} matches for "${searchTerm}"`);
+
   currentPage = 1;
   renderRecordsDisplay();
   updatePagination();
 };
 
-// Global clear search function for DataGridSearch integration  
+// Global clear search function for DataGridSearch integration
 window.clearSearch = function() {
-  console.log('Clearing global search');
+  logger.debug('Clearing global search');
   currentSearchTerm = '';
   filteredSearchRecords = [];
   currentPage = 1;
@@ -1816,42 +2009,23 @@ window.clearSearch = function() {
  */
 function getFilteredRecords() {
   try {
-    // Return stored records if available
     if (storedRecords && storedRecords.length > 0) {
-      return viewingEnabled 
+      return viewingEnabled
         ? storedRecords.filter(record => !record.isDisabled)
         : storedRecords.filter(record => record.isDisabled);
     }
-    
-    // Fallback to jobSearchData if available
-    if (jobSearchData?.jobsearch?.positions?.data) {
-      const allRecords = jobSearchData.jobsearch.positions.data;
-      return viewingEnabled 
-        ? allRecords.filter(record => !record.isDisabled)
-        : allRecords.filter(record => record.isDisabled);
+
+    const entityData = jobSearchData?.jobsearch?.[currentEntityType]?.data;
+    if (Array.isArray(entityData)) {
+      return viewingEnabled
+        ? entityData.filter(record => !record.isDisabled)
+        : entityData.filter(record => record.isDisabled);
     }
-    
-    // Return empty array if no data available
+
     return [];
   } catch (error) {
     logger.error('Error getting filtered records:', error);
     return [];
-  }
-}
-
-/**
- * Get company name by ID (helper function for search)
- */
-function getCompanyNameById(companyId) {
-  try {
-    if (jobSearchData?.jobsearch?.companies?.data) {
-      const company = jobSearchData.jobsearch.companies.data.find(c => c.id === companyId);
-      return company ? company.name : '';
-    }
-    return '';
-  } catch (error) {
-    logger.error('Error getting company name:', error);
-    return '';
   }
 }
 
@@ -1879,19 +2053,8 @@ function filterRecords(searchTerm) {
 
     const lowerSearchTerm = searchTerm.toLowerCase();
     const baseRecords = getFilteredRecords();
-    
-    return baseRecords.filter(record => {
-      const matches = (
-        (record.position && record.position.toLowerCase().includes(lowerSearchTerm)) ||
-        (record.email && record.email.toLowerCase().includes(lowerSearchTerm)) ||
-        (record.cphone && record.cphone.toLowerCase().includes(lowerSearchTerm)) ||
-        (record.ophone && record.ophone.toLowerCase().includes(lowerSearchTerm)) ||
-        (record.icontact && record.icontact.toLowerCase().includes(lowerSearchTerm)) ||
-        (record.lcontact && record.lcontact.toLowerCase().includes(lowerSearchTerm)) ||
-        (getCompanyNameById(record.companyId) && getCompanyNameById(record.companyId).toLowerCase().includes(lowerSearchTerm))
-      );
-      return matches;
-    });
+
+    return baseRecords.filter(record => recordMatchesSearchTerm(record, lowerSearchTerm));
   } catch (error) {
     logger.error('Error filtering records:', error);
     return [];
@@ -1941,13 +2104,19 @@ window.switchTab = function(tabName) {
     document.querySelectorAll('.tab-panel').forEach(panel => {
         panel.classList.remove('active');
     });
-    
+
     // Activate selected tab
     document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
     document.getElementById(`${tabName}-panel`).classList.add('active');
-    
-    // Update statistics if positions tab is active
-    if (tabName === 'positions') {
+
+    const entityKey = TAB_ENTITY_MAP[tabName] || tabName;
+    if (jobSearchData?.jobsearch?.[entityKey]) {
+        initializeEntity(entityKey);
+    } else {
+        logger.warn(`No data available for tab "${tabName}"`);
+    }
+
+    if (entityKey === 'positions') {
         updateStatistics();
     }
 };
@@ -1958,40 +2127,26 @@ function updateStatistics() {
         const totalRecords = storedRecords.length;
         const enabledRecords = storedRecords.filter(record => !record.isDisabled).length;
         const disabledRecords = storedRecords.filter(record => record.isDisabled).length;
-        
-        document.getElementById('totalPositions').textContent = totalRecords;
-        document.getElementById('activePositions').textContent = enabledRecords;
-        document.getElementById('archivedPositions').textContent = disabledRecords;
-        
+
+        const totalEl = document.getElementById('totalPositions');
+        const activeEl = document.getElementById('activePositions');
+        const archivedEl = document.getElementById('archivedPositions');
+        if (totalEl) totalEl.textContent = totalRecords;
+        if (activeEl) activeEl.textContent = enabledRecords;
+        if (archivedEl) archivedEl.textContent = disabledRecords;
+
         // Update current page display
         if (typeof currentPage !== 'undefined') {
-            document.getElementById('currentPage').textContent = currentPage;
+            const currentPageEl = document.getElementById('currentPage');
+            if (currentPageEl) currentPageEl.textContent = currentPage;
         }
     }
 }
 
 // Initialize DataGridSearch and hook into FormMock updates
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize DataGridSearch with FormMock integration
-    window.formMockSearch = new DataGridSearch('.DataGridSearch', {
-        debounceDelay: 300,
-        placeholder: 'Search positions...',
-        onSearch: function(searchTerm, instance) {
-            if (typeof window.performGlobalSearch === 'function') {
-                window.performGlobalSearch(searchTerm);
-            }
-            console.log('DataGridSearch: Searching for "' + searchTerm + '"');
-        },
-        onClear: function(instance) {
-            if (typeof window.clearSearch === 'function') {
-                window.clearSearch();
-            }
-            console.log('DataGridSearch: Search cleared');
-        }
-    });
-    
-    console.log('DataGridSearch initialized successfully');
-    
+    console.log('Initializing JobSearch Management UI');
+
     // Initial statistics update
     setTimeout(() => {
         updateStatistics();
