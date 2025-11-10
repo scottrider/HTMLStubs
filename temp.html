@@ -1,0 +1,1308 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Job Search Management System</title>
+    <link rel="stylesheet" href="./jobsearch.css" />
+  </head>
+  <body data-new-gr-c-s-check-loaded="14.1261.0" data-gr-ext-installed="">
+    <div class="app-container">
+      <!-- Tab Navigation -->
+      <nav class="tab-navigation">
+        <button
+          class="tab-button"
+          data-tab="positions"
+          onclick="switchTab('positions')"
+        >
+          <span>Positions</span>
+        </button>
+        <button
+          class="tab-button active"
+          data-tab="companies"
+          onclick="switchTab('companies')"
+        >
+          <span>Companies</span>
+        </button>
+        <button
+          class="tab-button"
+          data-tab="reports"
+          onclick="switchTab('reports')"
+        >
+          <span>Contacts</span>
+        </button>
+      </nav>
+
+      <!-- Main Content Area -->
+      <main class="main-content">
+        <!-- Positions Tab -->
+        <div id="positions-panel" class="tab-panel">
+          <!-- Statistics Bar -->
+          <div class="stats-bar">
+            <div class="stat-item">
+              <span class="stat-number" id="totalPositions">30</span>
+              <div class="stat-label">Total Positions</div>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number" id="activePositions">22</span>
+              <div class="stat-label">Active</div>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number" id="archivedPositions">8</span>
+              <div class="stat-label">Archived</div>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number" id="currentPage">1</span>
+              <div class="stat-label">Current Page</div>
+            </div>
+          </div>
+
+          <!-- FormMock Integration -->
+          <div class="datagrid-container">
+            <form>
+              <div>
+                <div class="datagrid-header">
+                  <div class="header-info">
+                    <div class="header-title">Position Records</div>
+                    <div class="header-summary" id="headerSummary">
+                      4 record(s) selected
+                    </div>
+                  </div>
+                  <div
+                    class="header-controls"
+                    style="display: flex; visibility: visible; opacity: 1"
+                  >
+                    <div id="hc-left">
+                      <div
+                        class="toggle-container"
+                        style="display: flex; visibility: visible; opacity: 1"
+                      >
+                        <label
+                          for="enableToggle"
+                          class="toggle-label"
+                          style="
+                            display: inline-block;
+                            visibility: visible;
+                            opacity: 1;
+                          "
+                          >Enabled</label
+                        >
+                        <label
+                          class="toggle-switch"
+                          style="
+                            display: inline-block;
+                            visibility: visible;
+                            opacity: 1;
+                          "
+                        >
+                          <input type="checkbox" id="enableToggle" checked="" />
+                          <span class="toggle-slider"></span>
+                        </label>
+                      </div>
+                    </div>
+                    <div id="hc-middle">
+                      <button
+                        class="btn-emoji btn-delete-selected"
+                        id="actionBtn"
+                        title="Delete Selected Records"
+                      >
+                        ❌
+                      </button>
+                    </div>
+                    <div id="hc-right">
+                      <div class="DataGridSearch">
+                        <label
+                          for="datagrid-search"
+                          class="DataGridSearch__label"
+                          >Search:</label
+                        >
+                        <div class="DataGridSearch__container has-content">
+                          <input
+                            type="text"
+                            id="datagrid-search"
+                            class="DataGridSearch__input"
+                            placeholder="Search positions..."
+                            autocomplete="off"
+                            aria-label="Search records"
+                            role="searchbox"
+                          />
+                          <button
+                            type="button"
+                            class="DataGridSearch__clear"
+                            title="Clear search"
+                            aria-label="Clear search"
+                            tabindex="0"
+                            style="display: flex"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div
+                  class="grid-data-row"
+                  id="recordForm"
+                  style="display: block"
+                >
+                  <div class="row-form" id="rowForm" style="display: none">
+                    <div class="action-buttons">
+                      <input
+                        type="checkbox"
+                        class="record-checkbox"
+                        id="recordCheckbox"
+                        name="datagrid-checkbox"
+                        hidden="none"
+                      />
+                      <button
+                        class="btn-emoji btn-cancel"
+                        id="cancelBtn"
+                        title="Cancel"
+                        type="button"
+                      >
+                        ❌
+                      </button>
+                      <button
+                        class="btn-emoji btn-save"
+                        id="saveBtn"
+                        title="Save"
+                        type="button"
+                      >
+                        💾
+                      </button>
+                    </div>
+
+                    <div class="field-group">
+                      <input
+                        type="text"
+                        class="field-input required"
+                        data-field="position"
+                        placeholder="Position"
+                        style="width: 200px; min-width: 200px"
+                      />
+                    </div>
+
+                    <div class="field-group">
+                      <label
+                        class="field-label-display"
+                        data-field="icontact"
+                        style="width: 140px; min-width: 140px"
+                      ></label>
+                    </div>
+
+                    <div class="field-group">
+                      <input
+                        type="date"
+                        class="field-input"
+                        value="2024-02-26"
+                        data-field="lcontact"
+                        style="width: 140px; min-width: 140px"
+                      />
+                    </div>
+
+                    <div class="field-group">
+                      <select
+                        class="field-select required"
+                        data-field="company-companyId"
+                        style="width: 150px; min-width: 150px"
+                      >
+                        <option value="">Select Company-Company...</option>
+                        <option value="1">TechCorp Inc</option>
+                        <option value="2">InnovateSoft</option>
+                        <option value="3">DataDrive Systems</option>
+                        <option value="4">CloudFirst Technologies</option>
+                        <option value="5">NextGen Solutions</option>
+                        <option value="6">DesignWorks Studio</option>
+                        <option value="7">ServerTech Corp</option>
+                        <option value="8">TestPro Solutions</option>
+                        <option value="9">AI Innovations Ltd</option>
+                        <option value="10">SecureNet Corp</option>
+                      </select>
+                    </div>
+
+                    <div class="field-group">
+                      <input
+                        type="email"
+                        class="field-input"
+                        data-field="email"
+                        placeholder="Enter contact email"
+                        style="width: 200px; min-width: 200px"
+                      />
+                    </div>
+
+                    <div class="field-group">
+                      <input
+                        type="tel"
+                        class="field-input"
+                        data-field="cphone"
+                        placeholder="(555) 123-4567"
+                        style="width: 120px; min-width: 120px"
+                      />
+                    </div>
+
+                    <div class="field-group">
+                      <input
+                        type="tel"
+                        class="field-input"
+                        data-field="ophone"
+                        placeholder="(555) 123-4567"
+                        style="width: 120px; min-width: 120px"
+                      />
+                    </div>
+                  </div>
+
+                  <!-- Title Row from jobsearch.json positions schema -->
+                  <div class="row-title" id="rowTitle" style="display: flex">
+                    <div class="title-buttons">
+                      <input
+                        type="checkbox"
+                        class="master-checkbox"
+                        id="masterCheckbox"
+                        title="Select All"
+                      />
+                    </div>
+
+                    <div class="title-group field-position">
+                      <span class="title-label">Position</span>
+                    </div>
+
+                    <div class="title-group field-icontact">
+                      <span class="title-label">Initial Contact</span>
+                    </div>
+
+                    <div class="title-group field-lcontact">
+                      <span class="title-label">Last Contact</span>
+                    </div>
+
+                    <div class="title-group field-company-company">
+                      <span class="title-label">Company-Company</span>
+                    </div>
+
+                    <div class="title-group field-email">
+                      <span class="title-label">Email</span>
+                    </div>
+
+                    <div class="title-group field-cphone">
+                      <span class="title-label">Cell</span>
+                    </div>
+
+                    <div class="title-group field-ophone">
+                      <span class="title-label">Office</span>
+                    </div>
+                  </div>
+
+                  <!-- Records Display Area -->
+                  <div class="records-display" id="recordsDisplay">
+                    <div class="record-row selected" data-record-index="4">
+                      <div class="record-actions">
+                        <input
+                          type="checkbox"
+                          class="record-checkbox"
+                          data-index="4"
+                          checked=""
+                          title="Select record"
+                        />
+                        <button
+                          class="btn-emoji btn-edit"
+                          data-action="edit"
+                          data-index="4"
+                          title="Edit"
+                        >
+                          ✏️
+                        </button>
+                      </div>
+
+                      <div class="record-field field-position">
+                        Product Manager
+                      </div>
+
+                      <div class="record-field field-icontact">2024-04-07</div>
+
+                      <div class="record-field field-lcontact">2024-10-22</div>
+
+                      <div class="record-field field-company-company">
+                        NextGen Solutions
+                      </div>
+
+                      <div class="record-field field-email">
+                        alex.brown@nextgen.com
+                      </div>
+
+                      <div class="record-field field-cphone">
+                        (555) 654-3210
+                      </div>
+
+                      <div class="record-field field-ophone">
+                        (555) 654-3210
+                      </div>
+                    </div>
+
+                    <div class="record-row selected" data-record-index="5">
+                      <div class="record-actions">
+                        <input
+                          type="checkbox"
+                          class="record-checkbox"
+                          data-index="5"
+                          checked=""
+                          title="Select record"
+                        />
+                        <button
+                          class="btn-emoji btn-edit"
+                          data-action="edit"
+                          data-index="5"
+                          title="Edit"
+                        >
+                          ✏️
+                        </button>
+                      </div>
+
+                      <div class="record-field field-position">UX Designer</div>
+
+                      <div class="record-field field-icontact">2024-02-20</div>
+
+                      <div class="record-field field-lcontact">2024-10-15</div>
+
+                      <div class="record-field field-company-company">
+                        DesignWorks Studio
+                      </div>
+
+                      <div class="record-field field-email">
+                        emily.davis@designworks.com
+                      </div>
+
+                      <div class="record-field field-cphone">
+                        (555) 789-0123
+                      </div>
+
+                      <div class="record-field field-ophone">
+                        (555) 789-0123
+                      </div>
+                    </div>
+
+                    <div class="record-row selected" data-record-index="14">
+                      <div class="record-actions">
+                        <input
+                          type="checkbox"
+                          class="record-checkbox"
+                          data-index="14"
+                          checked=""
+                          title="Select record"
+                        />
+                        <button
+                          class="btn-emoji btn-edit"
+                          data-action="edit"
+                          data-index="14"
+                          title="Edit"
+                        >
+                          ✏️
+                        </button>
+                      </div>
+
+                      <div class="record-field field-position">
+                        Scrum Master
+                      </div>
+
+                      <div class="record-field field-icontact">2024-02-28</div>
+
+                      <div class="record-field field-lcontact">2024-10-14</div>
+
+                      <div class="record-field field-company-company">
+                        NextGen Solutions
+                      </div>
+
+                      <div class="record-field field-email">
+                        christopher.taylor@nextgen.com
+                      </div>
+
+                      <div class="record-field field-cphone">
+                        (555) 890-1234
+                      </div>
+
+                      <div class="record-field field-ophone">
+                        (555) 890-1234
+                      </div>
+                    </div>
+
+                    <div class="record-row selected" data-record-index="24">
+                      <div class="record-actions">
+                        <input
+                          type="checkbox"
+                          class="record-checkbox"
+                          data-index="24"
+                          checked=""
+                          title="Select record"
+                        />
+                        <button
+                          class="btn-emoji btn-edit"
+                          data-action="edit"
+                          data-index="24"
+                          title="Edit"
+                        >
+                          ✏️
+                        </button>
+                      </div>
+
+                      <div class="record-field field-position">
+                        Product Owner
+                      </div>
+
+                      <div class="record-field field-icontact">2024-01-18</div>
+
+                      <div class="record-field field-lcontact">2024-10-06</div>
+
+                      <div class="record-field field-company-company">
+                        NextGen Solutions
+                      </div>
+
+                      <div class="record-field field-email">
+                        matthew.miller@nextgen.com
+                      </div>
+
+                      <div class="record-field field-cphone">
+                        (555) 890-1234
+                      </div>
+
+                      <div class="record-field field-ophone">
+                        (555) 890-1234
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </form>
+
+            <!-- Pagination Controls -->
+            <div
+              class="pagination-controls"
+              id="paginationControls"
+              style="display: flex"
+            >
+              <div class="page-size-container">
+                <label for="pageSizeSelect">Records per page:</label>
+                <select id="pageSizeSelect" class="page-size-select">
+                  <option value="10" selected="">10</option>
+                  <option value="15">15</option>
+                  <option value="20">20</option>
+                </select>
+              </div>
+
+              <button class="pagination-btn" id="firstBtn" disabled="">
+                First
+              </button>
+              <button class="pagination-btn" id="prevBtn" disabled="">
+                Previous
+              </button>
+
+              <button class="pagination-btn active" data-page="1">1</button
+              ><button class="pagination-btn" id="nextBtn" disabled="">
+                Next
+              </button>
+              <button class="pagination-btn" id="lastBtn" disabled="">
+                Last
+              </button>
+
+              <span class="page-info" id="pageInfo">Page 1 of 1</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Companies Tab -->
+        <div id="companies-panel" class="tab-panel active">
+          <!-- Statistics Bar -->
+          <div class="stats-bar">
+            <div class="stat-item">
+              <span class="stat-number" id="totalCompanies">10</span>
+              <div class="stat-label">Total Companies</div>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number" id="activeCompanies">10</span>
+              <div class="stat-label">Active</div>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number" id="archivedCompanies">0</span>
+              <div class="stat-label">Archived</div>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number" id="company-currentCompanyPage">1</span>
+              <div class="stat-label">Current Page</div>
+            </div>
+          </div>
+
+          <!-- Company Management Section -->
+          <div class="datagrid-container">
+            <form>
+              <div>
+                <div class="datagrid-header">
+                  <div class="header-info">
+                    <div class="header-title">Company-Company Records</div>
+                    <div class="header-summary" id="company-companyHeaderSummary">
+                      Showing 10 of 10 records
+                    </div>
+                  </div>
+                  <div class="header-controls">
+                    <div id="hc-left">
+                      <div class="toggle-container">
+                        <label for="company-companyEnableToggle" class="toggle-label"
+                          >Enabled</label
+                        >
+                        <label class="toggle-switch">
+                          <input
+                            type="checkbox"
+                            id="company-companyEnableToggle"
+                            checked=""
+                          />
+                          <span class="toggle-slider"></span>
+                        </label>
+                      </div>
+                    </div>
+                    <div id="hc-middle">
+                      <button
+                        class="btn-emoji btn-add"
+                        id="company-companyAddBtn"
+                        title="Add New Company"
+                        type="button"
+                      >
+                        ➕
+                      </button>
+                    </div>
+                    <div id="hc-right">
+                      <div class="DataGridSearch">
+                        <label
+                          for="search"
+                          class="DataGridSearch__label"
+                          >Search:</label
+                        >
+                        <div class="DataGridSearch__container">
+                          <input
+                            type="text"
+                            id="search"
+                            class="DataGridSearch__input"
+                            placeholder="Search companies..."
+                            autocomplete="off"
+                          />
+                          <button
+                            type="button"
+                            class="DataGridSearch__clear"
+                            title="Clear search"
+                            aria-label="Clear search"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div
+                  class="grid-data-row"
+                  id="company-companyRecordForm"
+                  style="display: block"
+                >
+                  <div
+                    class="row-form"
+                    id="company-companyRowForm"
+                    style="display: none"
+                  >
+                    <div class="action-buttons">
+                      <input
+                        type="checkbox"
+                        class="record-checkbox"
+                        id="company-companyMasterCheckbox"
+                        title="Toggle all"
+                      />
+                      <button
+                        class="btn-emoji btn-save"
+                        id="company-companySaveBtn"
+                        title="Save Changes"
+                        type="button"
+                      >
+                        💾
+                      </button>
+                      <button
+                        class="btn-emoji btn-cancel"
+                        id="company-companyCancelBtn"
+                        title="Cancel Changes"
+                        type="button"
+                      >
+                        ❌
+                      </button>
+                    </div>
+
+                    <div class="field-container name">
+                      <label for="name">Company Name</label>
+                      <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        data-field="name"
+                        placeholder="Enter company name"
+                        maxlength="100"
+                        required=""
+                      />
+                    </div>
+
+                    <div class="field-container industry">
+                      <label for="industry">Industry</label>
+                      <input
+                        type="text"
+                        id="industry"
+                        name="industry"
+                        data-field="industry"
+                        placeholder="e.g., Technology, Healthcare"
+                        maxlength="50"
+                      />
+                    </div>
+
+                    <div class="field-container size">
+                      <label for="size">Company Size</label>
+                      <select id="size" name="size" data-field="size">
+                        <option value="">Select Size...</option>
+                        <option value="Startup (1-10)">Startup (1-10)</option>
+                        <option value="Small (11-50)">Small (11-50)</option>
+                        <option value="Medium (51-200)">Medium (51-200)</option>
+                        <option value="Large (201-1000)">
+                          Large (201-1000)
+                        </option>
+                        <option value="Enterprise (1000+)">
+                          Enterprise (1000+)
+                        </option>
+                      </select>
+                    </div>
+
+                    <div class="field-container location">
+                      <label for="location">Location</label>
+                      <input
+                        type="text"
+                        id="location"
+                        name="location"
+                        data-field="location"
+                        placeholder="City, State or Remote"
+                        maxlength="100"
+                      />
+                    </div>
+
+                    <div class="field-container website">
+                      <label for="website">Website</label>
+                      <input
+                        type="url"
+                        id="website"
+                        name="website"
+                        data-field="website"
+                        placeholder="https://company.com"
+                      />
+                    </div>
+
+                    <div class="field-container notes">
+                      <label for="notes">Notes</label>
+                      <textarea
+                        id="notes"
+                        name="notes"
+                        data-field="notes"
+                        placeholder="Company notes, culture info, etc."
+                        rows="3"
+                      ></textarea>
+                    </div>
+                  </div>
+
+                  <div
+                    class="DataGrid datagrid"
+                    style="
+                      --position-width: 200px;
+                      --position-grid-flex: 2fr;
+                      --position-min-width: 200px;
+                      --width: 150px;
+                      --grid-flex: 1.5fr;
+                      --min-width: 150px;
+                      --email-width: 200px;
+                      --email-grid-flex: 2fr;
+                      --email-min-width: 200px;
+                      --cphone-width: 120px;
+                      --cphone-grid-flex: 1fr;
+                      --cphone-min-width: 120px;
+                      --ophone-width: 120px;
+                      --ophone-grid-flex: 1fr;
+                      --ophone-min-width: 120px;
+                      --icontact-width: 140px;
+                      --icontact-grid-flex: 1.2fr;
+                      --icontact-min-width: 140px;
+                      --lcontact-width: 140px;
+                      --lcontact-grid-flex: 1.2fr;
+                      --lcontact-min-width: 140px;
+                    "
+                  >
+                    <div class="datagrid-header">
+                      <div class="header-actions">
+                        <input
+                          type="checkbox"
+                          id="company-companyHeaderCheckbox"
+                          class="header-checkbox"
+                          title="Select All"
+                        />
+                      </div>
+                      <div class="header-field field-name">Company Name</div>
+                      <div class="header-field field-industry">Industry</div>
+                      <div class="header-field field-size">Size</div>
+                      <div class="header-field field-location">Location</div>
+                      <div class="header-field field-website">Website</div>
+                      <div class="header-field field-notes">Notes</div>
+                    </div>
+
+                    <div id="company-companyRecordsDisplay" class="records-container">
+                      <div class="record-row" data-record-index="0">
+                        <div class="record-actions">
+                          <input
+                            type="checkbox"
+                            class="record-checkbox"
+                            data-index="0"
+                            title="Select record"
+                          />
+                          <button
+                            class="btn-emoji btn-edit"
+                            data-action="edit"
+                            data-index="0"
+                            title="Edit"
+                          >
+                            ✏️
+                          </button>
+                        </div>
+
+                        <div class="record-field field-name">TechCorp Inc</div>
+
+                        <div class="record-field field-industry">
+                          Technology
+                        </div>
+
+                        <div class="record-field field-size">
+                          Large (201-1000)
+                        </div>
+
+                        <div class="record-field field-location">
+                          San Francisco, CA
+                        </div>
+
+                        <div class="record-field field-website">
+                          <a
+                            href="https://techcorp.com"
+                            target="_blank"
+                            title="https://techcorp.com"
+                            >https://techcorp.com</a
+                          >
+                        </div>
+
+                        <div class="record-field field-notes">
+                          Leading software development company with strong e...
+                        </div>
+                      </div>
+
+                      <div class="record-row" data-record-index="1">
+                        <div class="record-actions">
+                          <input
+                            type="checkbox"
+                            class="record-checkbox"
+                            data-index="1"
+                            title="Select record"
+                          />
+                          <button
+                            class="btn-emoji btn-edit"
+                            data-action="edit"
+                            data-index="1"
+                            title="Edit"
+                          >
+                            ✏️
+                          </button>
+                        </div>
+
+                        <div class="record-field field-name">InnovateSoft</div>
+
+                        <div class="record-field field-industry">
+                          Technology
+                        </div>
+
+                        <div class="record-field field-size">
+                          Medium (51-200)
+                        </div>
+
+                        <div class="record-field field-location">
+                          Austin, TX
+                        </div>
+
+                        <div class="record-field field-website">
+                          <a
+                            href="https://innovatesoft.com"
+                            target="_blank"
+                            title="https://innovatesoft.com"
+                            >https://innovatesoft.com</a
+                          >
+                        </div>
+
+                        <div class="record-field field-notes">
+                          Fast-growing startup focused on AI and machine lea...
+                        </div>
+                      </div>
+
+                      <div class="record-row" data-record-index="2">
+                        <div class="record-actions">
+                          <input
+                            type="checkbox"
+                            class="record-checkbox"
+                            data-index="2"
+                            title="Select record"
+                          />
+                          <button
+                            class="btn-emoji btn-edit"
+                            data-action="edit"
+                            data-index="2"
+                            title="Edit"
+                          >
+                            ✏️
+                          </button>
+                        </div>
+
+                        <div class="record-field field-name">
+                          DataDrive Systems
+                        </div>
+
+                        <div class="record-field field-industry">
+                          Data Analytics
+                        </div>
+
+                        <div class="record-field field-size">
+                          Medium (51-200)
+                        </div>
+
+                        <div class="record-field field-location">
+                          Seattle, WA
+                        </div>
+
+                        <div class="record-field field-website">
+                          <a
+                            href="https://datadrive.com"
+                            target="_blank"
+                            title="https://datadrive.com"
+                            >https://datadrive.com</a
+                          >
+                        </div>
+
+                        <div class="record-field field-notes">
+                          Data analytics and business intelligence solutions
+                        </div>
+                      </div>
+
+                      <div class="record-row" data-record-index="3">
+                        <div class="record-actions">
+                          <input
+                            type="checkbox"
+                            class="record-checkbox"
+                            data-index="3"
+                            title="Select record"
+                          />
+                          <button
+                            class="btn-emoji btn-edit"
+                            data-action="edit"
+                            data-index="3"
+                            title="Edit"
+                          >
+                            ✏️
+                          </button>
+                        </div>
+
+                        <div class="record-field field-name">
+                          CloudFirst Technologies
+                        </div>
+
+                        <div class="record-field field-industry">
+                          Cloud Computing
+                        </div>
+
+                        <div class="record-field field-size">
+                          Large (201-1000)
+                        </div>
+
+                        <div class="record-field field-location">Remote</div>
+
+                        <div class="record-field field-website">
+                          <a
+                            href="https://cloudfirst.com"
+                            target="_blank"
+                            title="https://cloudfirst.com"
+                            >https://cloudfirst.com</a
+                          >
+                        </div>
+
+                        <div class="record-field field-notes">
+                          Cloud infrastructure and DevOps solutions provider
+                        </div>
+                      </div>
+
+                      <div class="record-row" data-record-index="4">
+                        <div class="record-actions">
+                          <input
+                            type="checkbox"
+                            class="record-checkbox"
+                            data-index="4"
+                            title="Select record"
+                          />
+                          <button
+                            class="btn-emoji btn-edit"
+                            data-action="edit"
+                            data-index="4"
+                            title="Edit"
+                          >
+                            ✏️
+                          </button>
+                        </div>
+
+                        <div class="record-field field-name">
+                          NextGen Solutions
+                        </div>
+
+                        <div class="record-field field-industry">
+                          Consulting
+                        </div>
+
+                        <div class="record-field field-size">
+                          Large (201-1000)
+                        </div>
+
+                        <div class="record-field field-location">
+                          New York, NY
+                        </div>
+
+                        <div class="record-field field-website">
+                          <a
+                            href="https://nextgensolutions.com"
+                            target="_blank"
+                            title="https://nextgensolutions.com"
+                            >https://nextgensolutions.com</a
+                          >
+                        </div>
+
+                        <div class="record-field field-notes">
+                          Technology consulting and digital transformation s...
+                        </div>
+                      </div>
+
+                      <div class="record-row" data-record-index="5">
+                        <div class="record-actions">
+                          <input
+                            type="checkbox"
+                            class="record-checkbox"
+                            data-index="5"
+                            title="Select record"
+                          />
+                          <button
+                            class="btn-emoji btn-edit"
+                            data-action="edit"
+                            data-index="5"
+                            title="Edit"
+                          >
+                            ✏️
+                          </button>
+                        </div>
+
+                        <div class="record-field field-name">
+                          DesignWorks Studio
+                        </div>
+
+                        <div class="record-field field-industry">Design/UX</div>
+
+                        <div class="record-field field-size">Small (11-50)</div>
+
+                        <div class="record-field field-location">
+                          Los Angeles, CA
+                        </div>
+
+                        <div class="record-field field-website">
+                          <a
+                            href="https://designworks.com"
+                            target="_blank"
+                            title="https://designworks.com"
+                            >https://designworks.com</a
+                          >
+                        </div>
+
+                        <div class="record-field field-notes">
+                          Creative agency specializing in UX/UI design and b...
+                        </div>
+                      </div>
+
+                      <div class="record-row" data-record-index="6">
+                        <div class="record-actions">
+                          <input
+                            type="checkbox"
+                            class="record-checkbox"
+                            data-index="6"
+                            title="Select record"
+                          />
+                          <button
+                            class="btn-emoji btn-edit"
+                            data-action="edit"
+                            data-index="6"
+                            title="Edit"
+                          >
+                            ✏️
+                          </button>
+                        </div>
+
+                        <div class="record-field field-name">
+                          ServerTech Corp
+                        </div>
+
+                        <div class="record-field field-industry">
+                          Infrastructure
+                        </div>
+
+                        <div class="record-field field-size">
+                          Medium (51-200)
+                        </div>
+
+                        <div class="record-field field-location">
+                          Denver, CO
+                        </div>
+
+                        <div class="record-field field-website">
+                          <a
+                            href="https://servertech.com"
+                            target="_blank"
+                            title="https://servertech.com"
+                            >https://servertech.com</a
+                          >
+                        </div>
+
+                        <div class="record-field field-notes">
+                          Server hardware and infrastructure solutions
+                        </div>
+                      </div>
+
+                      <div class="record-row" data-record-index="7">
+                        <div class="record-actions">
+                          <input
+                            type="checkbox"
+                            class="record-checkbox"
+                            data-index="7"
+                            title="Select record"
+                          />
+                          <button
+                            class="btn-emoji btn-edit"
+                            data-action="edit"
+                            data-index="7"
+                            title="Edit"
+                          >
+                            ✏️
+                          </button>
+                        </div>
+
+                        <div class="record-field field-name">
+                          TestPro Solutions
+                        </div>
+
+                        <div class="record-field field-industry">
+                          Quality Assurance
+                        </div>
+
+                        <div class="record-field field-size">Small (11-50)</div>
+
+                        <div class="record-field field-location">Remote</div>
+
+                        <div class="record-field field-website">
+                          <a
+                            href="https://testpro.com"
+                            target="_blank"
+                            title="https://testpro.com"
+                            >https://testpro.com</a
+                          >
+                        </div>
+
+                        <div class="record-field field-notes">
+                          Automated testing and QA services
+                        </div>
+                      </div>
+
+                      <div class="record-row" data-record-index="8">
+                        <div class="record-actions">
+                          <input
+                            type="checkbox"
+                            class="record-checkbox"
+                            data-index="8"
+                            title="Select record"
+                          />
+                          <button
+                            class="btn-emoji btn-edit"
+                            data-action="edit"
+                            data-index="8"
+                            title="Edit"
+                          >
+                            ✏️
+                          </button>
+                        </div>
+
+                        <div class="record-field field-name">
+                          AI Innovations Ltd
+                        </div>
+
+                        <div class="record-field field-industry">
+                          Artificial Intelligence
+                        </div>
+
+                        <div class="record-field field-size">
+                          Startup (1-10)
+                        </div>
+
+                        <div class="record-field field-location">
+                          Boston, MA
+                        </div>
+
+                        <div class="record-field field-website">
+                          <a
+                            href="https://aiinnovations.com"
+                            target="_blank"
+                            title="https://aiinnovations.com"
+                            >https://aiinnovations.com</a
+                          >
+                        </div>
+
+                        <div class="record-field field-notes">
+                          Cutting-edge AI research and development
+                        </div>
+                      </div>
+
+                      <div class="record-row" data-record-index="9">
+                        <div class="record-actions">
+                          <input
+                            type="checkbox"
+                            class="record-checkbox"
+                            data-index="9"
+                            title="Select record"
+                          />
+                          <button
+                            class="btn-emoji btn-edit"
+                            data-action="edit"
+                            data-index="9"
+                            title="Edit"
+                          >
+                            ✏️
+                          </button>
+                        </div>
+
+                        <div class="record-field field-name">
+                          SecureNet Corp
+                        </div>
+
+                        <div class="record-field field-industry">
+                          Cybersecurity
+                        </div>
+
+                        <div class="record-field field-size">
+                          Medium (51-200)
+                        </div>
+
+                        <div class="record-field field-location">
+                          Washington, DC
+                        </div>
+
+                        <div class="record-field field-website">
+                          <a
+                            href="https://securenet.com"
+                            target="_blank"
+                            title="https://securenet.com"
+                            >https://securenet.com</a
+                          >
+                        </div>
+
+                        <div class="record-field field-notes">
+                          Enterprise cybersecurity and network protection se...
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Pagination Controls -->
+                    <div class="pagination-container">
+                      <div class="pagination-info">
+                        <span id="company-companyPaginationInfo"
+                          >Showing 1-10 of 10 companies</span
+                        >
+                      </div>
+                      <div class="pagination-controls">
+                        <button
+                          id="company-companyFirstPageBtn"
+                          class="pagination-btn"
+                          title="First Page"
+                          disabled=""
+                        >
+                          ⏮️
+                        </button>
+                        <button
+                          id="company-companyPrevPageBtn"
+                          class="pagination-btn"
+                          title="Previous Page"
+                          disabled=""
+                        >
+                          ◀️
+                        </button>
+                        <span id="company-companyPageIndicator">Page 1 of 1</span>
+                        <button
+                          id="company-companyNextPageBtn"
+                          class="pagination-btn"
+                          title="Next Page"
+                          disabled=""
+                        >
+                          ▶️
+                        </button>
+                        <button
+                          id="company-companyLastPageBtn"
+                          class="pagination-btn"
+                          title="Last Page"
+                          disabled=""
+                        >
+                          ⏭️
+                        </button>
+                      </div>
+                      <div class="pagination-settings">
+                        <label for="companyPageSize">Per page:</label>
+                        <select id="company-companyPageSize" class="page-size-select">
+                          <option value="5">5</option>
+                          <option value="10" selected="">10</option>
+                          <option value="25">25</option>
+                          <option value="50">50</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Reports Tab -->
+        <div id="reports-panel" class="tab-panel">
+          <div class="placeholder-content">
+            <div class="placeholder-icon">�</div>
+            <div class="placeholder-title">Contacts &amp; Communications</div>
+            <div class="placeholder-text">
+              Contact management and communication tracking will be displayed
+              here. This will include contact information, communication
+              history, and relationship management features.
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Load DataGrid Components -->
+    <script src="./DataGrid.js"></script>
+    <script src="./DataGridRow.js"></script>
+
+    <!-- Load JobSearch Consolidated JavaScript -->
+    <script src="./jobsearch.js"></script>
+  </body>
+  <grammarly-desktop-integration
+    data-grammarly-shadow-root="true"
+  ></grammarly-desktop-integration>
+</html>

@@ -1,32 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Job Search Management System</title>
     <link rel="stylesheet" href="./jobsearch.css" />
-</head>
-<body>
-    <div class="app-container">
+  </head>
+  <body>
+    <form>
+      <div class="app-container">
         <!-- Tab Navigation -->
         <nav class="tab-navigation">
-            <button class="tab-button active" data-tab="positions" onclick="switchTab('positions')">
-                <span>Positions</span>
-            </button>
-            <button class="tab-button" data-tab="companies" onclick="switchTab('companies')">
-                <span>Companies</span>
-            </button>
-            <button class="tab-button" data-tab="reports" onclick="switchTab('reports')">
-                <span>Contacts</span>
-            </button>
+          <button
+            class="tab-button active"
+            data-tab="positions"
+            onclick="switchTab('positions')"
+          >
+            <span>Positions</span>
+          </button>
+          <button
+            class="tab-button"
+            data-tab="companies"
+            onclick="switchTab('companies')"
+          >
+            <span>Companies</span>
+          </button>
+          <button
+            class="tab-button"
+            data-tab="reports"
+            onclick="switchTab('reports')"
+          >
+            <span>Contacts</span>
+          </button>
         </nav>
 
         <!-- Main Content Area -->
         <main class="main-content">
-            <!-- Positions Tab -->
-            <div id="positions-panel" class="tab-panel active">
-                <!-- Statistics Bar -->
-                <div class="stats-bar">
+          <!-- Positions Tab -->
+          <div id="positions-panel" class="tab-panel active">
+            <!-- Statistics Bar -->
+            <!-- <div class="stats-bar">
                     <div class="stat-item">
                         <span class="stat-number" id="totalPositions">0</span>
                         <div class="stat-label">Total Positions</div>
@@ -43,254 +56,270 @@
                         <span class="stat-number" id="currentPage">1</span>
                         <div class="stat-label">Current Page</div>
                     </div>
-                </div>
+                </div> -->
 
-                <!-- FormMock Integration -->
-                <div class="formmock-container">
-                    <form>
-                        <div>
-                            <div class="formmock-header">
-                                <div class="header-info">
-                                    <div class="header-title">Position Records</div>
-                                    <div class="header-summary" id="headerSummary">
-                                        Showing 1 of 1 records
-                                    </div>
-                                </div>
-                                <div class="header-controls">
-                                    <div id="hc-left">
-                                        <div class="toggle-container">
-                                            <label for="enableToggle" class="toggle-label">Enabled</label>
-                                            <label class="toggle-switch">
-                                                <input type="checkbox" id="enableToggle" checked />
-                                                <span class="toggle-slider"></span>
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div id="hc-middle">
-                                        <button
-                                            class="btn-emoji btn-add"
-                                            id="addBtn"
-                                            title="Add New Record"
-                                            type="button"
-                                        >
-                                            ➕
-                                        </button>
-                                    </div>
-                                    <div id="hc-right">
-                                        <div class="DataGridSearch">
-                                            <label for="formmock-search" class="DataGridSearch__label">Search:</label>
-                                            <div class="DataGridSearch__container">
-                                                <input type="text" id="formmock-search" class="DataGridSearch__input" 
-                                                       placeholder="Search positions..." autocomplete="off">
-                                                <button type="button" class="DataGridSearch__clear" title="Clear search" 
-                                                        aria-label="Clear search">✕</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div>
-                            <div class="grid-data-row" id="recordForm" style="display: block">
-                                <div class="row-form" id="rowForm" style="display: none">
-                                    <div class="action-buttons">
-                                        <input
-                                            type="checkbox"
-                                            class="record-checkbox"
-                                            id="recordCheckbox"
-                                            name="datagrid-checkbox"
-                                            hidden="none"
-                                        />
-                                        <button
-                                            class="btn-emoji btn-cancel"
-                                            id="cancelBtn"
-                                            title="Cancel"
-                                            type="button"
-                                        >
-                                            ❌
-                                        </button>
-                                        <button class="btn-emoji btn-save" id="saveBtn" title="Save" type="button">
-                                            💾
-                                        </button>
-                                    </div>
-
-                                    <div class="field-group">
-                                        <input
-                                            type="text"
-                                            class="field-input required"
-                                            data-field="position"
-                                            placeholder="Position"
-                                        />
-                                    </div>
-
-                                    <div class="field-group">
-                                        <label
-                                            class="field-label-display"
-                                            data-field="icontact"
-                                            data-value="2024-01-12"
-                                        >
-                                            2024-01-12
-                                        </label>
-                                    </div>
-
-                                    <div class="field-group">
-                                        <input
-                                            type="date"
-                                            class="field-input"
-                                            value="2024-02-26"
-                                            data-field="lcontact"
-                                        />
-                                    </div>
-
-                                    <div class="field-group">
-                                        <select class="field-select required" data-field="companyId">
-                                            <option value="">Select Company...</option>
-                                            <option value="1">TechCorp Inc</option>
-                                            <option value="2">InnovateSoft</option>
-                                            <option value="3">DataDrive Systems</option>
-                                            <option value="4">CloudFirst Technologies</option>
-                                            <option value="5">NextGen Solutions</option>
-                                            <option value="6">DesignWorks Studio</option>
-                                            <option value="7">ServerTech Corp</option>
-                                            <option value="8">TestPro Solutions</option>
-                                            <option value="9">AI Innovations Ltd</option>
-                                            <option value="10">SecureNet Corp</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="field-group">
-                                        <input
-                                            type="email"
-                                            class="field-input"
-                                            data-field="email"
-                                            placeholder="Enter contact email"
-                                        />
-                                    </div>
-
-                                    <div class="field-group">
-                                        <input
-                                            type="tel"
-                                            class="field-input"
-                                            data-field="cphone"
-                                            placeholder="(555) 123-4567"
-                                        />
-                                    </div>
-
-                                    <div class="field-group">
-                                        <input
-                                            type="tel"
-                                            class="field-input"
-                                            data-field="ophone"
-                                            placeholder="(555) 123-4567"
-                                        />
-                                    </div>
-                                </div>
-
-                                <!-- Title Row from jobsearch.json positions schema -->
-                                <div class="row-title" id="rowTitle" style="display: flex">
-                                    <div class="title-buttons">
-                                        <input
-                                            type="checkbox"
-                                            class="master-checkbox"
-                                            id="masterCheckbox"
-                                            title="Select All"
-                                        />
-                                    </div>
-
-                                    <div class="title-group field-position">
-                                        <span class="title-label">Position</span>
-                                    </div>
-
-                                    <div class="title-group field-icontact">
-                                        <span class="title-label">Initial Contact</span>
-                                    </div>
-
-                                    <div class="title-group field-lcontact">
-                                        <span class="title-label">Last Contact</span>
-                                    </div>
-
-                                    <div class="title-group field-company">
-                                        <span class="title-label">Company</span>
-                                    </div>
-
-                                    <div class="title-group field-email">
-                                        <span class="title-label">Email</span>
-                                    </div>
-
-                                    <div class="title-group field-cphone">
-                                        <span class="title-label">Cell</span>
-                                    </div>
-
-                                    <div class="title-group field-ophone">
-                                        <span class="title-label">Office</span>
-                                    </div>
-                                </div>
-
-                                <!-- Records Display Area -->
-                                <div class="records-display" id="recordsDisplay">
-                                    <!-- Individual record rows will be displayed here -->
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-
-                    <!-- Pagination Controls -->
-                    <div class="pagination-controls" id="paginationControls">
-                        <div class="page-size-container">
-                            <label for="pageSizeSelect">Records per page:</label>
-                            <select id="pageSizeSelect" class="page-size-select">
-                                <option value="10" selected>10</option>
-                                <option value="15">15</option>
-                                <option value="20">20</option>
-                            </select>
-                        </div>
-
-                        <button class="pagination-btn" id="firstBtn" disabled>First</button>
-                        <button class="pagination-btn" id="prevBtn" disabled>Previous</button>
-
-                        <button class="pagination-btn active" data-page="1">1</button>
-
-                        <button class="pagination-btn" id="nextBtn" disabled>Next</button>
-                        <button class="pagination-btn" id="lastBtn" disabled>Last</button>
-
-                        <span class="page-info" id="pageInfo"> Page 1 of 1 </span>
+            <!-- DataGrid Integration -->
+            <div class="datagrid-container">
+              <div>
+                <div class="datagrid-header">
+                  <div class="header-info">
+                    <div class="header-title">Position Records</div>
+                    <div class="header-summary" id="headerSummary">
+                      Showing 1 of 1 records
                     </div>
-                </div>
-            </div>
-
-            <!-- Companies Tab -->
-            <div id="companies-panel" class="tab-panel">
-                <div class="placeholder-content">
-                    <div class="placeholder-icon">🏢</div>
-                    <div class="placeholder-title">Company Management</div>
-                    <div class="placeholder-text">
-                        Company management features will be available here. This will include 
-                        adding, editing, and organizing company information that is referenced 
-                        in position records.
+                  </div>
+                  <div class="header-controls">
+                    <div id="hc-left">
+                      <div class="toggle-container">
+                        <label for="enableToggle" class="toggle-label"
+                          >Enabled</label
+                        >
+                        <label class="toggle-switch">
+                          <input type="checkbox" id="enableToggle" checked />
+                          <span class="toggle-slider"></span>
+                        </label>
+                      </div>
                     </div>
-                </div>
-            </div>
-
-            <!-- Reports Tab -->
-            <div id="reports-panel" class="tab-panel">
-                <div class="placeholder-content">
-                    <div class="placeholder-icon">�</div>
-                    <div class="placeholder-title">Contacts & Communications</div>
-                    <div class="placeholder-text">
-                        Contact management and communication tracking will be displayed here. This will include 
-                        contact information, communication history, and relationship management features.
+                    <div id="hc-middle">
+                      <button
+                        class="btn-emoji btn-add"
+                        id="addBtn"
+                        title="Add New Record"
+                        type="button"
+                      >
+                        ➕
+                      </button>
                     </div>
+                    <div id="hc-right">
+                      <div class="DataGridSearch">
+                        <label
+                          for="datagrid-search"
+                          class="DataGridSearch__label"
+                          >Search:</label
+                        >
+                        <div class="DataGridSearch__container">
+                          <input
+                            type="text"
+                            id="datagrid-search"
+                            class="DataGridSearch__input"
+                            placeholder="Search positions..."
+                            autocomplete="off"
+                          />
+                          <button
+                            type="button"
+                            class="DataGridSearch__clear"
+                            title="Clear search"
+                            aria-label="Clear search"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
+              </div>
+
+              <div>
+                <div
+                  class="grid-data-row"
+                  id="recordForm"
+                  style="display: block"
+                >
+                  <div class="row-form" id="rowForm" style="display: none">
+                    <div class="action-buttons">
+                      <input
+                        type="checkbox"
+                        class="record-checkbox"
+                        id="recordCheckbox"
+                        name="datagrid-checkbox"
+                        hidden="none"
+                      />
+                      <button
+                        class="btn-emoji btn-cancel"
+                        id="cancelBtn"
+                        title="Cancel"
+                        type="button"
+                      >
+                        ❌
+                      </button>
+                      <button
+                        class="btn-emoji btn-save"
+                        id="saveBtn"
+                        title="Save"
+                        type="button"
+                      >
+                        💾
+                      </button>
+                    </div>
+
+                    <div class="field-group">
+                      <input
+                        type="text"
+                        class="field-input required"
+                        data-field="position"
+                        placeholder="Position"
+                      />
+                    </div>
+
+                    <div class="field-group">
+                      <label
+                        class="field-label-display"
+                        data-field="icontact"
+                        data-value="2024-01-12"
+                      >
+                        2024-01-12
+                      </label>
+                    </div>
+
+                    <div class="field-group">
+                      <input
+                        type="date"
+                        class="field-input"
+                        value="2024-02-26"
+                        data-field="lcontact"
+                      />
+                    </div>
+
+                    <div class="field-group">
+                      <select
+                        class="field-select required"
+                        data-field="companyId"
+                      >
+                        <option value="">Select Company...</option>
+                        <option value="1">TechCorp Inc</option>
+                        <option value="2">InnovateSoft</option>
+                        <option value="3">DataDrive Systems</option>
+                        <option value="4">CloudFirst Technologies</option>
+                        <option value="5">NextGen Solutions</option>
+                        <option value="6">DesignWorks Studio</option>
+                        <option value="7">ServerTech Corp</option>
+                        <option value="8">TestPro Solutions</option>
+                        <option value="9">AI Innovations Ltd</option>
+                        <option value="10">SecureNet Corp</option>
+                      </select>
+                    </div>
+
+                    <div class="field-group">
+                      <input
+                        type="email"
+                        class="field-input"
+                        data-field="email"
+                        placeholder="Enter contact email"
+                      />
+                    </div>
+
+                    <div class="field-group">
+                      <input
+                        type="tel"
+                        class="field-input"
+                        data-field="cphone"
+                        placeholder="(555) 123-4567"
+                      />
+                    </div>
+
+                    <div class="field-group">
+                      <input
+                        type="tel"
+                        class="field-input"
+                        data-field="ophone"
+                        placeholder="(555) 123-4567"
+                      />
+                    </div>
+                  </div>
+
+                  <!-- Title Row from jobsearch.json positions schema -->
+                  <div class="row-title" id="rowTitle" style="display: flex">
+                    <div class="title-buttons">
+                      <input
+                        type="checkbox"
+                        class="master-checkbox"
+                        id="masterCheckbox"
+                        title="Select All"
+                      />
+                    </div>
+
+                    <div class="title-group field-position">
+                      <span class="title-label">Position</span>
+                    </div>
+
+                    <div class="title-group field-icontact">
+                      <span class="title-label">Initial Contact</span>
+                    </div>
+
+                    <div class="title-group field-lcontact">
+                      <span class="title-label">Last Contact</span>
+                    </div>
+
+                    <div class="title-group field-company">
+                      <span class="title-label">Company</span>
+                    </div>
+
+                    <div class="title-group field-email">
+                      <span class="title-label">Email</span>
+                    </div>
+
+                    <div class="title-group field-cphone">
+                      <span class="title-label">Cell</span>
+                    </div>
+
+                    <div class="title-group field-ophone">
+                      <span class="title-label">Office</span>
+                    </div>
+                  </div>
+
+                  <!-- Records Display Area -->
+                  <div class="records-display" id="recordsDisplay">
+                    <!-- Individual record rows will be displayed here -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- Pagination Controls -->
+              <div class="pagination-controls" id="paginationControls">
+                <div class="page-size-container">
+                  <label for="pageSizeSelect">Records per page:</label>
+                  <select id="pageSizeSelect" class="page-size-select">
+                    <option value="10" selected>10</option>
+                    <option value="15">15</option>
+                    <option value="20">20</option>
+                  </select>
+                </div>
+
+                <button class="pagination-btn" id="firstBtn" disabled>
+                  First
+                </button>
+                <button class="pagination-btn" id="prevBtn" disabled>
+                  Previous
+                </button>
+
+                <button class="pagination-btn active" data-page="1">1</button>
+
+                <button class="pagination-btn" id="nextBtn" disabled>
+                  Next
+                </button>
+                <button class="pagination-btn" id="lastBtn" disabled>
+                  Last
+                </button>
+
+                <span class="page-info" id="pageInfo"> Page 1 of 1 </span>
+              </div>
             </div>
+          </div>
+
+          <!-- Companies Tab -->
+          <div id="companies-panel" class="tab-panel"></div>
+
+          <!-- Reports Tab -->
+          <div id="reports-panel" class="tab-panel"></div>
         </main>
-    </div>
-
+      </div>
+    </form>
     <!-- Load DataGrid Components -->
     <script src="./DataGrid.js"></script>
     <script src="./DataGridRow.js"></script>
-    
+
     <!-- Load JobSearch Consolidated JavaScript -->
     <script src="./jobsearch.js"></script>
-</body>
+  </body>
 </html>

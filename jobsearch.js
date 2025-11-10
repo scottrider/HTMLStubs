@@ -52,7 +52,7 @@ function applySchemaCSSDimensions() {
         const schema = jobSearchData.jobsearch.positions.schema;
         
         // Apply to DataGrid
-        applyDataGridDimensions(schema);
+        applyDataGridDimensions(schema, 'positions');
         
         // Apply to row-form fields
         applyRowFormDimensions(schema);
@@ -66,25 +66,25 @@ function applySchemaCSSDimensions() {
 
 /**
  * Apply dimensions to DataGrid CSS custom properties
+ * @param {Object} schema - The data schema with field definitions
+ * @param {string} dataType - The type of data (positions, companies, contacts, etc.)
  */
-function applyDataGridDimensions(schema) {
-    const dataGridElement = document.querySelector('.DataGrid');
+function applyDataGridDimensions(schema, dataType = 'positions') {
+    const dataGridElement = document.querySelector('.datagrid-container');
     
     if (!dataGridElement) {
         logger.warn('DataGrid element not found for CSS dimension application');
         return;
     }
     
-    // Map schema field names to CSS custom property names
-    const fieldToCSSMap = {
-        'position': '--position',
-        'companyId': '--company', 
-        'email': '--email',
-        'cphone': '--cphone',
-        'ophone': '--ophone', 
-        'icontact': '--icontact',
-        'lcontact': '--lcontact'
-    };
+    // Use the global function to generate field mapping, or fallback to local generation
+    let fieldToCSSMap;
+    if (typeof window.generateFieldToCSSMap === 'function') {
+        fieldToCSSMap = window.generateFieldToCSSMap(schema, dataType);
+    } else {
+        // Fallback: generate locally
+        fieldToCSSMap = generateFieldToCSSMapLocal(schema, dataType);
+    }
     
     // Apply dimensions from schema to CSS custom properties
     Object.entries(schema).forEach(([fieldName, fieldConfig]) => {
@@ -131,7 +131,59 @@ function applyDataGridDimensions(schema) {
         }
     });
     
-    logger.debug('DataGrid dimensions applied from schema');
+    logger.debug(`DataGrid dimensions applied from ${dataType} schema with ${Object.keys(fieldToCSSMap).length} fields`);
+}
+
+/**
+ * Local fallback function to generate CSS custom property mapping from schema
+ * @param {Object} schema - The data schema with field definitions
+ * @param {string} dataType - The type of data (positions, companies, contacts, etc.)
+ * @returns {Object} Mapping of field names to CSS custom property prefixes
+ */
+function generateFieldToCSSMapLocal(schema, dataType) {
+    const fieldToCSSMap = {};
+    
+    // Generate CSS custom property names based on field names
+    Object.keys(schema).forEach(fieldName => {
+        // Convert field names to CSS-friendly custom property names
+        let cssPropertyName;
+        
+        // Handle special mappings for common field patterns
+        switch (fieldName) {
+            case 'companyId':
+                cssPropertyName = '--company';
+                break;
+            case 'contactId':
+                cssPropertyName = '--contact';
+                break;
+            case 'positionId':
+                cssPropertyName = '--position';
+                break;
+            case 'icontact':
+                cssPropertyName = '--icontact';
+                break;
+            case 'lcontact':
+                cssPropertyName = '--lcontact';
+                break;
+            case 'cphone':
+                cssPropertyName = '--cphone';
+                break;
+            case 'ophone':
+                cssPropertyName = '--ophone';
+                break;
+            default:
+                // Convert camelCase or PascalCase to kebab-case with double dash prefix
+                cssPropertyName = '--' + fieldName
+                    .replace(/([A-Z])/g, '-$1')
+                    .toLowerCase()
+                    .replace(/^-/, ''); // Remove leading dash if present
+        }
+        
+        fieldToCSSMap[fieldName] = cssPropertyName;
+    });
+    
+    logger.debug(`Generated local CSS mapping for ${dataType}:`, fieldToCSSMap);
+    return fieldToCSSMap;
 }
 
 // applyRowFormDimensions function has been moved to DataGridRow.js
@@ -944,10 +996,10 @@ function updateHeaderForSelection() {
       window.formMockSearch = null;
     }
     
-    const searchElement = document.querySelector('#formmock-search');
+    const searchElement = document.querySelector('#datagrid-search');
     if (searchElement) {
       try {
-        window.formMockSearch = new DataGridSearch('#formmock-search', {
+        window.formMockSearch = new DataGridSearch('#datagrid-search', {
           debounceDelay: 300,
           placeholder: 'Search positions...',
           onSearch: function(searchTerm, instance) {
@@ -1004,10 +1056,10 @@ function updateHeaderForSelection() {
       window.formMockSearch = null;
     }
     
-    const searchElement = document.querySelector('#formmock-search');
+    const searchElement = document.querySelector('#datagrid-search');
     if (searchElement) {
       try {
-        window.formMockSearch = new DataGridSearch('#formmock-search', {
+        window.formMockSearch = new DataGridSearch('#datagrid-search', {
           debounceDelay: 300,
           placeholder: 'Search positions...',
           onSearch: function(searchTerm, instance) {
