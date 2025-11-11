@@ -301,6 +301,7 @@
 
       .row-title {
         display: flex;
+        flex-direction: row;
         flex-wrap: nowrap;
         gap: 4px;
         align-items: center;

@@ -253,6 +253,19 @@ function resolveForeignKeyLabel(fieldConfig, value) {
     return match ? match.label : value;
 }
 
+function resolveForeignRecord(tableName, id) {
+    if (!tableName || id === null || id === undefined || id === '') {
+        return null;
+    }
+
+    const collection = jobSearchData?.jobsearch?.[tableName]?.data;
+    if (!Array.isArray(collection)) {
+        return null;
+    }
+
+    return collection.find(record => String(record.id) === String(id));
+}
+
 function getFieldDisplayValue(record, fieldName) {
     const fieldConfig = getFieldConfig(fieldName);
     if (!fieldConfig) {
@@ -261,6 +274,34 @@ function getFieldDisplayValue(record, fieldName) {
 
     const value = record[fieldName];
 
+    // Handle computed fields
+    if (fieldConfig.computed && fieldConfig.computedFrom && fieldConfig.computedKey) {
+        const foreignKeyValue = record[fieldConfig.computedKey];
+        if (!foreignKeyValue) {
+            return '';
+        }
+
+        // Extract table and field from computedFrom (e.g., "contacts.lname,contacts.fname")
+        const computedFromParts = fieldConfig.computedFrom.split('.');
+        if (computedFromParts.length === 2) {
+            const [tableName, fieldPath] = computedFromParts;
+            const foreignRecord = resolveForeignRecord(tableName, foreignKeyValue);
+            
+            if (foreignRecord) {
+                // Handle multiple fields (e.g., "lname,fname")
+                if (fieldPath.includes(',')) {
+                    const fieldNames = fieldPath.split(',');
+                    return fieldNames.map(fn => foreignRecord[fn.trim()]).filter(v => v).join(', ');
+                } else {
+                    return foreignRecord[fieldPath];
+                }
+            }
+        }
+        
+        return '';
+    }
+
+    // Handle regular foreign key lookups
     if (fieldConfig.htmlElement === 'select' && fieldConfig.foreignKey) {
         return resolveForeignKeyLabel(fieldConfig, value);
     }
@@ -1956,11 +1997,20 @@ function recordMatchesSearchTerm(record, lowerSearchTerm) {
     const displayValue = getFieldDisplayValue(record, fieldName);
 
     const valuesToCheck = [];
-    if (isValueProvided(rawValue)) {
-      valuesToCheck.push(rawValue);
-    }
-    if (displayValue !== rawValue && isValueProvided(displayValue)) {
-      valuesToCheck.push(displayValue);
+    
+    // For computed fields, only use the display value since rawValue won't exist in the record
+    if (fieldConfig?.computed) {
+      if (isValueProvided(displayValue)) {
+        valuesToCheck.push(displayValue);
+      }
+    } else {
+      // For regular fields, check both raw and display values
+      if (isValueProvided(rawValue)) {
+        valuesToCheck.push(rawValue);
+      }
+      if (displayValue !== rawValue && isValueProvided(displayValue)) {
+        valuesToCheck.push(displayValue);
+      }
     }
 
     return valuesToCheck.some(value => {
