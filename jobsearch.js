@@ -475,15 +475,37 @@ function renderTitleFromSchema() {
 
       const style = buildDimensionStyle(fieldConfig);
       const styleAttr = style ? ` style="${style}"` : '';
+      const hintText = getTitleHint(fieldName, fieldConfig);
       return `
         <div class="title-group field-${toKebabCase(fieldName)}"${styleAttr}>
           <span class="title-label">${escapeHtml(fieldConfig.displayName || fieldName)}</span>
+          ${hintText ? `<span class="title-hint">${escapeHtml(hintText)}</span>` : ''}
         </div>
       `;
     })
     .join('');
 
   titleContainer.innerHTML = titleHTML;
+}
+
+function getTitleHint(fieldName, fieldConfig) {
+  if (!fieldConfig) {
+    return '';
+  }
+
+  const computedFrom = typeof fieldConfig.computedFrom === 'string'
+    ? fieldConfig.computedFrom.toLowerCase()
+    : '';
+
+  if (
+    fieldName.toLowerCase() === 'name' &&
+    computedFrom.includes('lname') &&
+    computedFrom.includes('fname')
+  ) {
+    return 'Last Name, First Name';
+  }
+
+  return '';
 }
 
 function createFormFieldGroupHTML(fieldName, fieldConfig, value = '') {
