@@ -648,8 +648,14 @@ function updateHeaderTitle() {
 }
 
 function initializeSearchComponent() {
-  const searchElement = document.querySelector('#datagrid-search');
-  if (!searchElement) {
+  const searchInput = document.querySelector('#datagrid-search');
+  if (!searchInput) {
+    return;
+  }
+
+  const searchContainer = searchInput.closest('.DataGridSearch');
+  if (!searchContainer) {
+    logger.warn('DataGridSearch container not found for search input');
     return;
   }
 
@@ -664,7 +670,7 @@ function initializeSearchComponent() {
   const placeholder = `Search ${getEntityDisplayName(currentEntityType).toLowerCase()}...`;
 
   try {
-    window.formMockSearch = new DataGridSearch('#datagrid-search', {
+    window.formMockSearch = new DataGridSearch(searchContainer, {
       debounceDelay: CONFIG.DEBOUNCE_DELAY,
       placeholder,
       onSearch: (searchTerm) => {
