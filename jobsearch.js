@@ -148,7 +148,7 @@ function setEntityContext(entityType) {
     currentSchema = jobSearchData?.jobsearch?.[entityType]?.schema || {};
     currentFieldOrder = Object.keys(currentSchema);
     currentIdField = currentFieldOrder.find(name => name.toLowerCase() === 'id') || 'id';
-    currentVisibleFieldOrder = currentFieldOrder.filter(fieldName => isFieldVisible(currentSchema[fieldName]));
+    currentVisibleFieldOrder = currentFieldOrder.filter(fieldName => isTitleVisible(currentSchema[fieldName]));
 }
 
 function getFieldDefinitions(entityType = currentEntityType) {
@@ -164,16 +164,191 @@ function getFieldConfig(fieldName, entityType = currentEntityType) {
 }
 
 function isFieldVisible(fieldConfig) {
-    return fieldConfig?.htmlType !== 'hidden';
+    // Check displayType in the new three-state system
+    const displayConfig = getFieldTypeConfig(fieldConfig, 'display');
+    return displayConfig?.type !== 'hidden';
+}
+
+function isTitleVisible(fieldConfig) {
+    // Check titleType in the new three-state system for header display
+    const titleConfig = getFieldTypeConfig(fieldConfig, 'title');
+    const isVisible = titleConfig?.type !== 'hidden';
+    return isVisible;
 }
 
 function getVisibleFieldOrder(entityType = currentEntityType) {
     const schema = jobSearchData?.jobsearch?.[entityType]?.schema || {};
-    return Object.keys(schema).filter(fieldName => isFieldVisible(schema[fieldName]));
+    return Object.keys(schema).filter(fieldName => isTitleVisible(schema[fieldName]));
 }
 
-function buildDimensionStyle(fieldConfig = {}, { includeFlex = true } = {}) {
-    const css = fieldConfig.css || {};
+/**
+ * Schema Migration and Field Type Resolution
+ * Handles both legacy (htmlElement/htmlType) and new (titleType/displayType/editType) schema formats
+ */
+
+// Get the appropriate field configuration for a specific mode (title, display, or edit)
+function getFieldTypeConfig(fieldConfig, mode) {
+  if (!fieldConfig) return null;
+  
+  // New three-state schema format with titleType/displayType/editType
+  if (fieldConfig.titleType || fieldConfig.displayType || fieldConfig.editType) {
+    if (mode === 'title') {
+      return fieldConfig.titleType || fieldConfig.displayType || fieldConfig.editType; // Fallback chain
+    } else if (mode === 'read' || mode === 'display') {
+      return fieldConfig.displayType || fieldConfig.editType; // Fallback to editType if displayType missing
+    } else {
+      return fieldConfig.editType || fieldConfig.displayType; // Fallback to displayType if editType missing
+    }
+  }
+  
+  // Legacy schema format - convert on the fly
+  return migrateLegacyFieldConfig(fieldConfig);
+}
+
+// Convert legacy schema format to new format
+function migrateLegacyFieldConfig(fieldConfig) {
+  if (!fieldConfig.htmlElement && !fieldConfig.htmlType) {
+    return null;
+  }
+  
+  // Convert htmlElement + htmlType to new type format
+  let type = '';
+  if (fieldConfig.htmlElement === 'input') {
+    type = `input-${fieldConfig.htmlType || 'text'}`;
+  } else if (fieldConfig.htmlElement === 'select') {
+    type = 'select';
+  } else if (fieldConfig.htmlElement === 'textarea') {
+    type = 'textarea';
+  } else if (fieldConfig.htmlElement === 'label') {
+    type = 'label';
+  } else {
+    type = fieldConfig.htmlElement || 'input-text';
+  }
+  
+  return {
+    type: type,
+    css: fieldConfig.css || {},
+    required: fieldConfig.required || false
+  };
+}
+
+// Get validation rules for a field
+function getFieldValidation(fieldConfig, mode) {
+  const typeConfig = getFieldTypeConfig(fieldConfig, mode);
+  if (!typeConfig) return {};
+  
+  return {
+    required: fieldConfig.required || typeConfig.required || false,
+    minLength: typeConfig.css?.minlength,
+    maxLength: typeConfig.css?.maxlength,
+    min: typeConfig.css?.min,
+    max: typeConfig.css?.max,
+    pattern: typeConfig.css?.pattern,
+    step: typeConfig.css?.step
+  };
+}
+
+// Check if a field is required in a specific mode
+function isFieldRequired(fieldConfig, mode) {
+  // Field-level required takes precedence
+  if (fieldConfig.required !== undefined) {
+    return fieldConfig.required;
+  }
+  
+  // Check type-specific required setting
+  const typeConfig = getFieldTypeConfig(fieldConfig, mode);
+  return typeConfig?.required || false;
+}
+
+// Validate field value based on configuration
+function validateFieldValue(fieldName, value, fieldConfig, mode) {
+  const validation = getFieldValidation(fieldConfig, mode);
+  const errors = [];
+  
+  // Check required
+  if (validation.required && (!value || value.toString().trim() === '')) {
+    errors.push(`${fieldConfig.displayName || fieldName} is required`);
+    return errors; // If required and empty, don't check other validations
+  }
+  
+  // Skip other validations if value is empty and not required
+  if (!value || value.toString().trim() === '') {
+    return errors;
+  }
+  
+  const stringValue = value.toString();
+  
+  // Length validations
+  if (validation.minLength && stringValue.length < validation.minLength) {
+    errors.push(`${fieldConfig.displayName || fieldName} must be at least ${validation.minLength} characters`);
+  }
+  
+  if (validation.maxLength && stringValue.length > validation.maxLength) {
+    errors.push(`${fieldConfig.displayName || fieldName} must not exceed ${validation.maxLength} characters`);
+  }
+  
+  // Numeric validations
+  if (fieldConfig.type === 'number' || fieldConfig.type === 'date') {
+    const numValue = fieldConfig.type === 'date' ? new Date(value).getTime() : Number(value);
+    
+    if (validation.min !== undefined) {
+      const minValue = fieldConfig.type === 'date' ? new Date(validation.min).getTime() : Number(validation.min);
+      if (numValue < minValue) {
+        errors.push(`${fieldConfig.displayName || fieldName} must be at least ${validation.min}`);
+      }
+    }
+    
+    if (validation.max !== undefined) {
+      const maxValue = fieldConfig.type === 'date' ? new Date(validation.max).getTime() : Number(validation.max);
+      if (numValue > maxValue) {
+        errors.push(`${fieldConfig.displayName || fieldName} must not exceed ${validation.max}`);
+      }
+    }
+  }
+  
+  // Pattern validation
+  if (validation.pattern && !new RegExp(validation.pattern).test(stringValue)) {
+    errors.push(`${fieldConfig.displayName || fieldName} format is invalid`);
+  }
+  
+  return errors;
+}
+
+// Get required fields that are missing values
+function getMissingRequiredFields(record, mode = 'edit') {
+  const missingFields = [];
+  
+  Object.keys(currentSchema).forEach(fieldName => {
+    const fieldConfig = currentSchema[fieldName];
+    if (isFieldRequired(fieldConfig, mode)) {
+      const value = record[fieldName];
+      if (!value || value.toString().trim() === '') {
+        missingFields.push(fieldName);
+      }
+    }
+  });
+  
+  return missingFields;
+}
+
+// Validate an entire record
+function validateRecord(record, mode = 'edit') {
+  const errors = [];
+  
+  Object.keys(currentSchema).forEach(fieldName => {
+    const fieldConfig = currentSchema[fieldName];
+    const fieldErrors = validateFieldValue(fieldName, record[fieldName], fieldConfig, mode);
+    errors.push(...fieldErrors);
+  });
+  
+  return errors;
+}
+
+function buildDimensionStyle(fieldConfig = {}, { includeFlex = true, mode = 'display' } = {}) {
+    // Get the appropriate type configuration for the mode
+    const typeConfig = getFieldTypeConfig(fieldConfig, mode);
+    const css = typeConfig?.css || fieldConfig.css || {};
+    
     const styleSegments = [];
 
     if (css.width) {
@@ -245,17 +420,41 @@ function resolveForeignKeyOptions(fieldConfig) {
     }
 
     const [collectionKey, idField] = fieldConfig.foreignKey.split('.');
-    const [displayCollectionKey, displayField] = (fieldConfig.foreignKeyDisplay || '').split('.');
-    const collectionName = displayCollectionKey || collectionKey;
-    const collection = jobSearchData?.jobsearch?.[collectionName]?.data;
+    const collection = jobSearchData?.jobsearch?.[collectionKey]?.data;
     if (!Array.isArray(collection)) {
         return [];
     }
 
-    return collection.map(item => ({
-        value: item?.[idField],
-        label: displayField && item?.[displayField] !== undefined ? item[displayField] : item?.[idField]
-    }));
+    return collection.map(item => {
+        let label;
+        
+        // Handle multiple display fields for contacts (fname, lname format)
+        if (fieldConfig.foreignKeyDisplay && fieldConfig.foreignKeyDisplay.includes(',')) {
+            // Parse multiple display fields (e.g., "contacts.lname, contacts.fname")
+            const displayFields = fieldConfig.foreignKeyDisplay.split(',').map(f => f.trim());
+            const fieldValues = displayFields.map(field => {
+                const [, fieldName] = field.split('.');
+                return item?.[fieldName] || '';
+            });
+            
+            // For contacts, format as "FirstName, LastName"
+            if (fieldValues.length >= 2) {
+                const [lname, fname] = fieldValues;
+                label = fname && lname ? `${fname}, ${lname}` : (fname || lname || item?.[idField]);
+            } else {
+                label = fieldValues.join(', ');
+            }
+        } else {
+            // Single display field
+            const [displayCollectionKey, displayField] = (fieldConfig.foreignKeyDisplay || '').split('.');
+            label = displayField && item?.[displayField] !== undefined ? item[displayField] : item?.[idField];
+        }
+        
+        return {
+            value: item?.[idField],
+            label: label
+        };
+    });
 }
 
 function resolveForeignKeyLabel(fieldConfig, value) {
@@ -296,9 +495,12 @@ function getFieldDisplayValue(record, fieldName) {
             return '';
         }
 
-        // Parse computedFrom (e.g., "contacts.lname,contacts.fname")
+        // Parse computedFrom (e.g., "contacts.lname,contacts.fname" or "companies.name")
         const computedFrom = fieldConfig.computedFrom;
-        const foreignRecord = resolveForeignRecord('contacts', foreignKeyValue); // Assuming all computed fields use contacts table
+        
+        // Extract table name from computedFrom (e.g., "companies.name" -> "companies")
+        const tableName = computedFrom.includes('.') ? computedFrom.split('.')[0] : 'contacts';
+        const foreignRecord = resolveForeignRecord(tableName, foreignKeyValue);
         
         if (foreignRecord) {
             // Handle multiple fields by extracting field names after table prefix
@@ -348,17 +550,6 @@ function normalizeFieldValue(fieldName, value) {
 
 function isValueProvided(value) {
     return value !== undefined && value !== null && value !== '';
-}
-
-function getMissingRequiredFields(formData) {
-    return currentFieldOrder.filter(fieldName => {
-        const fieldConfig = currentSchema[fieldName];
-        if (!fieldConfig?.required) {
-            return false;
-        }
-
-        return !isValueProvided(formData[fieldName]);
-    });
 }
 
 function formatEntityCount(count, entityType = currentEntityType) {
@@ -558,14 +749,23 @@ function createRecordFieldHTML(record, fieldName, fieldConfig, mode) {
     return '';
   }
 
-  const style = buildDimensionStyle(fieldConfig);
+  const style = buildDimensionStyle(fieldConfig, { mode: mode });
   const styleAttr = style ? ` style="${style}"` : '';
   const fieldClass = `record-field field-${toKebabCase(fieldName)}`;
 
   let content = '';
   if (mode === 'read') {
     const displayValue = getFieldDisplayValue(record, fieldName);
-    content = escapeHtml(displayValue ?? '');
+    
+    // Check if this field should be rendered as a label in read mode
+    const typeConfig = getFieldTypeConfig(fieldConfig, 'display');
+    if (typeConfig && typeConfig.type === 'label') {
+      const escapedValue = escapeHtml(displayValue ?? '');
+      const dataValueAttr = isValueProvided(displayValue) ? ` data-value="${escapedValue}"` : '';
+      content = `<label class="field-label-display" data-field="${fieldName}"${dataValueAttr}>${escapedValue}</label>`;
+    } else {
+      content = escapeHtml(displayValue ?? '');
+    }
   } else {
     content = createFieldInputHTML(fieldName, fieldConfig, record[fieldName], { mode: 'edit' });
   }
@@ -575,31 +775,77 @@ function createRecordFieldHTML(record, fieldName, fieldConfig, mode) {
 
 function createFieldInputHTML(fieldName, fieldConfig, value, { mode }) {
   const safeValue = value ?? '';
-
-  switch ((fieldConfig?.htmlElement || 'input').toLowerCase()) {
+  const typeConfig = getFieldTypeConfig(fieldConfig, mode);
+  
+  if (!typeConfig) {
+    // Fallback for fields without proper configuration
+    return `<input type="text" class="field-input" data-field="${fieldName}" value="${escapeHtml(safeValue)}" />`;
+  }
+  
+  const elementType = typeConfig.type;
+  const css = typeConfig.css || {};
+  const isRequired = isFieldRequired(fieldConfig, mode);
+  
+  // Parse element type (e.g., "input-text", "select", "label")
+  const [element, subtype] = elementType.split('-');
+  
+  switch (element.toLowerCase()) {
     case 'label': {
       const display = escapeHtml(safeValue);
       const dataValueAttr = isValueProvided(safeValue) ? ` data-value="${display}"` : '';
       return `<label class="field-label-display" data-field="${fieldName}"${dataValueAttr}>${display}</label>`;
     }
+    
     case 'select': {
       const optionsHTML = buildSelectOptions(fieldName, fieldConfig, safeValue);
-      const requiredAttr = fieldConfig.required ? ' required' : '';
+      const requiredAttr = isRequired ? ' required' : '';
       const styleClass = 'field-select';
-      return `<select class="${styleClass}${requiredAttr ? ' required' : ''}" data-field="${fieldName}"${requiredAttr}>${optionsHTML}</select>`;
+      return `<select class="${styleClass}${isRequired ? ' required' : ''}" data-field="${fieldName}"${requiredAttr}>${optionsHTML}</select>`;
     }
+    
+    case 'textarea': {
+      const placeholder = getFieldPlaceholder(fieldName, fieldConfig, css);
+      const requiredAttr = isRequired ? ' required' : '';
+      const rows = css.rows || '3';
+      const attributes = [
+        `class="field-input${isRequired ? ' required' : ''}"`,
+        `data-field="${fieldName}"`,
+        `rows="${rows}"`,
+        `placeholder="${escapeHtml(placeholder || '')}"`
+      ];
+      
+      // Add validation attributes
+      ['maxlength', 'minlength'].forEach(attr => {
+        if (css[attr] !== undefined) {
+          attributes.push(`${attr}="${escapeHtml(css[attr])}"`);
+        }
+      });
+      
+      if (isRequired) {
+        attributes.push('required');
+      }
+      
+      return `<textarea ${attributes.join(' ')}>${escapeHtml(safeValue)}</textarea>`;
+    }
+    
+    case 'input':
     default: {
-      const type = fieldConfig.htmlType || fieldConfig.type || 'text';
-      const placeholder = getFieldPlaceholder(fieldName, fieldConfig);
-      const attributes = [`type="${type}"`, `class="field-input${fieldConfig.required ? ' required' : ''}"`, `data-field="${fieldName}"`];
+      const inputType = subtype || fieldConfig.type || 'text';
+      const placeholder = getFieldPlaceholder(fieldName, fieldConfig, css);
+      const attributes = [
+        `type="${inputType}"`,
+        `class="field-input${isRequired ? ' required' : ''}"`,
+        `data-field="${fieldName}"`
+      ];
 
       if (placeholder) {
         attributes.push(`placeholder="${escapeHtml(placeholder)}"`);
       }
 
-      ['min', 'max', 'step', 'maxlength', 'pattern'].forEach(attr => {
-        if (fieldConfig.css && fieldConfig.css[attr] !== undefined) {
-          attributes.push(`${attr}="${escapeHtml(fieldConfig.css[attr])}"`);
+      // Add validation attributes from CSS
+      ['min', 'max', 'step', 'maxlength', 'minlength', 'pattern'].forEach(attr => {
+        if (css[attr] !== undefined) {
+          attributes.push(`${attr}="${escapeHtml(css[attr])}"`);
         }
       });
 
@@ -607,7 +853,7 @@ function createFieldInputHTML(fieldName, fieldConfig, value, { mode }) {
         attributes.push(`value="${escapeHtml(safeValue)}"`);
       }
 
-      if (fieldConfig.required) {
+      if (isRequired) {
         attributes.push('required');
       }
 
@@ -633,10 +879,18 @@ function buildSelectOptions(fieldName, fieldConfig, selectedValue) {
   return optionsHTML.join('');
 }
 
-function getFieldPlaceholder(fieldName, fieldConfig) {
+function getFieldPlaceholder(fieldName, fieldConfig, css = null) {
+  // Try CSS from new schema format first
+  if (css && css.placeholder) {
+    return css.placeholder;
+  }
+  
+  // Fallback to legacy CSS format
   if (fieldConfig?.css?.placeholder) {
     return fieldConfig.css.placeholder;
   }
+  
+  // Generate default placeholder
   return fieldConfig?.displayName ? `Enter ${fieldConfig.displayName.toLowerCase()}` : '';
 }
 
@@ -732,7 +986,14 @@ function saveFormData() {
   // Add timestamp
   formData.timestamp = new Date().toISOString();
 
-  const missingFields = getMissingRequiredFields(formData);
+  // Validate the record using new validation system
+  const validationErrors = validateRecord(formData, 'edit');
+  if (validationErrors.length > 0) {
+    alert(`Validation errors:\n${validationErrors.join('\n')}`);
+    return;
+  }
+  
+  const missingFields = getMissingRequiredFields(formData, 'edit');
   if (missingFields.length > 0) {
     alert(`Please provide values for: ${missingFields.map(field => currentSchema[field]?.displayName || field).join(', ')}`);
     return;
@@ -1111,7 +1372,16 @@ function saveInlineEdit(index) {
     formData[fieldName] = normalizeFieldValue(fieldName, trimmedValue);
   });
 
-  const missingFields = getMissingRequiredFields({ ...storedRecords[index], ...formData });
+  const updatedRecord = { ...storedRecords[index], ...formData };
+  
+  // Validate the record using new validation system
+  const validationErrors = validateRecord(updatedRecord, 'edit');
+  if (validationErrors.length > 0) {
+    alert(`Validation errors:\n${validationErrors.join('\n')}`);
+    return;
+  }
+
+  const missingFields = getMissingRequiredFields(updatedRecord, 'edit');
   if (missingFields.length > 0) {
     alert(`Please provide values for: ${missingFields.map(field => currentSchema[field]?.displayName || field).join(', ')}`);
     return;
@@ -1119,7 +1389,7 @@ function saveInlineEdit(index) {
 
   // Update the stored record (preserve isDisabled state)
   const currentIsDisabled = storedRecords[index].isDisabled;
-  storedRecords[index] = { ...storedRecords[index], ...formData };
+  storedRecords[index] = updatedRecord;
   storedRecords[index].isDisabled = currentIsDisabled; // Preserve the disabled state
   persistStoredRecords();
 

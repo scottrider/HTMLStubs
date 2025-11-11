@@ -1,11 +1,9 @@
       .grid-data-row {
         padding: 0;
         margin: 0;
-        border: 0;
         font-family: Arial, sans-serif;
         font-size: 14px;
         line-height: 1.4;
-        background: #f8f9fa;
       }
 
       /* Header Styles */
@@ -15,9 +13,6 @@
         align-items: center;
         margin: 20px 0;
         padding: 15px 20px;
-        background: #f8f9fa;
-        border: 1px solid #dee2e6;
-        border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       }
 
@@ -315,9 +310,7 @@
         gap: 4px;
         align-items: center;
         white-space: nowrap;
-        background: #f8f9fa;
-        border-top: 2px solid #007bff;
-        border-bottom: 2px solid #007bff;
+        border-bottom: 1px solid #007bff;
         padding: 8px 0;
         margin-top: 8px;
         font-weight: bold;
@@ -428,7 +421,7 @@
       }
 
       .field-input {
-        padding: 4px 8px;
+        padding: 4px 8px !important;  /* Consistent padding inside field inputs */
         border: 1px solid #ccc;
         border-radius: 4px;
         font-size: 14px;
@@ -436,6 +429,7 @@
         line-height: 1.4;
         height: 32px;
         box-sizing: border-box;
+        margin: 0 !important;  /* Remove any default margins */
       }
 
       .field-input.required {
@@ -443,22 +437,19 @@
       }
 
       .field-select {
-        padding: 4px 8px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
+        padding: 4px 8px !important;  /* Consistent padding inside field selects */
         font-size: 14px;
         font-family: Arial, sans-serif;
         line-height: 1.4;
         height: 32px;
         background: white;
         box-sizing: border-box;
+        margin: 0 !important;  /* Remove any default margins */
       }
 
       .field-label-display {
-        padding: 4px 8px;
+        padding: 4px 8px !important;  /* Consistent padding inside field labels */
         background: #f8f9fa;
-        border: 1px solid #e9ecef;
-        border-radius: 4px;
         font-size: 14px;
         font-family: Arial, sans-serif;
         line-height: 1.4;
@@ -467,6 +458,7 @@
         box-sizing: border-box;
         display: flex;
         align-items: center;
+        margin: 0 !important;  /* Remove any default margins */
       }
 
       /* Records Display Area */
@@ -483,33 +475,19 @@
         align-items: center;
         white-space: nowrap;
         padding: 3px 0;
-        border-bottom: 1px solid #e9ecef;
-        background: white;
         transition: background-color 0.2s ease;
       }
 
       .record-row.editing {
-        background-color: #fff3cd;
-        border: 1px solid #ffeaa7;
-        border-radius: 4px;
         padding: 3px 0;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      }
-
-      .record-row:hover {
-        background-color: #f8f9fa;
-      }
-
-      .record-row.selected {
-        background-color: #e3f2fd;
-        border-left: 3px solid #2196f3;
       }
 
       /* Record Fields - Unified sizing controlled by schema */
       .record-field {
         display: flex;
         flex-direction: column;
-        padding: 4px 8px;
+        padding: 4px 8px !important;  /* Force consistent padding for all data types */
         font-size: 14px;
         font-family: Arial, sans-serif;
         line-height: 1.4;
@@ -518,6 +496,53 @@
         text-overflow: ellipsis;
         align-items: flex-start;
         /* Remove hardcoded sizing - now controlled by schema CSS */
+      }
+
+      /* Ensure all field content elements have consistent padding */
+      .record-field > *,
+      .record-field .field-input,
+      .record-field .field-select,
+      .record-field .field-label-display,
+      .record-field input,
+      .record-field select,
+      .record-field textarea,
+      .record-field label {
+        margin: 0 !important;  /* Remove any default margins */
+        box-sizing: border-box !important;  /* Ensure consistent box model */
+      }
+
+      /* Universal field class padding to ensure consistency across all entity types */
+      [class*="field-"] {
+        padding: 4px 8px !important;
+      }
+
+      /* Additional catch-all rules for field containers */
+      .record-field[class*="field-"],
+      .record-row .record-field,
+      .record-row > div[class*="field-"] {
+        padding: 4px 8px !important;
+      }
+
+      /* Universal record field class patterns */
+      .field-company-name,
+      .field-location, 
+      .field-phone,
+      .field-email,
+      .field-website,
+      .field-notes,
+      .field-position,
+      .field-company-id,
+      .field-contact-id,
+      .field-icontact,
+      .field-lcontact,
+      .field-name,
+      .field-cphone,
+      .field-ophone,
+      .field-lname,
+      .field-fname {
+        padding: 4px 8px !important;  /* Force consistent padding for all field types */
+        margin: 0 !important;
+        box-sizing: border-box !important;
       }
 
       .record-actions {
@@ -642,13 +667,14 @@
       .record-field .field-input,
       .record-field .field-select {
         width: 100%;
-        padding: 4px 6px;
+        padding: 4px 6px !important;  /* Slightly reduced padding for inline editing */
         border: 1px solid #ced4da;
         border-radius: 3px;
         font-size: 13px;
         font-family: Arial, sans-serif;
         background: white;
         transition: border-color 0.2s ease;
+        margin: 0 !important;  /* Remove any default margins */
       }
 
       .record-field .field-input:focus,
