@@ -185,7 +185,22 @@ function buildDimensionStyle(fieldConfig = {}, { includeFlex = true } = {}) {
     if (css.maxWidth) {
         styleSegments.push(`max-width:${css.maxWidth}`);
     }
-    if (includeFlex && css.gridFlex) {
+    if (css.height) {
+        styleSegments.push(`height:${css.height}`);
+    }
+    if (css.minHeight) {
+        styleSegments.push(`min-height:${css.minHeight}`);
+    }
+    if (css.maxHeight) {
+        styleSegments.push(`max-height:${css.maxHeight}`);
+    }
+    
+    // Use the new flex property from schema
+    if (includeFlex && css.flex) {
+        styleSegments.push(`flex:${css.flex}`);
+    } 
+    // Fallback to legacy gridFlex for compatibility
+    else if (includeFlex && css.gridFlex) {
         const flexGrowMatch = css.gridFlex.toString().match(/([0-9.]+)/);
         if (flexGrowMatch) {
             const flexGrow = parseFloat(flexGrowMatch[1]) || 1;
@@ -281,20 +296,24 @@ function getFieldDisplayValue(record, fieldName) {
             return '';
         }
 
-        // Extract table and field from computedFrom (e.g., "contacts.lname,contacts.fname")
-        const computedFromParts = fieldConfig.computedFrom.split('.');
-        if (computedFromParts.length === 2) {
-            const [tableName, fieldPath] = computedFromParts;
-            const foreignRecord = resolveForeignRecord(tableName, foreignKeyValue);
-            
-            if (foreignRecord) {
-                // Handle multiple fields (e.g., "lname,fname")
-                if (fieldPath.includes(',')) {
-                    const fieldNames = fieldPath.split(',');
-                    return fieldNames.map(fn => foreignRecord[fn.trim()]).filter(v => v).join(', ');
-                } else {
-                    return foreignRecord[fieldPath];
-                }
+        // Parse computedFrom (e.g., "contacts.lname,contacts.fname")
+        const computedFrom = fieldConfig.computedFrom;
+        const foreignRecord = resolveForeignRecord('contacts', foreignKeyValue); // Assuming all computed fields use contacts table
+        
+        if (foreignRecord) {
+            // Handle multiple fields by extracting field names after table prefix
+            if (computedFrom.includes(',')) {
+                // Split by comma and extract field names
+                const fieldParts = computedFrom.split(',').map(part => {
+                    const trimmed = part.trim();
+                    // Extract field name after the dot (e.g., "contacts.lname" -> "lname")
+                    return trimmed.includes('.') ? trimmed.split('.').pop() : trimmed;
+                });
+                return fieldParts.map(fn => foreignRecord[fn]).filter(v => v).join(', ');
+            } else {
+                // Single field: extract field name after dot
+                const fieldName = computedFrom.includes('.') ? computedFrom.split('.').pop() : computedFrom;
+                return foreignRecord[fieldName];
             }
         }
         

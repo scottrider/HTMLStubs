@@ -19,7 +19,8 @@
                         "placeholder": "Enter company name", 
                         "maxlength": "100",
                         "width": "200px",
-                        "minWidth": "150px"
+                        "minWidth": "150px",
+                        "flex": "2 1 200px"
                     },
                     "required": true
                 },
@@ -32,7 +33,8 @@
                         "placeholder": "City, State or Remote", 
                         "maxlength": "100",
                         "width": "180px",
-                        "minWidth": "120px"
+                        "minWidth": "120px",
+                        "flex": "1.5 1 180px"
                     },
                     "required": false
                 },
@@ -45,7 +47,8 @@
                         "placeholder": "(555) 123-4567", 
                         "maxlength": "20",
                         "width": "140px",
-                        "minWidth": "120px"
+                        "minWidth": "120px",
+                        "flex": "1 1 140px"
                     },
                     "required": false
                 },
@@ -58,7 +61,8 @@
                         "placeholder": "contact@company.com", 
                         "maxlength": "100",
                         "width": "200px",
-                        "minWidth": "150px"
+                        "minWidth": "150px",
+                        "flex": "2 1 200px"
                     },
                     "required": false
                 },
@@ -70,7 +74,8 @@
                     "css": { 
                         "placeholder": "https://company.com",
                         "width": "220px",
-                        "minWidth": "160px"
+                        "minWidth": "160px",
+                        "flex": "2 1 220px"
                     },
                     "required": false
                 },
@@ -85,6 +90,7 @@
                         "width": "300px",
                         "height": "80px",
                         "minWidth": "200px",
+                        "flex": "3 1 300px",
                         "minHeight": "60px"
                     },
                     "required": false
@@ -183,167 +189,6 @@
                 }
             ]
         },
-        "positions": {
-            "schema": {
-                "position": { 
-                    "type": "string", 
-                    "displayName": "Position", 
-                    "htmlElement": "input",
-                    "htmlType": "text",
-                    "css": { 
-                        "placeholder": "Enter position title", 
-                        "maxlength": "100",
-                        "width": "200px",
-                        "minWidth": "200px",
-                        "gridFlex": "2fr"
-                    },
-                    "required": true 
-                },
-                "companyId": {
-                    "type": "number",
-                    "displayName": "Company",
-                    "htmlElement": "select",
-                    "htmlType": "select",
-                    "required": true,
-                    "foreignKey": "companies.id",
-                    "foreignKeyDisplay": "companies.name",
-                    "css": {
-                        "width": "150px",
-                        "minWidth": "150px",
-                        "gridFlex": "1.5fr"
-                    }
-                },
-                "contactId": {
-                    "type": "number",
-                    "displayName": "Contact",
-                    "htmlElement": "input",
-                    "htmlType": "hidden",
-                    "required": false,
-                    "foreignKey": "contacts.id",
-                    "foreignKeyDisplay": "contacts.lname,contacts.fname"
-                },
-                "icontact": { 
-                    "type": "date", 
-                    "displayName": "Initial Contact", 
-                    "htmlElement": "label",
-                    "htmlType": "label",
-                    "css": { 
-                        "min": "2020-01-01", 
-                        "max": "2030-12-31",
-                        "width": "140px",
-                        "minWidth": "140px",
-                        "gridFlex": "1.2fr"
-                    },
-                    "required": true 
-                },
-                "lcontact": { 
-                    "type": "date", 
-                    "displayName": "Last Contact", 
-                    "htmlElement": "input",
-                    "htmlType": "date",
-                    "css": { 
-                        "min": "2020-01-01", 
-                        "max": "2030-12-31",
-                        "width": "140px",
-                        "minWidth": "140px",
-                        "gridFlex": "1.2fr"
-                    },
-                    "required": false 
-                },
-                "name": {
-                    "type": "computed",
-                    "displayName": "Name",
-                    "htmlElement": "label",
-                    "htmlType": "label",
-                    "computed": true,
-                    "computedFrom": "contacts.lname,contacts.fname",
-                    "computedKey": "contactId",
-                    "css": {
-                        "width": "150px",
-                        "minWidth": "150px",
-                        "gridFlex": "1.5fr"
-                    },
-                    "required": false
-                },
-                "email": {
-                    "type": "computed",
-                    "displayName": "Email",
-                    "htmlElement": "label",
-                    "htmlType": "label",
-                    "computed": true,
-                    "computedFrom": "contacts.email",
-                    "computedKey": "contactId",
-                    "css": {
-                        "width": "200px",
-                        "minWidth": "200px",
-                        "gridFlex": "2fr"
-                    },
-                    "required": false
-                },
-                "cphone": {
-                    "type": "computed",
-                    "displayName": "Cell",
-                    "htmlElement": "label",
-                    "htmlType": "label",
-                    "computed": true,
-                    "computedFrom": "contacts.cphone",
-                    "computedKey": "contactId",
-                    "css": {
-                        "width": "120px",
-                        "minWidth": "120px",
-                        "gridFlex": "1fr"
-                    },
-                    "required": false
-                },
-                "ophone": {
-                    "type": "computed",
-                    "displayName": "Office",
-                    "htmlElement": "label",
-                    "htmlType": "label",
-                    "computed": true,
-                    "computedFrom": "contacts.ophone",
-                    "computedKey": "contactId",
-                    "css": {
-                        "width": "120px",
-                        "minWidth": "120px",
-                        "gridFlex": "1fr"
-                    },
-                    "required": false
-                }
-            },
-            "data": [
-                { "position": "Senior Software Engineer", "companyId": 1, "contactId": 1, "icontact": "2024-01-15", "lcontact": "2024-10-28", "isDisabled": false },
-                { "position": "Frontend Developer", "companyId": 2, "contactId": 2, "icontact": "2024-02-03", "lcontact": "2024-10-25", "isDisabled": false },
-                { "position": "Data Analyst", "companyId": 3, "contactId": 3, "icontact": "2024-03-12", "lcontact": "2024-09-18", "isDisabled": false },
-                { "position": "DevOps Engineer", "companyId": 4, "contactId": 4, "icontact": "2024-01-28", "lcontact": "2024-10-30", "isDisabled": false },
-                { "position": "Product Manager", "companyId": 5, "contactId": 5, "icontact": "2024-04-07", "lcontact": "2024-10-22", "isDisabled": false },
-                { "position": "UX Designer", "companyId": 6, "contactId": 6, "icontact": "2024-02-20", "lcontact": "2024-10-15", "isDisabled": false },
-                { "position": "Backend Developer", "companyId": 7, "contactId": 7, "icontact": "2024-05-11", "lcontact": "2024-10-10", "isDisabled": false },
-                { "position": "QA Engineer", "companyId": 8, "contactId": 8, "icontact": "2024-03-25", "lcontact": "2024-10-29", "isDisabled": true },
-                { "position": "Machine Learning Engineer", "companyId": 9, "contactId": 9, "icontact": "2024-04-18", "lcontact": "2024-11-01", "isDisabled": false },
-                { "position": "Cybersecurity Analyst", "companyId": 10, "contactId": 10, "icontact": "2024-01-10", "lcontact": "2024-10-20", "isDisabled": false },
-                { "position": "Full Stack Developer", "companyId": 1, "contactId": 1, "icontact": "2024-02-14", "lcontact": "2024-10-18", "isDisabled": false },
-                { "position": "Mobile App Developer", "companyId": 2, "contactId": 2, "icontact": "2024-03-08", "lcontact": "2024-10-12", "isDisabled": true },
-                { "position": "Data Scientist", "companyId": 3, "contactId": 3, "icontact": "2024-01-22", "lcontact": "2024-09-30", "isDisabled": false },
-                { "position": "Cloud Architect", "companyId": 4, "contactId": 4, "icontact": "2024-04-03", "lcontact": "2024-11-02", "isDisabled": false },
-                { "position": "Scrum Master", "companyId": 5, "contactId": 5, "icontact": "2024-02-28", "lcontact": "2024-10-14", "isDisabled": false },
-                { "position": "UI/UX Designer", "companyId": 6, "contactId": 6, "icontact": "2024-03-16", "lcontact": "2024-10-08", "isDisabled": true },
-                { "position": "Site Reliability Engineer", "companyId": 7, "contactId": 7, "icontact": "2024-01-05", "lcontact": "2024-10-26", "isDisabled": false },
-                { "position": "Automation Engineer", "companyId": 8, "contactId": 8, "icontact": "2024-04-12", "lcontact": "2024-11-03", "isDisabled": false },
-                { "position": "AI Research Scientist", "companyId": 9, "contactId": 9, "icontact": "2024-02-07", "lcontact": "2024-10-24", "isDisabled": false },
-                { "position": "Network Security Engineer", "companyId": 10, "contactId": 10, "icontact": "2024-03-21", "lcontact": "2024-10-16", "isDisabled": true },
-                { "position": "Technical Lead", "companyId": 1, "contactId": 1, "icontact": "2024-01-30", "lcontact": "2024-10-11", "isDisabled": false },
-                { "position": "React Developer", "companyId": 2, "contactId": 2, "icontact": "2024-04-25", "lcontact": "2024-10-31", "isDisabled": false },
-                { "position": "Business Intelligence Analyst", "companyId": 3, "contactId": 3, "icontact": "2024-02-16", "lcontact": "2024-09-28", "isDisabled": true },
-                { "position": "DevSecOps Engineer", "companyId": 4, "contactId": 4, "icontact": "2024-03-04", "lcontact": "2024-10-19", "isDisabled": false },
-                { "position": "Product Owner", "companyId": 5, "contactId": 5, "icontact": "2024-01-18", "lcontact": "2024-10-06", "isDisabled": false },
-                { "position": "Graphic Designer", "companyId": 6, "contactId": 6, "icontact": "2024-04-09", "lcontact": "2024-10-27", "isDisabled": true },
-                { "position": "Database Administrator", "companyId": 7, "contactId": 7, "icontact": "2024-02-22", "lcontact": "2024-10-13", "isDisabled": false },
-                { "position": "Performance Test Engineer", "companyId": 8, "contactId": 8, "icontact": "2024-03-14", "lcontact": "2024-10-09", "isDisabled": true },
-                { "position": "Deep Learning Engineer", "companyId": 9, "contactId": 9, "icontact": "2024-01-26", "lcontact": "2024-10-23", "isDisabled": false },
-                { "position": "Information Security Manager", "companyId": 10, "contactId": 10, "icontact": "2024-04-01", "lcontact": "2024-11-04", "isDisabled": true }
-            ]
-        },
         "contacts": {
             "schema": {
                 "id": {
@@ -363,7 +208,8 @@
                         "placeholder": "Enter last name",
                         "maxlength": "50",
                         "width": "150px",
-                        "minWidth": "120px"
+                        "minWidth": "120px",
+                        "flex": "1.5 1 150px"
                     },
                     "required": true
                 },
@@ -376,7 +222,8 @@
                         "placeholder": "Enter first name",
                         "maxlength": "50",
                         "width": "150px",
-                        "minWidth": "120px"
+                        "minWidth": "120px",
+                        "flex": "1.5 1 150px"
                     },
                     "required": true
                 },
@@ -389,7 +236,8 @@
                         "placeholder": "(555) 123-4567",
                         "maxlength": "20",
                         "width": "140px",
-                        "minWidth": "120px"
+                        "minWidth": "120px",
+                        "flex": "1 1 140px"
                     },
                     "required": false
                 },
@@ -402,7 +250,8 @@
                         "placeholder": "(555) 123-4567",
                         "maxlength": "20",
                         "width": "140px",
-                        "minWidth": "120px"
+                        "minWidth": "120px",
+                        "flex": "1 1 140px"
                     },
                     "required": false
                 },
@@ -415,7 +264,8 @@
                         "placeholder": "contact@example.com",
                         "maxlength": "100",
                         "width": "200px",
-                        "minWidth": "150px"
+                        "minWidth": "150px",
+                        "flex": "2 1 200px"
                     },
                     "required": false
                 }
@@ -501,6 +351,168 @@
                     "ophone": "(202) 555-7300",
                     "email": "lisa.anderson@securenet.com"
                 }
+            ]
+        },
+        "positions": {
+            "schema": {
+                "position": { 
+                    "type": "string", 
+                    "displayName": "Position", 
+                    "htmlElement": "input",
+                    "htmlType": "text",
+                    "css": { 
+                        "placeholder": "Enter position title", 
+                        "maxlength": "100",
+                        "width": "200px",
+                        "minWidth": "200px",
+                        "flex": "2 1 200px"
+                    },
+                    "required": true 
+                },
+                "companyId": {
+                    "type": "number",
+                    "displayName": "Company",
+                    "htmlElement": "select",
+                    "htmlType": "select",
+                    "required": true,
+                    "foreignKey": "companies.id",
+                    "foreignKeyDisplay": "companies.name",
+                    "css": {
+                        "width": "150px",
+                        "minWidth": "150px",
+                        "flex": "1.5 1 150px"
+                    }
+                },
+                "contactId": {
+                    "type": "number",
+                    "displayName": "Contact",
+                    "htmlElement": "input",
+                    "htmlType": "hidden",
+                    "required": false,
+                    "foreignKey": "contacts.id",
+                    "foreignKeyDisplay": "contacts.lname,contacts.fname"
+                },
+                "icontact": { 
+                    "type": "date", 
+                    "displayName": "Initial Contact", 
+                    "htmlElement": "label",
+                    "htmlType": "label",
+                    "css": { 
+                        "min": "2020-01-01", 
+                        "max": "2030-12-31",
+                        "width": "140px",
+                        "minWidth": "140px",
+                        "flex": "1.2 1 140px"
+                    },
+                    "required": true 
+                },
+                "lcontact": { 
+                    "type": "date", 
+                    "displayName": "Last Contact", 
+                    "htmlElement": "input",
+                    "htmlType": "date",
+                    "css": { 
+                        "min": "2020-01-01", 
+                        "max": "2030-12-31",
+                        "width": "140px",
+                        "minWidth": "140px",
+                        "flex": "1.2 1 140px"
+                    },
+                    "required": false 
+                },
+                "name": {
+                    "type": "computed",
+                    "displayName": "Contact",
+                    "displaySubtitle": "Last, First",
+                    "htmlElement": "label",
+                    "htmlType": "label",
+                    "computed": true,
+                    "computedFrom": "contacts.lname,contacts.fname",
+                    "computedKey": "contactId",
+                    "css": {
+                        "width": "150px",
+                        "minWidth": "150px",
+                        "flex": "1.5 1 150px"
+                    },
+                    "required": false
+                },
+                "email": {
+                    "type": "computed",
+                    "displayName": "Email",
+                    "htmlElement": "label",
+                    "htmlType": "label",
+                    "computed": true,
+                    "computedFrom": "contacts.email",
+                    "computedKey": "contactId",
+                    "css": {
+                        "width": "200px",
+                        "minWidth": "200px",
+                        "flex": "2 1 200px"
+                    },
+                    "required": false
+                },
+                "cphone": {
+                    "type": "computed",
+                    "displayName": "Cell",
+                    "htmlElement": "label",
+                    "htmlType": "label",
+                    "computed": true,
+                    "computedFrom": "contacts.cphone",
+                    "computedKey": "contactId",
+                    "css": {
+                        "width": "120px",
+                        "minWidth": "120px",
+                        "flex": "1 1 120px"
+                    },
+                    "required": false
+                },
+                "ophone": {
+                    "type": "computed",
+                    "displayName": "Office",
+                    "htmlElement": "label",
+                    "htmlType": "label",
+                    "computed": true,
+                    "computedFrom": "contacts.ophone",
+                    "computedKey": "contactId",
+                    "css": {
+                        "width": "120px",
+                        "minWidth": "120px",
+                        "flex": "1 1 120px"
+                    },
+                    "required": false
+                }
+            },
+            "data": [
+                { "position": "Senior Software Engineer", "companyId": 1, "contactId": 1, "icontact": "2024-01-15", "lcontact": "2024-10-28", "isDisabled": false },
+                { "position": "Frontend Developer", "companyId": 2, "contactId": 2, "icontact": "2024-02-03", "lcontact": "2024-10-25", "isDisabled": false },
+                { "position": "Data Analyst", "companyId": 3, "contactId": 3, "icontact": "2024-03-12", "lcontact": "2024-09-18", "isDisabled": false },
+                { "position": "DevOps Engineer", "companyId": 4, "contactId": 4, "icontact": "2024-01-28", "lcontact": "2024-10-30", "isDisabled": false },
+                { "position": "Product Manager", "companyId": 5, "contactId": 5, "icontact": "2024-04-07", "lcontact": "2024-10-22", "isDisabled": false },
+                { "position": "UX Designer", "companyId": 6, "contactId": 6, "icontact": "2024-02-20", "lcontact": "2024-10-15", "isDisabled": false },
+                { "position": "Backend Developer", "companyId": 7, "contactId": 7, "icontact": "2024-05-11", "lcontact": "2024-10-10", "isDisabled": false },
+                { "position": "QA Engineer", "companyId": 8, "contactId": 8, "icontact": "2024-03-25", "lcontact": "2024-10-29", "isDisabled": true },
+                { "position": "Machine Learning Engineer", "companyId": 9, "contactId": 9, "icontact": "2024-04-18", "lcontact": "2024-11-01", "isDisabled": false },
+                { "position": "Cybersecurity Analyst", "companyId": 10, "contactId": 10, "icontact": "2024-01-10", "lcontact": "2024-10-20", "isDisabled": false },
+                { "position": "Full Stack Developer", "companyId": 1, "contactId": 1, "icontact": "2024-02-14", "lcontact": "2024-10-18", "isDisabled": false },
+                { "position": "Mobile App Developer", "companyId": 2, "contactId": 2, "icontact": "2024-03-08", "lcontact": "2024-10-12", "isDisabled": true },
+                { "position": "Data Scientist", "companyId": 3, "contactId": 3, "icontact": "2024-01-22", "lcontact": "2024-09-30", "isDisabled": false },
+                { "position": "Cloud Architect", "companyId": 4, "contactId": 4, "icontact": "2024-04-03", "lcontact": "2024-11-02", "isDisabled": false },
+                { "position": "Scrum Master", "companyId": 5, "contactId": 5, "icontact": "2024-02-28", "lcontact": "2024-10-14", "isDisabled": false },
+                { "position": "UI/UX Designer", "companyId": 6, "contactId": 6, "icontact": "2024-03-16", "lcontact": "2024-10-08", "isDisabled": true },
+                { "position": "Site Reliability Engineer", "companyId": 7, "contactId": 7, "icontact": "2024-01-05", "lcontact": "2024-10-26", "isDisabled": false },
+                { "position": "Automation Engineer", "companyId": 8, "contactId": 8, "icontact": "2024-04-12", "lcontact": "2024-11-03", "isDisabled": false },
+                { "position": "AI Research Scientist", "companyId": 9, "contactId": 9, "icontact": "2024-02-07", "lcontact": "2024-10-24", "isDisabled": false },
+                { "position": "Network Security Engineer", "companyId": 10, "contactId": 10, "icontact": "2024-03-21", "lcontact": "2024-10-16", "isDisabled": true },
+                { "position": "Technical Lead", "companyId": 1, "contactId": 1, "icontact": "2024-01-30", "lcontact": "2024-10-11", "isDisabled": false },
+                { "position": "React Developer", "companyId": 2, "contactId": 2, "icontact": "2024-04-25", "lcontact": "2024-10-31", "isDisabled": false },
+                { "position": "Business Intelligence Analyst", "companyId": 3, "contactId": 3, "icontact": "2024-02-16", "lcontact": "2024-09-28", "isDisabled": true },
+                { "position": "DevSecOps Engineer", "companyId": 4, "contactId": 4, "icontact": "2024-03-04", "lcontact": "2024-10-19", "isDisabled": false },
+                { "position": "Product Owner", "companyId": 5, "contactId": 5, "icontact": "2024-01-18", "lcontact": "2024-10-06", "isDisabled": false },
+                { "position": "Graphic Designer", "companyId": 6, "contactId": 6, "icontact": "2024-04-09", "lcontact": "2024-10-27", "isDisabled": true },
+                { "position": "Database Administrator", "companyId": 7, "contactId": 7, "icontact": "2024-02-22", "lcontact": "2024-10-13", "isDisabled": false },
+                { "position": "Performance Test Engineer", "companyId": 8, "contactId": 8, "icontact": "2024-03-14", "lcontact": "2024-10-09", "isDisabled": true },
+                { "position": "Deep Learning Engineer", "companyId": 9, "contactId": 9, "icontact": "2024-01-26", "lcontact": "2024-10-23", "isDisabled": false },
+                { "position": "Information Security Manager", "companyId": 10, "contactId": 10, "icontact": "2024-04-01", "lcontact": "2024-11-04", "isDisabled": true }
             ]
         }
     }

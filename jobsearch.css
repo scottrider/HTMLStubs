@@ -348,16 +348,16 @@
         gap: 4px;
       }
 
+      /* Title Groups - Unified sizing controlled by schema */
       .title-group {
         display: flex;
         flex-direction: column;
-        min-width: 120px;
         flex-shrink: 0;
-        justify-content: center; /* Center vertically within row */
+        justify-content: center;
         align-items: flex-start;
-        padding: 4px 8px; /* Match field padding */
-        flex: 1 1 150px;
+        padding: 4px 8px;
         gap: 2px;
+        /* Remove hardcoded sizing - now controlled by schema CSS */
       }
 
       .title-label {
@@ -366,7 +366,7 @@
         color: #495057;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        text-align: left; /* Left-aligned to match data */
+        text-align: left;
         white-space: nowrap;
       }
 
@@ -376,16 +376,6 @@
         text-transform: none;
         letter-spacing: normal;
         white-space: nowrap;
-      }
-
-      /* Phone and calendar title groups - match field group sizing */
-      .title-group.field-icontact,
-      .title-group.field-lcontact,
-      .title-group.field-cphone,
-      .title-group.field-ophone {
-        min-width: 120px;
-        max-width: 120px;
-        flex-shrink: 0;
       }
 
       .action-buttons {
@@ -430,20 +420,11 @@
         color: white;
       }
 
+      /* Field Groups - Unified sizing controlled by schema */
       .field-group {
         display: flex;
         flex-direction: column;
-        min-width: 120px;
-        flex: 1 1 150px;
-      }
-
-      /* Phone and calendar fields - fixed smaller width */
-      .field-group:has(input[type="tel"]),
-      .field-group:has(input[type="date"]),
-      .field-group:has(.field-label-display) {
-        min-width: 120px;
-        max-width: 120px;
-        flex-shrink: 0;
+        /* Remove hardcoded sizing - now controlled by schema CSS */
       }
 
       .field-input {
@@ -524,10 +505,10 @@
         border-left: 3px solid #2196f3;
       }
 
+      /* Record Fields - Unified sizing controlled by schema */
       .record-field {
         display: flex;
         flex-direction: column;
-        min-width: 120px;
         padding: 4px 8px;
         font-size: 14px;
         font-family: Arial, sans-serif;
@@ -535,8 +516,8 @@
         color: #333;
         overflow: hidden;
         text-overflow: ellipsis;
-        align-items: flex-start; /* Ensure left alignment */
-        flex: 1 1 150px;
+        align-items: flex-start;
+        /* Remove hardcoded sizing - now controlled by schema CSS */
       }
 
       .record-actions {
