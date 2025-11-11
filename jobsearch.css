@@ -350,13 +350,14 @@
 
       .title-group {
         display: flex;
-        flex-direction: row;
+        flex-direction: column;
         min-width: 120px;
         flex-shrink: 0;
-        justify-content: flex-start; /* Left-justified to match data */
-        align-items: center;
+        justify-content: center; /* Center vertically within row */
+        align-items: flex-start;
         padding: 4px 8px; /* Match field padding */
         flex: 1 1 150px;
+        gap: 2px;
       }
 
       .title-label {
@@ -366,6 +367,14 @@
         text-transform: uppercase;
         letter-spacing: 0.5px;
         text-align: left; /* Left-aligned to match data */
+        white-space: nowrap;
+      }
+
+      .title-hint {
+        font-size: 11px;
+        color: #6c757d;
+        text-transform: none;
+        letter-spacing: normal;
         white-space: nowrap;
       }
 
