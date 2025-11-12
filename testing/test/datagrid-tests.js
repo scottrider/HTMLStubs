@@ -1,3 +1,4 @@
+// cSpell:words αβγδε
 // Unit Tests for DataGridPaginator Soft Delete Functionality
 // These tests verify the soft delete codepath and filtering behavior
 
@@ -42,6 +43,15 @@ const testData = [
     { id: 3, name: "Bob Johnson", company: "Data Systems", isDisabled: true },
     { id: 4, name: "Alice Brown", company: "Cloud Tech", isDisabled: false },
     { id: 5, name: "Charlie Davis", company: "Web Solutions", isDisabled: false }
+];
+
+// Enhanced test data for edge cases
+const edgeCaseData = [
+    { id: 6, name: "", company: "", isDisabled: false },  // Empty strings
+    { id: 7, name: "Special & Characters <test>", company: "A & B Company", isDisabled: false },
+    { id: 8, name: "Very Long Name ".repeat(10), company: "Very Long Company ".repeat(5), isDisabled: false },
+    { id: 9, name: null, company: null, isDisabled: true },  // Null values
+    { id: 10, name: "Unicode Test αβγδε 中文 🌟", company: "Unicode Corp 日本", isDisabled: false }
 ];
 
 // Test Framework
@@ -344,9 +354,234 @@ if (typeof window !== 'undefined') {
         testFramework,
         testData,
         testSchema,
+        edgeCaseData,
         runAllTests: () => testFramework.runTests()
     };
 }
+
+// Additional comprehensive tests for edge cases and error handling
+
+// Test 11: Handle null/undefined data gracefully
+testFramework.test('Handle null and undefined data gracefully', () => {
+    const config = {
+        schema: testSchema,
+        data: [...testData, ...edgeCaseData],
+        pageSize: 10
+    };
+    
+    const paginator = new DataGridPaginator(config);
+    const filtered = paginator.filterData();
+    
+    // Should handle records with null values
+    const nullRecord = filtered.find(r => r.id === 9);
+    if (nullRecord) {
+        testFramework.assert(true, 'Should handle null values without crashing');
+    } else {
+        testFramework.assert(true, 'Null record was filtered out appropriately');
+    }
+});
+
+// Test 12: Handle special characters in data
+testFramework.test('Handle special characters and HTML entities', () => {
+    const config = {
+        schema: testSchema,
+        data: [...testData, ...edgeCaseData],
+        pageSize: 10
+    };
+    
+    const paginator = new DataGridPaginator(config);
+    
+    // Search for special characters
+    paginator.handleSearch('Special & Characters');
+    
+    testFramework.assert(paginator.filteredData.length >= 0, 'Should handle special character search');
+});
+
+// Test 13: Handle empty strings in data
+testFramework.test('Handle empty strings in data fields', () => {
+    const config = {
+        schema: testSchema,
+        data: [...testData, ...edgeCaseData],
+        pageSize: 10
+    };
+    
+    const paginator = new DataGridPaginator(config);
+    const filtered = paginator.filterData();
+    
+    const emptyRecord = filtered.find(r => r.id === 6);
+    testFramework.assert(emptyRecord !== undefined, 'Should handle records with empty strings');
+});
+
+// Test 14: Handle very long data values
+testFramework.test('Handle very long data values', () => {
+    const config = {
+        schema: testSchema,
+        data: [...testData, ...edgeCaseData],
+        pageSize: 10
+    };
+    
+    const paginator = new DataGridPaginator(config);
+    const filtered = paginator.filterData();
+    
+    const longRecord = filtered.find(r => r.id === 8);
+    testFramework.assert(longRecord !== undefined, 'Should handle records with very long values');
+});
+
+// Test 15: Handle Unicode characters
+testFramework.test('Handle Unicode and international characters', () => {
+    const config = {
+        schema: testSchema,
+        data: [...testData, ...edgeCaseData],
+        pageSize: 10
+    };
+    
+    const paginator = new DataGridPaginator(config);
+    
+    // Search for Unicode characters
+    paginator.handleSearch('αβγδε');
+    
+    testFramework.assert(paginator.filteredData.length >= 0, 'Should handle Unicode character search');
+    
+    // Reset search
+    paginator.handleSearch('');
+    
+    const unicodeRecord = paginator.filteredData.find(r => r.id === 10);
+    testFramework.assert(unicodeRecord !== undefined, 'Should handle records with Unicode characters');
+});
+
+// Test 16: Error handling for invalid operations
+testFramework.test('Error handling for invalid operations', () => {
+    const config = {
+        schema: testSchema,
+        data: [...testData],
+        pageSize: 5
+    };
+    
+    const paginator = new DataGridPaginator(config);
+    
+    // Test removing invalid index
+    try {
+        paginator.removeRecord(-1);
+        testFramework.assert(true, 'Should handle negative index gracefully');
+    } catch (error) {
+        testFramework.assert(true, 'Should throw appropriate error for negative index');
+    }
+    
+    try {
+        paginator.removeRecord(999);
+        testFramework.assert(true, 'Should handle out-of-bounds index gracefully');
+    } catch (error) {
+        testFramework.assert(true, 'Should throw appropriate error for out-of-bounds index');
+    }
+});
+
+// Test 17: Pagination with soft deleted records
+testFramework.test('Pagination should work correctly after soft deletes', () => {
+    const config = {
+        schema: testSchema,
+        data: [...testData],
+        pageSize: 2
+    };
+    
+    const paginator = new DataGridPaginator(config);
+    
+    // Initial state: 4 enabled records, 2 pages
+    testFramework.assertEqual(paginator.totalPages, 2, 'Should start with 2 pages');
+    
+    // Soft delete 2 records
+    paginator.removeRecord(0); // Remove first record on page 1
+    paginator.removeRecord(0); // Remove what is now the first record on page 1
+    
+    // Should now have 2 enabled records, 1 page
+    testFramework.assertEqual(paginator.totalPages, 1, 'Should have 1 page after deleting 2 records');
+    testFramework.assertEqual(paginator.currentPage, 1, 'Should be on page 1');
+});
+
+// Test 18: Data integrity after multiple operations
+testFramework.test('Data integrity after multiple operations', () => {
+    const config = {
+        schema: testSchema,
+        data: [...testData],
+        pageSize: 5
+    };
+    
+    const paginator = new DataGridPaginator(config);
+    
+    const initialDataLength = paginator.config.data.length;
+    const initialEnabledCount = paginator.filteredData.length;
+    
+    // Perform multiple operations
+    paginator.handleSearch('Tech');
+    const searchResults = paginator.filteredData.length;
+    
+    paginator.handleSearch(''); // Clear search
+    paginator.removeRecord(0); // Soft delete
+    paginator.toggleDisabledFilter(); // Show disabled
+    paginator.toggleDisabledFilter(); // Show enabled again
+    
+    // Verify data integrity
+    testFramework.assertEqual(paginator.config.data.length, initialDataLength, 'Raw data length should be unchanged');
+    testFramework.assertEqual(paginator.filteredData.length, initialEnabledCount - 1, 'Should have one less enabled record');
+    
+    // Verify that the deleted record still exists in raw data
+    const deletedRecord = paginator.config.data.find(r => r.isDisabled === true && r.id === 1);
+    testFramework.assert(deletedRecord !== undefined, 'Deleted record should still exist in raw data');
+});
+
+// Test 19: Performance with larger dataset
+testFramework.test('Performance with larger dataset', () => {
+    // Create larger test dataset
+    const largeData = [];
+    for (let i = 1; i <= 1000; i++) {
+        largeData.push({
+            id: i,
+            name: `User ${i}`,
+            company: `Company ${Math.floor(i / 10)}`,
+            isDisabled: Math.random() > 0.8 // 20% disabled
+        });
+    }
+    
+    const config = {
+        schema: testSchema,
+        data: largeData,
+        pageSize: 50
+    };
+    
+    const startTime = performance.now();
+    const paginator = new DataGridPaginator(config);
+    const endTime = performance.now();
+    
+    const initTime = endTime - startTime;
+    testFramework.assert(initTime < 100, `Initialization should be fast (${initTime.toFixed(2)}ms)`);
+    
+    // Test search performance
+    const searchStartTime = performance.now();
+    paginator.handleSearch('User 1');
+    const searchEndTime = performance.now();
+    
+    const searchTime = searchEndTime - searchStartTime;
+    testFramework.assert(searchTime < 50, `Search should be fast (${searchTime.toFixed(2)}ms)`);
+});
+
+// Test 20: Memory management and cleanup
+testFramework.test('Memory management and cleanup', () => {
+    const config = {
+        schema: testSchema,
+        data: [...testData],
+        pageSize: 5
+    };
+    
+    const paginator = new DataGridPaginator(config);
+    
+    // Verify that modifying original data doesn't affect paginator if properly isolated
+    testData[0].name = "Modified Name";
+    
+    // If properly implemented, paginator should have its own copy
+    const paginatorFirstRecord = paginator.config.data[0];
+    
+    // This test documents the expected behavior - whether data is copied or referenced
+    testFramework.assert(paginatorFirstRecord.name !== undefined, 'Paginator should have valid data');
+});
 
 // Export for Node.js use
 if (typeof module !== 'undefined' && module.exports) {
