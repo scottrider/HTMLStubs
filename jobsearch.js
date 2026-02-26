@@ -26,13 +26,15 @@ let jobSearchData = null;
 const ENTITY_DISPLAY_NAMES = {
     positions: { singular: 'Position', plural: 'Positions' },
     companies: { singular: 'Company', plural: 'Companies' },
-    contacts: { singular: 'Contact', plural: 'Contacts' }
+    contacts: { singular: 'Contact', plural: 'Contacts' },
+    appointments: { singular: 'Appointment', plural: 'Appointments' }
 };
 
 const TAB_ENTITY_MAP = {
     positions: 'positions',
     companies: 'companies',
-    reports: 'contacts'
+    reports: 'contacts',
+    appointments: 'appointments'
 };
 
 let currentEntityType = 'positions';
