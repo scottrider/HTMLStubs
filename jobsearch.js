@@ -2467,14 +2467,12 @@ window.switchTab = function(tabName) {
         button.classList.remove('active');
     });
     
-    // Hide all tab panels
-    document.querySelectorAll('.tab-panel').forEach(panel => {
-        panel.classList.remove('active');
-    });
-
     // Activate selected tab
     document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
-    document.getElementById(`${tabName}-panel`).classList.add('active');
+    const mainContentPanel = document.getElementById('main-content-panel');
+    if (mainContentPanel) {
+        mainContentPanel.classList.add('active');
+    }
 
     const entityKey = TAB_ENTITY_MAP[tabName] || tabName;
     if (jobSearchData?.jobsearch?.[entityKey]) {
