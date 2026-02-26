@@ -2464,27 +2464,34 @@ if (typeof window !== 'undefined') {
 
 // Tab switching functionality
 window.switchTab = function(tabName) {
-    
-    // Activate selected tab
-    document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+  try {
+    document.querySelectorAll('.tab-button').forEach(button => {
+      button.classList.remove('active');
+    });
+
+    const activeButton = document.querySelector(`[data-tab="${tabName}"]`);
+    if (activeButton) {
+      activeButton.classList.add('active');
+    }
+
     const mainContentPanel = document.getElementById('main-content-panel');
     if (mainContentPanel) {
-        mainContentPanel.classList.add('active');
+      mainContentPanel.classList.add('active');
     }
 
-      const entityKey = TAB_ENTITY_MAP[tabName] || tabName;
-      if (jobSearchData?.jobsearch?.[entityKey]) {
-          initializeEntity(entityKey);
-      } else {
-          logger.warn(`No data available for tab "${tabName}"`);
-      }
-
-      if (entityKey === 'positions') {
-          updateStatistics();
-      }
-    } catch (error) {
-      logger.error('Error switching tabs:', error);
+    const entityKey = TAB_ENTITY_MAP[tabName] || tabName;
+    if (jobSearchData?.jobsearch?.[entityKey]) {
+      initializeEntity(entityKey);
+    } else {
+      logger.warn(`No data available for tab "${tabName}"`);
     }
+
+    if (entityKey === 'positions') {
+      updateStatistics();
+    }
+  } catch (error) {
+    logger.error('Error switching tabs:', error);
+  }
 };
 
 // Update statistics function
