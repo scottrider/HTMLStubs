@@ -3,7 +3,7 @@
  * Component for handling row-form interactions, editing state, and field management
  */
 
-const rowLogger = window.DataGridNamespace?.logger || {
+const rowLogger = window.DataGridNamespace?.logger || { 
     debug: () => {},
     info: console.info,
     warn: console.warn,

@@ -286,7 +286,8 @@ class DataGridPresentation {
 
             // Create tab panel
             const tabPanel = document.createElement('div');
-            tabPanel.id = `${id}-panel`;
+            // tabPanel.id = `${id}-panel`;
+            tabPanel.id = `main-content-panel`;
             tabPanel.className = `tab-panel ${!activeTabSet ? 'active' : ''}`;
             
             // Create DataGrid container within the panel
@@ -335,13 +336,13 @@ class DataGridPresentation {
 
         // Update tab panels
         const tabPanels = container.querySelectorAll('.tab-panel');
-        tabPanels.forEach(panel => {
-            if (panel.id === `${tabId}-panel`) {
-                panel.classList.add('active');
-            } else {
-                panel.classList.remove('active');
-            }
-        });
+        // tabPanels.forEach(panel => {
+        //     if (panel.id === `${tabId}-panel`) {
+        //         panel.classList.add('active');
+        //     } else {
+        //         panel.classList.remove('active');
+        //     }
+        // });
 
         dgpLogger.debug(`Switched to tab: ${tabId}`);
     }
