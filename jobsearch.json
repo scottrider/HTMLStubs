@@ -287,6 +287,252 @@
                 }
             ]
         },
+        "appointments": {
+            "schema": {
+                "id": {
+                    "type": "number",
+                    "displayName": "ID",
+                    "titleType": {
+                        "element": "input",
+                        "type": "hidden",
+                        "css": {}
+                    },
+                    "displayType": {
+                        "element": "input",
+                        "type": "hidden",
+                        "css": {}
+                    },
+                    "editType": {
+                        "element": "input",
+                        "type": "hidden",
+                        "css": {}
+                    },
+                    "required": true,
+                    "primaryKey": true
+                },
+                "position": {
+                    "type": "string",
+                    "displayName": "Position",
+                    "titleType": {
+                        "element": "label",
+                        "type": "label",
+                        "css": {
+                            "width": "180px",
+                            "minWidth": "140px",
+                            "flex": "2 1 180px"
+                        }
+                    },
+                    "displayType": {
+                        "element": "input",
+                        "type": "text",
+                        "css": {
+                            "placeholder": "Related position",
+                            "maxlength": "100",
+                            "width": "180px",
+                            "minWidth": "140px",
+                            "flex": "2 1 180px"
+                        }
+                    },
+                    "editType": {
+                        "element": "input",
+                        "type": "text",
+                        "css": {
+                            "placeholder": "Related position",
+                            "maxlength": "100",
+                            "width": "180px",
+                            "minWidth": "140px",
+                            "flex": "2 1 180px"
+                        }
+                    },
+                    "required": true
+                },
+                "appointmentType": {
+                    "type": "string",
+                    "displayName": "Type",
+                    "titleType": {
+                        "element": "label",
+                        "type": "label",
+                        "css": {
+                            "width": "130px",
+                            "minWidth": "110px",
+                            "flex": "1.2 1 130px"
+                        }
+                    },
+                    "displayType": {
+                        "element": "select",
+                        "type": "select",
+                        "options": [
+                            "Phone Screen",
+                            "Interview",
+                            "Follow-up",
+                            "Networking",
+                            "Other"
+                        ],
+                        "css": {
+                            "width": "130px",
+                            "minWidth": "110px",
+                            "flex": "1.2 1 130px"
+                        }
+                    },
+                    "editType": {
+                        "element": "select",
+                        "type": "select",
+                        "options": [
+                            "Phone Screen",
+                            "Interview",
+                            "Follow-up",
+                            "Networking",
+                            "Other"
+                        ],
+                        "css": {
+                            "width": "130px",
+                            "minWidth": "110px",
+                            "flex": "1.2 1 130px"
+                        }
+                    },
+                    "required": true
+                },
+                "appointmentDate": {
+                    "type": "date",
+                    "displayName": "Date",
+                    "titleType": {
+                        "element": "label",
+                        "type": "label",
+                        "css": {
+                            "width": "120px",
+                            "minWidth": "110px",
+                            "flex": "1 1 120px"
+                        }
+                    },
+                    "displayType": {
+                        "element": "input",
+                        "type": "date",
+                        "css": {
+                            "width": "120px",
+                            "minWidth": "110px",
+                            "flex": "1 1 120px"
+                        }
+                    },
+                    "editType": {
+                        "element": "input",
+                        "type": "date",
+                        "css": {
+                            "width": "120px",
+                            "minWidth": "110px",
+                            "flex": "1 1 120px"
+                        }
+                    },
+                    "required": true
+                },
+                "appointmentTime": {
+                    "type": "time",
+                    "displayName": "Time",
+                    "titleType": {
+                        "element": "label",
+                        "type": "label",
+                        "css": {
+                            "width": "100px",
+                            "minWidth": "90px",
+                            "flex": "0.8 1 100px"
+                        }
+                    },
+                    "displayType": {
+                        "element": "input",
+                        "type": "time",
+                        "css": {
+                            "width": "100px",
+                            "minWidth": "90px",
+                            "flex": "0.8 1 100px"
+                        }
+                    },
+                    "editType": {
+                        "element": "input",
+                        "type": "time",
+                        "css": {
+                            "width": "100px",
+                            "minWidth": "90px",
+                            "flex": "0.8 1 100px"
+                        }
+                    },
+                    "required": false
+                },
+                "location": {
+                    "type": "string",
+                    "displayName": "Location",
+                    "titleType": {
+                        "element": "label",
+                        "type": "label",
+                        "css": {
+                            "width": "170px",
+                            "minWidth": "130px",
+                            "flex": "1.6 1 170px"
+                        }
+                    },
+                    "displayType": {
+                        "element": "input",
+                        "type": "text",
+                        "css": {
+                            "placeholder": "Office, phone, or video link",
+                            "maxlength": "120",
+                            "width": "170px",
+                            "minWidth": "130px",
+                            "flex": "1.6 1 170px"
+                        }
+                    },
+                    "editType": {
+                        "element": "input",
+                        "type": "text",
+                        "css": {
+                            "placeholder": "Office, phone, or video link",
+                            "maxlength": "120",
+                            "width": "170px",
+                            "minWidth": "130px",
+                            "flex": "1.6 1 170px"
+                        }
+                    },
+                    "required": false
+                },
+                "notes": {
+                    "type": "string",
+                    "displayName": "Notes",
+                    "titleType": {
+                        "element": "label",
+                        "type": "label",
+                        "css": {
+                            "width": "220px",
+                            "minWidth": "160px",
+                            "flex": "2.5 1 220px"
+                        }
+                    },
+                    "displayType": {
+                        "element": "textarea",
+                        "type": "textarea",
+                        "css": {
+                            "placeholder": "Appointment details",
+                            "maxlength": "500",
+                            "rows": "1",
+                            "width": "220px",
+                            "minWidth": "160px",
+                            "flex": "2.5 1 220px"
+                        }
+                    },
+                    "editType": {
+                        "element": "textarea",
+                        "type": "textarea",
+                        "css": {
+                            "placeholder": "Appointment details",
+                            "maxlength": "500",
+                            "rows": "2",
+                            "width": "220px",
+                            "minWidth": "160px",
+                            "flex": "2.5 1 220px"
+                        }
+                    },
+                    "required": false
+                }
+            },
+            "records": []
+        },
         "contacts": {
             "schema": {
                 "id": {

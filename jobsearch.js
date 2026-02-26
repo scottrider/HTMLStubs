@@ -26,13 +26,15 @@ let jobSearchData = null;
 const ENTITY_DISPLAY_NAMES = {
     positions: { singular: 'Position', plural: 'Positions' },
     companies: { singular: 'Company', plural: 'Companies' },
-    contacts: { singular: 'Contact', plural: 'Contacts' }
+    contacts: { singular: 'Contact', plural: 'Contacts' },
+    appointments: { singular: 'Appointment', plural: 'Appointments' }
 };
 
 const TAB_ENTITY_MAP = {
     positions: 'positions',
     companies: 'companies',
-    contacts: 'contacts'
+    reports: 'contacts',
+    appointments: 'appointments'
 };
 
 let currentEntityType = 'positions';
@@ -2463,18 +2465,12 @@ if (typeof window !== 'undefined') {
 // Tab switching functionality
 window.switchTab = function(tabName) {
     
-    try {
-      document.querySelectorAll('.tab-button').forEach(button => {
-          button.classList.remove('active');
-      });
-      
-      // Hide all tab panels
-      // document.querySelectorAll('.tab-panel').forEach(panel => {
-      //     panel.classList.remove('active');
-      // });
-
-      // Activate selected tab
-      // document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+    // Activate selected tab
+    document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+    const mainContentPanel = document.getElementById('main-content-panel');
+    if (mainContentPanel) {
+        mainContentPanel.classList.add('active');
+    }
 
       const entityKey = TAB_ENTITY_MAP[tabName] || tabName;
       if (jobSearchData?.jobsearch?.[entityKey]) {
