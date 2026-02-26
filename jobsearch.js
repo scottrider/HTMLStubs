@@ -32,7 +32,7 @@ const ENTITY_DISPLAY_NAMES = {
 const TAB_ENTITY_MAP = {
     positions: 'positions',
     companies: 'companies',
-    reports: 'contacts'
+    contacts: 'contacts'
 };
 
 let currentEntityType = 'positions';
@@ -2462,29 +2462,32 @@ if (typeof window !== 'undefined') {
 
 // Tab switching functionality
 window.switchTab = function(tabName) {
-    // Remove active class from all tab buttons
-    document.querySelectorAll('.tab-button').forEach(button => {
-        button.classList.remove('active');
-    });
     
-    // Hide all tab panels
-    document.querySelectorAll('.tab-panel').forEach(panel => {
-        panel.classList.remove('active');
-    });
+    try {
+      document.querySelectorAll('.tab-button').forEach(button => {
+          button.classList.remove('active');
+      });
+      
+      // Hide all tab panels
+      // document.querySelectorAll('.tab-panel').forEach(panel => {
+      //     panel.classList.remove('active');
+      // });
 
-    // Activate selected tab
-    document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
-    document.getElementById(`${tabName}-panel`).classList.add('active');
+      // Activate selected tab
+      // document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
 
-    const entityKey = TAB_ENTITY_MAP[tabName] || tabName;
-    if (jobSearchData?.jobsearch?.[entityKey]) {
-        initializeEntity(entityKey);
-    } else {
-        logger.warn(`No data available for tab "${tabName}"`);
-    }
+      const entityKey = TAB_ENTITY_MAP[tabName] || tabName;
+      if (jobSearchData?.jobsearch?.[entityKey]) {
+          initializeEntity(entityKey);
+      } else {
+          logger.warn(`No data available for tab "${tabName}"`);
+      }
 
-    if (entityKey === 'positions') {
-        updateStatistics();
+      if (entityKey === 'positions') {
+          updateStatistics();
+      }
+    } catch (error) {
+      logger.error('Error switching tabs:', error);
     }
 };
 

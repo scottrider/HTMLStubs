@@ -466,6 +466,8 @@
         display: block;
         margin: 0;
         padding: 0;
+        height: 700px;
+        overflow-y: scroll;
       }
 
       .record-row {
