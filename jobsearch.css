@@ -1036,6 +1036,18 @@ html, body {
     content: "📊";
 }
 
+.tab-button[data-tab="contacts"]::before {
+    content: "👤";
+}
+
+.tab-button[data-tab="appointments"]::before {
+    content: "📅";
+}
+
+.tab-button[data-tab="settings"]::before {
+    content: "⚙️";
+}
+
 .main-content {
     flex: 1;
     display: flex;
@@ -1052,6 +1064,46 @@ html, body {
 
 .tab-panel.active {
     display: flex;
+}
+
+.settings-panel-content {
+    max-width: 900px;
+    margin: 24px auto;
+    padding: 24px;
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.settings-description {
+    margin-top: 8px;
+    color: #495057;
+}
+
+.settings-data-source-details {
+    margin-top: 18px;
+    display: grid;
+    gap: 10px;
+}
+
+.settings-data-row {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 16px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: #f8f9fa;
+}
+
+.settings-data-label {
+    font-weight: 600;
+    color: #343a40;
+}
+
+.settings-data-value {
+    color: #212529;
+    word-break: break-word;
 }
 
 .stats-bar {

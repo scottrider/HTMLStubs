@@ -37,6 +37,13 @@ const TAB_ENTITY_MAP = {
     appointments: 'appointments'
 };
 
+const DATA_SOURCE_DETAILS = [
+  { label: 'Data File', value: './jobsearch.json' },
+  { label: 'Loader', value: 'loadJobSearchData() via fetch' },
+  { label: 'Runtime', value: 'window.jobSearchData in-memory state' },
+  { label: 'UI Binding', value: 'Schema-driven DataGrid rendering' }
+];
+
 let currentEntityType = 'positions';
 let currentSchema = {};
 let currentFieldOrder = [];
@@ -593,11 +600,39 @@ async function loadJobSearchData() {
   try {
     const response = await fetch('./jobsearch.json');
     jobSearchData = await response.json();
+    renderSettingsDataSource();
     initializeEntity(currentEntityType);
   } catch (error) {
     logger.error('Error loading job search data:', error);
     // Fallback to hardcoded options if file load fails
+    renderSettingsDataSource(error);
   }
+}
+
+function renderSettingsDataSource(loadError = null) {
+  const detailsContainer = document.getElementById('settingsDataSourceDetails');
+  if (!detailsContainer) {
+    return;
+  }
+
+  const entityNames = jobSearchData?.jobsearch ? Object.keys(jobSearchData.jobsearch) : [];
+  const entityValue = entityNames.length > 0 ? entityNames.join(', ') : 'No entities loaded';
+  const statusValue = loadError ? `Load failed (${loadError.message || 'Unknown error'})` : 'Loaded';
+
+  const allDetails = [
+    ...DATA_SOURCE_DETAILS,
+    { label: 'Status', value: statusValue },
+    { label: 'Entities', value: entityValue }
+  ];
+
+  detailsContainer.innerHTML = allDetails
+    .map(detail => `
+      <div class="settings-data-row">
+        <span class="settings-data-label">${escapeHtml(detail.label)}</span>
+        <span class="settings-data-value">${escapeHtml(detail.value)}</span>
+      </div>
+    `)
+    .join('');
 }
 
 function initializeEntity(entityType = currentEntityType) {
@@ -2475,8 +2510,18 @@ window.switchTab = function(tabName) {
     }
 
     const mainContentPanel = document.getElementById('main-content-panel');
+    const settingsPanel = document.getElementById('settings-panel');
+
     if (mainContentPanel) {
-      mainContentPanel.classList.add('active');
+      mainContentPanel.classList.toggle('active', tabName !== 'settings');
+    }
+    if (settingsPanel) {
+      settingsPanel.classList.toggle('active', tabName === 'settings');
+    }
+
+    if (tabName === 'settings') {
+      renderSettingsDataSource();
+      return;
     }
 
     const entityKey = TAB_ENTITY_MAP[tabName] || tabName;
@@ -2519,6 +2564,8 @@ function updateStatistics() {
 // Initialize DataGridSearch and hook into FormMock updates
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Initializing JobSearch Management UI');
+
+    renderSettingsDataSource();
 
     // Initial statistics update
     setTimeout(() => {

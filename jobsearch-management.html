@@ -43,6 +43,14 @@
           >
             <span>Appointments</span>
           </button>
+          <button
+            class="tab-button"
+            data-tab="settings"
+            type="button"
+            onclick="switchTab('settings')"
+          >
+            <span>Settings</span>
+          </button>
         </nav>
 
         <!-- Main Content Area -->
@@ -192,6 +200,14 @@
               </div>
             </div>
           </div>
+
+          <div id="settings-panel" class="tab-panel">
+            <div class="settings-panel-content">
+              <h2>Settings</h2>
+              <p class="settings-description">
+                Data source details for what is running this page.
+              </p>
+              <div id="settingsDataSourceDetails" class="settings-data-source-details"></div>
             </div>
           </div>
         </main>
