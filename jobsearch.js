@@ -2495,6 +2495,142 @@ if (typeof window !== 'undefined') {
 }
 
 
+
+
+const APPOINTMENT_VIEWS = ['daily', 'monthly', 'quarterly', 'yearly'];
+let appointmentsCurrentDate = new Date();
+let appointmentsCurrentView = 'monthly';
+
+function parseAppointmentDate(record) {
+  if (!record?.appointmentDate) return null;
+  const parsed = new Date(record.appointmentDate);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function getAppointmentRecords() {
+  return jobSearchData?.jobsearch?.appointments?.records || [];
+}
+
+function renderAppointmentsUI() {
+  renderAppointmentsMonthList();
+  renderAppointmentsCalendar();
+  bindAppointmentsControls();
+}
+
+function bindAppointmentsControls() {
+  const prevBtn = document.getElementById('appointmentsPrevMonth');
+  const nextBtn = document.getElementById('appointmentsNextMonth');
+
+  if (prevBtn && !prevBtn.dataset.bound) {
+    prevBtn.addEventListener('click', () => {
+      appointmentsCurrentDate = new Date(appointmentsCurrentDate.getFullYear(), appointmentsCurrentDate.getMonth() - 1, 1);
+      renderAppointmentsCalendar();
+    });
+    prevBtn.dataset.bound = 'true';
+  }
+
+  if (nextBtn && !nextBtn.dataset.bound) {
+    nextBtn.addEventListener('click', () => {
+      appointmentsCurrentDate = new Date(appointmentsCurrentDate.getFullYear(), appointmentsCurrentDate.getMonth() + 1, 1);
+      renderAppointmentsCalendar();
+    });
+    nextBtn.dataset.bound = 'true';
+  }
+
+  document.querySelectorAll('.appointments-view-btn').forEach(btn => {
+    if (btn.dataset.bound) return;
+    btn.addEventListener('click', () => {
+      appointmentsCurrentView = APPOINTMENT_VIEWS.includes(btn.dataset.view) ? btn.dataset.view : 'monthly';
+      document.querySelectorAll('.appointments-view-btn').forEach(viewBtn => {
+        viewBtn.classList.toggle('active', viewBtn.dataset.view === appointmentsCurrentView);
+      });
+      renderAppointmentsCalendar();
+    });
+    btn.dataset.bound = 'true';
+  });
+}
+
+function renderAppointmentsMonthList() {
+  const container = document.getElementById('appointmentsMonthList');
+  if (!container) return;
+
+  const grouped = new Map();
+  getAppointmentRecords().forEach(record => {
+    const date = parseAppointmentDate(record);
+    if (!date) return;
+    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    if (!grouped.has(key)) grouped.set(key, []);
+    grouped.get(key).push({ record, date });
+  });
+
+  const sortedKeys = [...grouped.keys()].sort();
+  if (!sortedKeys.length) {
+    container.innerHTML = '<p>No appointments scheduled.</p>';
+    return;
+  }
+
+  container.innerHTML = sortedKeys.map(key => {
+    const [year, month] = key.split('-');
+    const monthLabel = new Date(Number(year), Number(month) - 1, 1).toLocaleString('default', { month: 'long', year: 'numeric' });
+    const items = grouped.get(key)
+      .sort((a, b) => a.date - b.date)
+      .map(({ record, date }) => `<li>${date.toLocaleDateString()}${record.appointmentTime ? ` ${record.appointmentTime}` : ''} — ${record.position || 'Appointment'}</li>`)
+      .join('');
+    return `<div class="appointments-month-section"><h3>${monthLabel}</h3><ul>${items}</ul></div>`;
+  }).join('');
+}
+
+function renderAppointmentsCalendar() {
+  const grid = document.getElementById('appointmentsCalendarGrid');
+  const monthLabel = document.getElementById('appointmentsCurrentMonthLabel');
+  if (!grid || !monthLabel) return;
+
+  const year = appointmentsCurrentDate.getFullYear();
+  const month = appointmentsCurrentDate.getMonth();
+  const monthlyLabel = appointmentsCurrentDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+  monthLabel.textContent = appointmentsCurrentView === 'monthly' ? monthlyLabel : `${monthlyLabel} (${appointmentsCurrentView})`;
+
+  const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+    .map(day => `<div class="appointments-day-header">${day}</div>`)
+    .join('');
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const appointmentsByDay = new Map();
+
+  getAppointmentRecords().forEach(record => {
+    const date = parseAppointmentDate(record);
+    if (!date || date.getFullYear() !== year || date.getMonth() !== month) return;
+    const day = date.getDate();
+    if (!appointmentsByDay.has(day)) appointmentsByDay.set(day, []);
+    appointmentsByDay.get(day).push(record);
+  });
+
+  let cells = '';
+  for (let i = 0; i < firstDay; i += 1) {
+    cells += '<div class="appointments-day-cell empty"></div>';
+  }
+
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    const events = (appointmentsByDay.get(day) || []).map(record => {
+      const label = appointmentsCurrentView === 'daily'
+        ? `${record.appointmentTime || ''} ${record.position || 'Appointment'}`.trim()
+        : `${record.position || 'Appointment'}`;
+      return `<span class="appointments-event">${label}</span>`;
+    }).join('');
+
+    cells += `<div class="appointments-day-cell"><div class="appointments-day-number">${day}</div>${events}</div>`;
+  }
+
+  const totalCells = firstDay + daysInMonth;
+  const trailing = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+  for (let i = 0; i < trailing; i += 1) {
+    cells += '<div class="appointments-day-cell empty"></div>';
+  }
+
+  grid.innerHTML = dayHeaders + cells;
+}
+
 // ===== JobSearch Management Tab Functionality =====
 
 // Tab switching functionality
@@ -2510,10 +2646,14 @@ window.switchTab = function(tabName) {
     }
 
     const mainContentPanel = document.getElementById('main-content-panel');
+    const appointmentsPanel = document.getElementById('appointments-panel');
     const settingsPanel = document.getElementById('settings-panel');
 
     if (mainContentPanel) {
-      mainContentPanel.classList.toggle('active', tabName !== 'settings');
+      mainContentPanel.classList.toggle('active', tabName !== 'settings' && tabName !== 'appointments');
+    }
+    if (appointmentsPanel) {
+      appointmentsPanel.classList.toggle('active', tabName === 'appointments');
     }
     if (settingsPanel) {
       settingsPanel.classList.toggle('active', tabName === 'settings');
@@ -2521,6 +2661,11 @@ window.switchTab = function(tabName) {
 
     if (tabName === 'settings') {
       renderSettingsDataSource();
+      return;
+    }
+
+    if (tabName === 'appointments') {
+      renderAppointmentsUI();
       return;
     }
 

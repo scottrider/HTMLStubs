@@ -201,6 +201,34 @@
             </div>
           </div>
 
+          <div id="appointments-panel" class="tab-panel appointments-panel">
+            <div class="appointments-layout">
+              <section class="appointments-list-pane" aria-label="Appointments by month">
+                <h2>Appointments by Month</h2>
+                <div id="appointmentsMonthList" class="appointments-month-list"></div>
+              </section>
+
+              <section class="appointments-calendar-pane" aria-label="Appointment calendar">
+                <div class="appointments-calendar-header">
+                  <div class="appointments-month-controls">
+                    <button id="appointmentsPrevMonth" type="button" class="appointments-control-btn">◀</button>
+                    <div id="appointmentsCurrentMonthLabel" class="appointments-current-label">Month YYYY</div>
+                    <button id="appointmentsNextMonth" type="button" class="appointments-control-btn">▶</button>
+                  </div>
+
+                  <div class="appointments-view-controls" role="group" aria-label="Appointment calendar view">
+                    <button type="button" class="appointments-view-btn" data-view="daily">Daily</button>
+                    <button type="button" class="appointments-view-btn active" data-view="monthly">Monthly</button>
+                    <button type="button" class="appointments-view-btn" data-view="quarterly">Quarterly</button>
+                    <button type="button" class="appointments-view-btn" data-view="yearly">Yearly</button>
+                  </div>
+                </div>
+
+                <div id="appointmentsCalendarGrid" class="appointments-calendar-grid"></div>
+              </section>
+            </div>
+          </div>
+
           <div id="settings-panel" class="tab-panel">
             <div class="settings-panel-content">
               <h2>Settings</h2>
