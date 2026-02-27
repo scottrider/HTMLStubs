@@ -1301,6 +1301,21 @@ html, body {
   gap: 6px;
 }
 
+.appointments-add-btn {
+  border: 1px solid #ced4da;
+  background: #fff;
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.appointments-add-btn:hover {
+  background: #f8f9fa;
+}
+
 .appointments-view-btn {
   border: 1px solid #ced4da;
   background: #fff;
