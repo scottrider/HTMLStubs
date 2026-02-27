@@ -2520,6 +2520,7 @@ function renderAppointmentsUI() {
 function bindAppointmentsControls() {
   const prevBtn = document.getElementById('appointmentsPrevMonth');
   const nextBtn = document.getElementById('appointmentsNextMonth');
+  const addBtn = document.getElementById('appointmentsAddBtn');
 
   if (prevBtn && !prevBtn.dataset.bound) {
     prevBtn.addEventListener('click', () => {
@@ -2548,6 +2549,18 @@ function bindAppointmentsControls() {
     });
     btn.dataset.bound = 'true';
   });
+
+  if (addBtn && !addBtn.dataset.bound) {
+    addBtn.addEventListener('click', () => {
+      switchTab('appointments');
+      setEntityContext('appointments');
+      selectedRecords.clear();
+      masterCheckboxState = false;
+      updateHeaderForSelection();
+      showRecordForm();
+    });
+    addBtn.dataset.bound = 'true';
+  }
 }
 
 function renderAppointmentsMonthList() {
